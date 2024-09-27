@@ -52,14 +52,14 @@ import Toasts from "./components/Toasts";
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => setLoaded(true), 1000);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
-  return (
-    <Route {...rest} render={props => ( <> <Preloader show={loaded ? false : true} /> <Component {...props} /> </> ) } />
-  );
+  // return (
+  //   <Route {...rest} render={props => ( <> <Preloader show={loaded ? false : true} /> <Component {...props} /> </> ) } />
+  // );
 };
 
 const RouteWithSidebar = ({ component: Component, ...rest }) => {
