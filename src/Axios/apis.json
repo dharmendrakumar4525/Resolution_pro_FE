@@ -6,8 +6,8 @@
       "registerUser": "/AppUsers/registerUser",
       "registerUserMobile": "/AppUsers/registerUserMobile",
       "loginWithOTP": "/loginWithOtp",
-      "loginWithPassword": "/loginWithOtp"
-      
+      "loginWithPassword": "/loginWithOtp",
+      "getUser": "/users"
     }
   }
   

@@ -1,7 +1,7 @@
 import axios from "axios";
 import apis from "./apis"; //json file containing apis data
 
-// const url = "http://localhost:3000";
+// const url = "http://localhost:3000/v1";
 
 const url = "https://uzjxpasrmq.us-east-1.awsapprunner.com/v1";
 

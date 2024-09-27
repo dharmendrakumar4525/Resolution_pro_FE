@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { apiURL } from "../API/api";
+
 
 export const AuthContext = createContext();
 
@@ -54,28 +54,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // const logout = async () => {
-  //   const refreshToken = localStorage.getItem("refreshToken");
-  //   try {
-  //     const res = await fetch(`${apiURL}auth/logout`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ refreshToken }),
-  //     });
-  //     console.log("Res", res);
-  //     if (res.ok) {
-  //       localStorage.removeItem("accessToken");
-  //       localStorage.removeItem("refreshToken");
-  //       localStorage.removeItem("user");
-  //       localStorage.removeItem("openTabs");
-  //       setIsAuthenticated(false);
-  //       toast.info("Logged out successfully.");
-  //       navigate("/login");
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
 
   const logout = async () => {
     localStorage.removeItem("accessToken");
