@@ -1,0 +1,39 @@
+/**
+ * = Accordions
+ */
+
+ .accordion-button {
+    text-align: left;
+    background-color: rgba(var(--bs-primary-rgb));
+    .btn-check:focus + .btn, .btn:focus {
+        outline: 0;
+        box-shadow: none;
+    }
+    
+    &:hover{
+        background-color: $gray-200;
+    }
+}
+
+
+
+.accordion-flush {
+    .accordion-button {
+        background-color: rgba(var(--bs-primary-rgb));
+        &:not(.collapsed) {
+            color: $gray-200;
+            background-color: rgba(var(--bs-primary-rgb));
+        }
+        &:focus {
+            border-color: $gray-300;
+            background-color: rgba(var(--bs-primary-rgb));
+            box-shadow: none;
+        }
+    }
+    .accordion-collapse {
+        border: 0;
+        // background-color: rgba(var(--bs-primary-rgb));
+    }
+}
+
+

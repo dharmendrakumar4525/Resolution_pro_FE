@@ -1,0 +1,193 @@
+.sidebar .multi-level .nav-link {
+  padding-left: 15px !important;
+}
+
+.sidebar-inner .accordion-body {
+  background-color: #2e3650;
+  background-color: #2e3650 !important ;
+
+  /* border: none !important; */
+}
+
+.Project-Heading {
+  font-size: 25px;
+  padding: 0px 0px 20px 20px;
+}
+
+.accordion-item {
+  border: none !important;
+}
+
+.sidebar .nav-link {
+  font-size: 1rem;
+  vertical-align: middle;
+  padding: 8px !important;
+  border-radius: 0 !important;
+  color: #000 I !important;
+}
+
+.sidebar-inner .accordion {
+  background-color: #262b3f !important ;
+  color: #000 I !important;
+  padding: 10px 10px;
+}
+
+.sidebar .nav-item .nav-link {
+  color: #000 I !important;
+  border: 0 !important;
+  background-color: #2e3650 !important ;
+}
+
+.sidebar .nav-item {
+  border: 0 !important;
+  margin-bottom: 0 !important;
+  color: #000 I !important;
+}
+
+.sidebar .nav-item.active > .nav-link {
+  color: #fff !important;
+  background-color: #2e3650 !important;
+  border: 1px solid #2e3650 !important;
+}
+
+.sidebar .nav-link.active > .sidebar-icon {
+  color: #000 !important;
+}
+
+.simplebar-mask {
+  background-color: #2e3650 !important;
+}
+
+.sidebar-inner .accordion-button::after {
+  background-image: none;
+  content: "\25B6" !important;
+  font-family: "Font Awesome 5 Free";
+  font-size: 0.875rem;
+  font-weight: 900;
+  height: 1.25rem;
+  width: 0.5rem;
+}
+
+.sidebar-inner .accordion-button:not(.collapsed)::after {
+  transform: rotate(90deg) !important;
+  transition: all 0.2s ease;
+  background-color: transparent !important;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+.accordion-button.collapsed {
+  color: #fff !important;
+}
+
+.accordion-button:hover {
+  background-color: #f5f8fb;
+  color: #000 !important;
+}
+
+@media screen and (max-width: 767px) {
+  .Userid-box {
+    display: none !important;
+  }
+}
+
+.head-box {
+  background-color: #f8f9fa !important;
+  padding: 16px 24px !important;
+  border-radius: 8px !important;
+  box-shadow: 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-box {
+  display: flex !important;
+  align-items: center !important;
+  background-color: #009688 !important;
+  border-color: #009688 !important;
+  padding: 10px 20px !important;
+  border-radius: 50px !important;
+  font-weight: 500 !important;
+}
+
+.h4-heading-style {
+  color: #2e3650 !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+/* Usermenu css */
+
+.user-menu-dropdown .dropdown-menu {
+  min-width: 350px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.user-menu-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+}
+
+.user-menu-dropdown .dropdown-item .me-2 {
+  margin-right: 10px;
+}
+
+/* LoginPage.css */
+.login-container {
+  height: 100vh !important;
+  background: linear-gradient(135deg, #000, #2e3650) !important;
+  color: #fff !important;
+}
+
+.card {
+  background-color: #fff !important;
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+.form-control-custom {
+  border: 2px solid #2e3650 !important;
+  border-radius: 5px !important;
+  font-size: 1rem !important;
+  color: #2e3650 !important;
+}
+
+.form-control-custom:focus {
+  border-color: #2e3650 !important;
+  box-shadow: 0 0 8px rgba(46, 54, 80, 0.4) !important;
+}
+
+/* OtpPage.css */
+.otp-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #000, #2e3650);
+}
+
+.otp-card {
+  border-radius: 15px;
+  background-color: #fff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.otp-input {
+  border: 2px solid #2e3650;
+  border-radius: 5px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.otp-input:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 8px rgba(63, 81, 181, 0.4);
+}
+
+/* Table  css */
+
+/* .styled-table{
+  border-radius: 15px;
+  background-color: #fff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+} */
