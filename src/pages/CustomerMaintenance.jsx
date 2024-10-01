@@ -4,6 +4,7 @@ import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from 'react-router-dom';
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
@@ -28,6 +29,7 @@ export default function CustomerMaintenance() {
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
   const userManagerName = JSON.parse(localStorage.getItem("user"))?.name;
   const userManagerId = JSON.parse(localStorage.getItem("user"))?.id;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -180,11 +182,15 @@ export default function CustomerMaintenance() {
     }
   };
 
+  const handleViewDirectors = (id) => {
+    navigate(`/directors/${id}`);
+  };
+
   return (
     <>
       <Container className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Cutomer Maintenance</h4>
+          <h4 className="h4-heading-style">Customer Maintenance</h4>
           <Button
             variant="primary"
             className="btn-box"
@@ -364,6 +370,7 @@ export default function CustomerMaintenance() {
                 <th>RO?</th>
                 <th>Revision</th>
                 <th>Alloted Manager</th>
+                <th>Directors</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -384,7 +391,7 @@ export default function CustomerMaintenance() {
                   <td className="text-center">
                     {row.alloted_manager?.name || "-"}
                   </td>
-
+                  <button onClick={() => handleViewDirectors(row.id)}>View Directors</button>
                   <td>
                     <Button
                       variant="outline-secondary"

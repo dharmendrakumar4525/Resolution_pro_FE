@@ -10,6 +10,7 @@ import ErrorPage from "../pages/ErrorPage";
 import OtpPage from "../pages/OtpPage";
 import { useAuth } from "../context/AuthContext";
 import CustomerMaintenance from "../pages/CustomerMaintenance";
+import Directors from "../pages/Directors";
 import MeetingAgendaTemplate from "../pages/MeetingAgendaTemplate";
 import CommitteeMembers from "../pages/CommitteeMembers";
 import Preloader from "../components/Preloader";
@@ -136,6 +137,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenance />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/directors/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Directors />} />
           ) : (
             <Navigate to="/login" />
           )
