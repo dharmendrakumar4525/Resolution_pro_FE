@@ -7,6 +7,7 @@ import {
   InputGroup,
   FormControl,
   Container,
+  Spinner,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
@@ -18,6 +19,7 @@ export default function CommitteeMembers() {
   const [templateNames, setTemplateNames] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     meetingType: "",
     groupName: "",
@@ -49,7 +51,10 @@ export default function CommitteeMembers() {
         setRows(updatedRows);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
+      
     };
     fetchData();
   }, []);
@@ -178,7 +183,7 @@ export default function CommitteeMembers() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="clientName">
-                <Form.Label>Client Name</Form.Label>
+                <Form.Label >Client Name</Form.Label>
                 <Form.Control
                   as="select"
                   value={formData.clientName}
@@ -191,7 +196,7 @@ export default function CommitteeMembers() {
               </Form.Group>
 
               <Form.Group controlId="committee">
-                <Form.Label>Committee</Form.Label>
+                <Form.Label className="f-label">Committee</Form.Label>
                 <Form.Control
                   as="select"
                   value={formData.committee}
@@ -204,7 +209,7 @@ export default function CommitteeMembers() {
               </Form.Group>
 
               <Form.Group controlId="groupItems">
-                <Form.Label>Committee Members</Form.Label>
+                <Form.Label className="f-label">Committee Members</Form.Label>
                 <Form.Control
                   as="select"
                   multiple
@@ -231,6 +236,18 @@ export default function CommitteeMembers() {
             </Form>
           </Modal.Body>
         </Modal>
+
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ): rows.length === 0 ? ( 
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
 
         <div className="table-responsive mt-5">
           <Table striped bordered hover>
@@ -268,6 +285,7 @@ export default function CommitteeMembers() {
             </tbody>
           </Table>
         </div>
+        )}
       </Container>
       <ToastContainer />
     </>

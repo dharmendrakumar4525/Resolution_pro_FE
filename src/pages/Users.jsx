@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Form, Modal, Container, Alert } from "react-bootstrap";
+import { Table, Button, Form, Modal, Container, Alert, Spinner, } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +10,7 @@ export default function CustomerMaintenance() {
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,6 +26,8 @@ export default function CustomerMaintenance() {
         setRows(data.results);
       } catch (error) {
         toast.error("Error fetching data");
+      }finally {
+        setLoading(false); 
       }
     };
     fetchData();
@@ -40,6 +43,8 @@ export default function CustomerMaintenance() {
     setEditingRow(null);
     setOpenAddModal(true);
   };
+
+  
 
   const handleCloseAddModal = () => setOpenAddModal(false);
 
@@ -207,6 +212,17 @@ export default function CustomerMaintenance() {
           </Modal.Body>
         </Modal>
 
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? (  
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
         <div className="table-responsive mt-5">
           <Table striped bordered hover>
             <thead>
@@ -245,6 +261,7 @@ export default function CustomerMaintenance() {
             </tbody>
           </Table>
         </div>
+        )}
       </Container>
       <ToastContainer />
     </>

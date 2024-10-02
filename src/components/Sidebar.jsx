@@ -11,7 +11,6 @@ import {
   Nav,
   Navbar,
   Button,
-  Image,
   Accordion,
   Badge,
 } from "react-bootstrap";
@@ -20,18 +19,24 @@ import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 export default function Sidebar() {
   const location = useLocation();
   const { pathname } = location;
+  
   const [show, setShow] = useState(false);
+  const [activeKey, setActiveKey] = useState(""); // New state for active key
   const showClass = show ? "show" : "";
 
   const handleToggleSidebar = () => setShow(!show);
 
+  const handleAccordionChange = (eventKey) => {
+    setActiveKey(activeKey === eventKey ? "" : eventKey); // Toggle accordion open/close
+  };
+
   const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
     const defaultKey = pathname.includes(eventKey) ? eventKey : "";
-
+    
     return (
-      <Accordion defaultActiveKey={defaultKey}>
+      <Accordion activeKey={activeKey} onSelect={handleAccordionChange}>
         <Accordion.Item eventKey={eventKey}>
-          <Accordion.Header>
+          <Accordion.Header onClick={() => handleAccordionChange(eventKey)}>
             <FontAwesomeIcon icon={icon} className="me-2" />
             {title}
           </Accordion.Header>
@@ -87,28 +92,6 @@ export default function Sidebar() {
         style={{ minHeight: "100vh" }}
       >
         <div className="sidebar-inner">
-          {/* <div className="d-flex align-items-center mb-4">
-            <Image
-              src={ProfilePicture}
-              roundedCircle
-              width={40}
-              height={40}
-              className="me-3 border border-2 border-white"
-            />
-            <div>
-              <h6 className="mb-0">Hi, Jane</h6>
-              <Button
-                variant="light"
-                size="sm"
-                className="mt-1 text-dark"
-                as={NavLink}
-                to="/signin"
-              >
-                <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sign Out
-              </Button>
-            </div>
-          </div> */}
-
           <Nav className="flex-column">
             <NavLink to="/" className="nav-link mb-3 text-white">
               <h4 className="Project-Heading">Resolution Pro</h4>

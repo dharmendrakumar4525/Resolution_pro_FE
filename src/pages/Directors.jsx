@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
-import { Button, Form, Modal, Table, Container, Col, Row } from "react-bootstrap";
+import { Button, Form, Modal, Table, Container, Col, Row , Spinner,} from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -10,6 +10,7 @@ export default function Directors() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     company_id: "",    
     name: "",            
@@ -30,6 +31,8 @@ export default function Directors() {
         setRows(data);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
     fetchData();
@@ -38,6 +41,9 @@ export default function Directors() {
   useEffect(() => {
     console.log("Rows after state update:", rows);
   }, [rows]);
+
+
+  
 
   // Open modal for adding a new director
   const handleOpenAddModal = () => {
@@ -220,7 +226,17 @@ export default function Directors() {
           </Modal.Body>
         </Modal>
 
-        {/* Directors Table */}
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? ( 
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
         <div className="table-responsive mt-5">
           <Table striped bordered hover align="center">
             <thead>
@@ -256,6 +272,7 @@ export default function Directors() {
             </tbody>
           </Table>
         </div>
+        )}
       </Container>
       <ToastContainer />
     </>

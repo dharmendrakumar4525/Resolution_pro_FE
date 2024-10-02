@@ -184,10 +184,20 @@
   box-shadow: 0 0 8px rgba(63, 81, 181, 0.4);
 }
 
-/* Table  css */
+/* Modal Form css */
 
-/* .styled-table{
-  border-radius: 15px;
-  background-color: #fff;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-} */
+.f-label{
+  margin-top: 10px !important;
+}
+
+/* Directors btn */
+
+.director-btn{
+  border: none ;
+  background: transparent;
+}
+.director-btn:hover{
+  color: blue;
+}
+
+

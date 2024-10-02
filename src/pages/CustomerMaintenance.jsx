@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Modal, Table, Container,Col,Row } from "react-bootstrap";
+import { Button, Form, Modal, Table, Container,Col,Row, Spinner, } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -11,6 +11,7 @@ export default function CustomerMaintenance() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -39,6 +40,8 @@ export default function CustomerMaintenance() {
         setRows(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
     fetchData();
@@ -208,7 +211,9 @@ export default function CustomerMaintenance() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="name" className="mb-3">
+            <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="name" >
                 <Form.Label>Name</Form.Label>
                 <Form.Control
                   type="text"
@@ -217,7 +222,9 @@ export default function CustomerMaintenance() {
                   placeholder="Enter Name"
                 />
               </Form.Group>
-              <Row className="mb-3">
+              </Col>
+              <Col>
+              
               <Form.Group as={Col} controlId="state" >
                 <Form.Label>State</Form.Label>
                 <Form.Control
@@ -227,7 +234,10 @@ export default function CustomerMaintenance() {
                   placeholder="Enter State"
                 />
               </Form.Group>
-
+              </Col>
+              </Row>
+              <Row className="mb-3">
+              <Col>
               <Form.Group as={Col} controlId="country" >
                 <Form.Label>Country</Form.Label>
                 <Form.Control
@@ -237,8 +247,10 @@ export default function CustomerMaintenance() {
                   placeholder="Enter Country"
                 />
               </Form.Group>
-              </Row>
-              <Row className="mb-3">
+              </Col>
+              
+         
+              <Col>
               <Form.Group as={Col} controlId="cin" >
                 <Form.Label>CIN</Form.Label>
                 <Form.Control
@@ -248,7 +260,10 @@ export default function CustomerMaintenance() {
                   placeholder="Enter CIN"
                 />
               </Form.Group>
-
+              </Col>
+              </Row>
+              <Row className="mb-3">
+              <Col>
               <Form.Group as={Col} controlId="pan" >
                 <Form.Label>PAN</Form.Label>
                 <Form.Control
@@ -258,9 +273,10 @@ export default function CustomerMaintenance() {
                   placeholder="Enter PAN"
                 />
               </Form.Group>
-              </Row >
+              </Col>
+              <Col>
 
-              <Form.Group controlId="gstin" className="mb-3">
+              <Form.Group controlId="gstin" >
                 <Form.Label>GSTIN</Form.Label>
                 <Form.Control
                   type="text"
@@ -269,8 +285,11 @@ export default function CustomerMaintenance() {
                   placeholder="Enter GSTIN"
                 />
               </Form.Group>
-
-              <Form.Group controlId="revision" className="mb-3">
+              </Col>
+              </Row>
+              <Row className="mb-3">
+              <Col>
+              <Form.Group controlId="revision">
                 <Form.Label>Revision</Form.Label>
                 <Form.Control
                   type="text"
@@ -279,7 +298,9 @@ export default function CustomerMaintenance() {
                   placeholder="Enter Revision"
                 />
               </Form.Group>
-              <Form.Group controlId="alloted_manager" className="mb-3">
+              </Col>
+              <Col>
+              <Form.Group controlId="alloted_manager" >
                 <Form.Label>Manager</Form.Label>
                 {userRole === "manager" ? (
                   <Form.Control
@@ -303,8 +324,10 @@ export default function CustomerMaintenance() {
                   </Form.Control>
                 )}
               </Form.Group>
+              </Col>
+              </Row>
 <Row className="mb-4">
-              <Form.Group as={Col} controlId="o" className="mb-3">
+              <Form.Group as={Col} controlId="o" >
                 <Form.Check
                   type="checkbox"
                   label="O"
@@ -313,7 +336,7 @@ export default function CustomerMaintenance() {
                 />
               </Form.Group>
 
-              <Form.Group as={Col} controlId="c" className="mb-3">
+              <Form.Group as={Col} controlId="c" >
                 <Form.Check
                   type="checkbox"
                   label="C"
@@ -322,7 +345,7 @@ export default function CustomerMaintenance() {
                 />
               </Form.Group>
 
-              <Form.Group as={Col} controlId="v" className="mb-3">
+              <Form.Group as={Col} controlId="v" >
                 <Form.Check
                   type="checkbox"
                   label="V"
@@ -331,7 +354,7 @@ export default function CustomerMaintenance() {
                 />
               </Form.Group>
 
-              <Form.Group as={Col} controlId="ro" className="mb-3">
+              <Form.Group as={Col} controlId="ro" >
                 <Form.Check
                   type="checkbox"
                   label="RO"
@@ -354,6 +377,17 @@ export default function CustomerMaintenance() {
           </Modal.Body>
         </Modal>
 
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? (  
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
         <div className="table-responsive mt-5">
           <Table striped bordered hover align="center">
             <thead>
@@ -391,7 +425,8 @@ export default function CustomerMaintenance() {
                   <td className="text-center">
                     {row.alloted_manager?.name || "-"}
                   </td>
-                  <button onClick={() => handleViewDirectors(row.id)}>View Directors</button>
+                  <td><button className="director-btn" onClick={() => handleViewDirectors(row.id)}>View Directors</button></td>
+                  
                   <td>
                     <Button
                       variant="outline-secondary"
@@ -412,6 +447,7 @@ export default function CustomerMaintenance() {
             </tbody>
           </Table>
         </div>
+        )}
       </Container>
       <ToastContainer />
     </>

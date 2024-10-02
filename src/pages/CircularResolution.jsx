@@ -8,6 +8,7 @@ import {
   Row,
   Col,
   Container,
+  Spinner,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -18,8 +19,10 @@ const CircularResolution = () => {
   const [open, setOpen] = useState(false);
   const [templateNames, setTemplateNames] = useState([]);
   const [resolutionType, setResolutionType] = useState("");
-  const [circularResolutions, setCircularResolutions] = useState([]);
-  const [selectedResolution, setSelectedResolution] = useState(null); // Track the selected resolution for detail view
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true); 
+
+  const [selectedResolution, setSelectedResolution] = useState(null);
 
   const [formData, setFormData] = useState({
     status: "",
@@ -45,7 +48,7 @@ const CircularResolution = () => {
       try {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
-        setCircularResolutions(data.data.results);
+        setRows(data.data.results);
 
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
@@ -58,6 +61,8 @@ const CircularResolution = () => {
         setTemplateNames(templateNames);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
 
@@ -83,7 +88,7 @@ const CircularResolution = () => {
       }
       toast.success("Resolution added successfully");
       const data = await response.json();
-      setCircularResolutions((prevRows) => [...prevRows, data]);
+      setRows((prevRows) => [...prevRows, data]);
 
       handleClose();
       resetForm();
@@ -319,6 +324,16 @@ const CircularResolution = () => {
               </p>
             </div>
           </>
+        ) : loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ): rows.length === 0 ? ( 
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
         ) : (
           <div className="table-responsive mt-5">
             <Table striped bordered hover>
@@ -335,7 +350,7 @@ const CircularResolution = () => {
                 </tr>
               </thead>
               <tbody>
-                {circularResolutions.map((row, index) => (
+                {rows.map((row, index) => (
                   <tr
                     key={index}
                     onClick={() => showResolutionDetails(row)}

@@ -8,6 +8,7 @@ import {
   Modal,
   Table,
   Container,
+  Spinner,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -17,6 +18,7 @@ export default function MeetingAgendaTemplate() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     status: "",
     meetingType: "",
@@ -34,6 +36,8 @@ export default function MeetingAgendaTemplate() {
         setRows(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
     fetchData();
@@ -51,6 +55,8 @@ export default function MeetingAgendaTemplate() {
     });
     setOpenAddModal(true);
   };
+
+  
 
   const handleCloseAddModal = () => setOpenAddModal(false);
 
@@ -174,7 +180,7 @@ export default function MeetingAgendaTemplate() {
               <Row>
                 <Col md={6}>
                   <Form.Group controlId="status">
-                    <Form.Label>Status</Form.Label>
+                    <Form.Label className="f-label">Status</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.status}
@@ -190,7 +196,7 @@ export default function MeetingAgendaTemplate() {
 
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
-                    <Form.Label>Meeting Type</Form.Label>
+                    <Form.Label className="f-label">Meeting Type</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.meetingType}
@@ -212,7 +218,7 @@ export default function MeetingAgendaTemplate() {
               <Row>
                 <Col md={6}>
                   <Form.Group controlId="templateName">
-                    <Form.Label>Template Name</Form.Label>
+                    <Form.Label className="f-label">Template Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.templateName}
@@ -224,7 +230,7 @@ export default function MeetingAgendaTemplate() {
 
                 <Col md={6}>
                   <Form.Group controlId="fileName">
-                    <Form.Label>File Name</Form.Label>
+                    <Form.Label className="f-label">File Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.fileName}
@@ -235,10 +241,10 @@ export default function MeetingAgendaTemplate() {
                 </Col>
               </Row>
 
-              <Row>
+              <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group controlId="by">
-                    <Form.Label>By</Form.Label>
+                    <Form.Label className="f-label">By</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.by}
@@ -250,7 +256,7 @@ export default function MeetingAgendaTemplate() {
 
                 <Col md={6}>
                   <Form.Group controlId="at">
-                    <Form.Label>At</Form.Label>
+                    <Form.Label className="f-label">At</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.at}
@@ -275,6 +281,17 @@ export default function MeetingAgendaTemplate() {
           </Modal.Body>
         </Modal>
 
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? ( 
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
         <Table striped bordered hover responsive className="mt-5 ">
           <thead>
             <tr>
@@ -315,6 +332,7 @@ export default function MeetingAgendaTemplate() {
             ))}
           </tbody>
         </Table>
+        )}
       </Container>
       <ToastContainer />
     </>

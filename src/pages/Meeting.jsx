@@ -8,6 +8,7 @@ import {
   Row,
   Col,
   Container,
+  Spinner,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -19,6 +20,7 @@ export default function Meeting() {
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => setOpenAddModal(false);
   const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     status: "",
     meetingType: "",
@@ -37,6 +39,8 @@ export default function Meeting() {
         setRows(data.meetingTemplates);
       } catch (error) {
         console.error("Error fetching data:", error);
+      }finally {
+        setLoading(false); 
       }
     };
 
@@ -64,6 +68,8 @@ export default function Meeting() {
       alert("Failed to delete item. Please try again.");
     }
   };
+
+  
 
   const handleChange = (e) => {
     const { id, name, value } = e.target;
@@ -169,8 +175,9 @@ export default function Meeting() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
+            <Row>
               <Form.Group controlId="status">
-                <Form.Label>Status</Form.Label>
+                <Form.Label >Status</Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.status}
@@ -178,11 +185,12 @@ export default function Meeting() {
                   placeholder="Enter Status"
                 />
               </Form.Group>
+              </Row>
 
               <Row>
                 <Col>
                   <Form.Group controlId="templateName">
-                    <Form.Label>Template Name</Form.Label>
+                    <Form.Label className="f-label">Template Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.templateName}
@@ -193,7 +201,7 @@ export default function Meeting() {
                 </Col>
                 <Col>
                   <Form.Group controlId="meetingType">
-                    <Form.Label>Meeting Type</Form.Label>
+                    <Form.Label className="f-label">Meeting Type</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.meetingType}
@@ -214,7 +222,7 @@ export default function Meeting() {
               <Row>
                 <Col>
                   <Form.Group controlId="templateType">
-                    <Form.Label>Template Type</Form.Label>
+                    <Form.Label className="f-label">Template Type</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.templateType}
@@ -228,7 +236,7 @@ export default function Meeting() {
                 </Col>
                 <Col>
                   <Form.Group controlId="fileName">
-                    <Form.Label>File Name</Form.Label>
+                    <Form.Label className="f-label">File Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.fileName}
@@ -239,8 +247,10 @@ export default function Meeting() {
                 </Col>
               </Row>
 
+              <Row>
+              <Col>
               <Form.Group controlId="by">
-                <Form.Label>By</Form.Label>
+                <Form.Label className="f-label">By</Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.by}
@@ -248,9 +258,10 @@ export default function Meeting() {
                   placeholder="By"
                 />
               </Form.Group>
-
+              </Col>
+              <Col>
               <Form.Group controlId="at">
-                <Form.Label>At</Form.Label>
+                <Form.Label className="f-label">At</Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.at}
@@ -258,6 +269,8 @@ export default function Meeting() {
                   placeholder="At"
                 />
               </Form.Group>
+              </Col>
+              </Row>
 
               <Button variant="primary" type="submit" className="mt-3 me-2">
                 Save
@@ -272,6 +285,18 @@ export default function Meeting() {
             </Form>
           </Modal.Body>
         </Modal>
+
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? ( 
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
 
         <Table striped bordered hover responsive className="mt-5">
           <thead>
@@ -315,6 +340,7 @@ export default function Meeting() {
             ))}
           </tbody>
         </Table>
+        )}
       </Container>
       <ToastContainer />
     </>
