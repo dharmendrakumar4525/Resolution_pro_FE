@@ -49,6 +49,7 @@ export default function CustomerMaintenance() {
         const response = await fetch(`${apiURL}/customer-maintenance`);
         const data = await response.json();
         setRows(data.results);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
