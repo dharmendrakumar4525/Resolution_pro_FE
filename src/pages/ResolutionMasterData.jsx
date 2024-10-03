@@ -27,7 +27,7 @@ const ResolutionMasterData = () => {
 
   const [formData, setFormData] = useState({
     type: "",
-   status: "created", 
+    status: "created",
     description: "",
     itemFile: "https://example.com/files/resolution.pdf", // Updated default file
     itemVariable: "Variable content", // Updated default content
@@ -126,12 +126,9 @@ const ResolutionMasterData = () => {
     }
 
     try {
-      const response = await fetch(`${apiURL}/resolutions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resolutionData), // Send modified data
-      });
-
+      const response = await fetch(`${apiURL}/resolutions`);
+      let data = await response.json();
+      setRows(data.data.results);
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error message:", errorData);
@@ -139,8 +136,7 @@ const ResolutionMasterData = () => {
       }
 
       toast.success("Resolution added successfully");
-      const data = await response.json();
-      setRows((prevRows) => [...prevRows, data]);
+
       handleClose();
       resetForm();
     } catch (error) {
@@ -151,7 +147,7 @@ const ResolutionMasterData = () => {
   const resetForm = () => {
     setFormData({
       type: "",
-      status: "created", 
+      status: "created",
       description: "",
       itemFile: "https://example.com/files/resolution.pdf",
       itemVariable: "Variable content",
@@ -373,33 +369,41 @@ const ResolutionMasterData = () => {
 
               {resolutionType === "committee" && (
                 <>
-                <Row>
-                <Col>
-                  <Form.Group controlId="committeeType" className="mb-3">
-                    <Form.Label>Committee Type</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="committeeType"
-                      value={formData.committeeType}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Committee Type</option>
-                      <option value="CSR">CSR</option>
-                      <option value="Audit">Audit</option>
-                    </Form.Control>
-                  </Form.Group>
-                  </Col>
-                  <Col>
-                  <Form.Group controlId="emailTo" className="mb-3">
-                    <Form.Label>Email To</Form.Label>
-                    <Form.Control
-                      type="email"
-                      value={formData.emailTo}
-                      onChange={handleChange}
-                      placeholder="Enter recipient email"
-                    />
-                  </Form.Group>
-                  </Col>
+                  <Row>
+                    <Col>
+                      <Form.Group controlId="clientName" className="mb-3">
+                        <Form.Label>Client Name</Form.Label>
+                        <Form.Control
+                          as="select"
+                          name="clientName"
+                          value={formData.clientName}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select client name</option>
+                          {companies.map((company) => (
+                            <option key={company.id} value={company.id}>
+                              {company.name}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId="committeeType" className="mb-3">
+                        <Form.Label>Committee Type</Form.Label>
+                        <Form.Control
+                          as="select"
+                          name="committeeType"
+                          value={formData.committeeType}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="">Select committee type</option>
+                          <option value="CSR">CSR</option>
+                          <option value="Audit">Audit</option>
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
                   </Row>
 
                   <Row>
@@ -533,9 +537,6 @@ const ResolutionMasterData = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-
-                
-                 
                 </>
               )}
 
