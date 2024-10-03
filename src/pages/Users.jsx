@@ -24,6 +24,8 @@ export default function CustomerMaintenance() {
         const response = await fetch(`${apiURL}/users`);
         const data = await response.json();
         setRows(data.results);
+
+        console.log(data.results)
       } catch (error) {
         toast.error("Error fetching data");
       }finally {
@@ -91,6 +93,7 @@ export default function CustomerMaintenance() {
     e.preventDefault();
     try {
       if (editingRow) {
+        // Update the user in the backend
         await fetch(`${apiURL}/users/${editingRow.id}`, {
           method: "PATCH",
           headers: {
@@ -98,13 +101,22 @@ export default function CustomerMaintenance() {
           },
           body: JSON.stringify(formData),
         });
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
+
+        // Update rows in the state
+        const updatedRows = rows.map((row) =>
+          row.id === editingRow.id ? { ...row, ...formData } : row
         );
+        setRows(updatedRows);
+
+        // Update localStorage user data if the edited user is the logged-in user
+        const localStorageUser = JSON.parse(localStorage.getItem('user'));
+        if (localStorageUser && localStorageUser.id === editingRow.id) {
+          const updatedUser = { ...localStorageUser, ...formData };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+
         toast.success("User edited successfully");
-      } else {
+      }  else {
         const response = await fetch(`${apiURL}/users`, {
           method: "POST",
           headers: {
