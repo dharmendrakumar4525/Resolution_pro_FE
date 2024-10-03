@@ -14,33 +14,38 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CircularResolution = () => {
+const ResolutionMasterData = () => {
   const [isDocOpen, setIsDocOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [templateNames, setTemplateNames] = useState([]);
   const [resolutionType, setResolutionType] = useState("");
   const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   const [selectedResolution, setSelectedResolution] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [templateList, setTemplateList] = useState([]);
 
   const [formData, setFormData] = useState({
-    status: "",
+    type: "",
+    status: "Draft",
     type: "",
     description: "",
-    committeeType: "",
+    // committeeType: "CSR",
+    itemFile: "https://example.com/files/resolution.pdf",
+    itemVariable: "Variable content",
     clientName: "",
     resolutionItem: "",
-    itemFile: "",
+    itemVariable: "Variable content",
+    isFinancialSequence: false,
     issueDate: "",
     passedDate: "",
     issueFrom: "",
-    emailTo: "",
+    emailTo: "director@example.com",
+    emailAt: "direct@example.com",
     dueDate: "",
     resolutionNo: "",
     decisionType: "",
-    by: "",
-    at: "",
   });
 
   useEffect(() => {
@@ -61,14 +66,52 @@ const CircularResolution = () => {
         setTemplateNames(templateNames);
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const data = await response.json();
+        setTemplateList(data.results);
+        console.log(data.results, "frdeedde");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch(`${apiURL}/customer-maintenance`);
 
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Customer Maintenance Data:", data);
+
+        setCompanies(data.results);
+        console.log(
+          "Companies associated with selected manager:",
+          data.results
+        );
+      } catch (error) {
+        toast.error(`Error fetching companies: ${error.message}`);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });
@@ -99,10 +142,11 @@ const CircularResolution = () => {
 
   const resetForm = () => {
     setFormData({
-      status: "",
+      status: "Draft",
       type: "",
       description: "",
       committeeType: "",
+
       clientName: "",
       resolutionItem: "",
       itemFile: "",
@@ -137,9 +181,9 @@ const CircularResolution = () => {
 
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Circular Resolution</h4>
+          <h4 className="h4-heading-style">Resolution Master Data</h4>
           <Button variant="primary" className="btn-box" onClick={handleOpen}>
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
@@ -147,7 +191,7 @@ const CircularResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Add Circular Resolution</Modal.Title>
+            <Modal.Title>Add Resolution Master Data</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
@@ -169,24 +213,21 @@ const CircularResolution = () => {
 
               {resolutionType === "board" && (
                 <>
-                  <Form.Group controlId="status" className="mb-3">
-                    <Form.Label>Status</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.status}
-                      onChange={handleChange}
-                      placeholder="Enter status"
-                    />
-                  </Form.Group>
-
                   <Form.Group controlId="clientName" className="mb-3">
                     <Form.Label>Client Name</Form.Label>
                     <Form.Control
-                      type="text"
+                      as="select"
+                      name="clientName"
                       value={formData.clientName}
                       onChange={handleChange}
-                      placeholder="Enter client name"
-                    />
+                    >
+                      <option value="">Select client name</option>
+                      {companies.map((company) => (
+                        <option key={company.id} value={company.id}>
+                          {company.name}
+                        </option>
+                      ))}
+                    </Form.Control>
                   </Form.Group>
 
                   <Form.Group controlId="description" className="mb-3">
@@ -197,6 +238,26 @@ const CircularResolution = () => {
                       onChange={handleChange}
                       placeholder="Enter description"
                     />
+                  </Form.Group>
+
+                  <Form.Group controlId="resolutionItem" className="mb-3">
+                    <Form.Label>Template Name</Form.Label>
+                    <Form.Control
+                      as="select"
+                      name="resolutionItem"
+                      value={formData.resolutionItem}
+                      onChange={handleChange}
+                      disabled={loading}
+                    >
+                      <option value="">Select template name</option>
+                      {templateList.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.templateName}
+                        </option>
+                      ))}
+                    </Form.Control>
+                    {loading && <Spinner animation="border" size="sm" />}{" "}
+                    {/* Optional spinner */}
                   </Form.Group>
 
                   <Row>
@@ -222,7 +283,14 @@ const CircularResolution = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-
+                  <Form.Group controlId="dueDate" className="mb-3">
+                    <Form.Label>Due Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
                   <Form.Group controlId="issueFrom" className="mb-3">
                     <Form.Label>Issue From</Form.Label>
                     <Form.Control
@@ -330,7 +398,7 @@ const CircularResolution = () => {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ): rows.length === 0 ? ( 
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -376,4 +444,4 @@ const CircularResolution = () => {
   );
 };
 
-export default CircularResolution;
+export default ResolutionMasterData;

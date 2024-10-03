@@ -98,7 +98,7 @@ export default function Sidebar() {
             >
               <NavItem
                 title="Resolution Master Data"
-                link="/circular-resolution"
+                link="/resolution-master-data"
               />
             </CollapsableNavItem>
 

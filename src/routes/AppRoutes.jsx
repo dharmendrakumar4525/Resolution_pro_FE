@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
-import CircularResolution from "../pages/CircularResolution";
+import ResolutionMasterData from "../pages/ResolutionMasterData";
 import TemplateGroup from "../pages/TemplateGroup";
 import Meeting from "../pages/Meeting";
 import LoginPage from "../pages/Login";
@@ -73,10 +73,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/circular-resolution"
+        path="/resolution-master-data"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<CircularResolution />} />
+            <RouteWithSidebar element={<ResolutionMasterData />} />
           ) : (
             <Navigate to="/login" />
           )
