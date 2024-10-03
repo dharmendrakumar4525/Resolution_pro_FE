@@ -7,19 +7,13 @@ import {
   faSignOutAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  Nav,
-  Navbar,
-  Button,
-  Accordion,
-  Badge,
-} from "react-bootstrap";
+import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 
 export default function Sidebar() {
   const location = useLocation();
   const { pathname } = location;
-  
+
   const [show, setShow] = useState(false);
   const [activeKey, setActiveKey] = useState(""); // New state for active key
   const showClass = show ? "show" : "";
@@ -32,7 +26,7 @@ export default function Sidebar() {
 
   const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
     const defaultKey = pathname.includes(eventKey) ? eventKey : "";
-    
+
     return (
       <Accordion activeKey={activeKey} onSelect={handleAccordionChange}>
         <Accordion.Item eventKey={eventKey}>
@@ -97,17 +91,34 @@ export default function Sidebar() {
               <h4 className="Project-Heading">Resolution Pro</h4>
             </NavLink>
 
-            <CollapsableNavItem eventKey="tables/" title="Resolution" icon={faTable}>
-              <NavItem title="Circular Resolution" link="/circular-resolution" />
-              <NavItem title="Template Group" link="/template-group" />
-              <NavItem title="Meeting Template" link="/meeting-template" />
-              <NavItem title="Meeting Agenda Template" link="/meeting-agenda-template" />
-              <NavItem title="Committee Members" link="/committee-members" />
+            <CollapsableNavItem
+              eventKey="tables/"
+              title="Resolution"
+              icon={faTable}
+            >
+              <NavItem
+                title="Resolution Master Data"
+                link="/circular-resolution"
+              />
             </CollapsableNavItem>
 
-            <CollapsableNavItem eventKey="examples/" title="Master" icon={faFileAlt}>
+            <CollapsableNavItem
+              eventKey="examples/"
+              title="Master"
+              icon={faFileAlt}
+            >
+              <NavItem title="Template Group" link="/template-group" />
+              <NavItem title="Meeting Template" link="/meeting-template" />
+              <NavItem
+                title="Meeting Agenda Template"
+                link="/meeting-agenda-template"
+              />
+              <NavItem title="Committee Members" link="/committee-members" />
               <NavItem title="Users" link="/users" />
-              <NavItem title="Customer Maintenance" link="/customer-maintenance" />
+              <NavItem
+                title="Customer Maintenance"
+                link="/customer-maintenance"
+              />
             </CollapsableNavItem>
           </Nav>
         </div>
