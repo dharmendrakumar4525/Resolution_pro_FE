@@ -49,6 +49,8 @@ export default function CustomerMaintenance() {
         const response = await fetch(`${apiURL}/customer-maintenance`);
         const data = await response.json();
         setRows(data.results);
+        console.log(data.results);
+        
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -203,7 +205,7 @@ export default function CustomerMaintenance() {
 
   return (
     <>
-      <Container className="styled-table pt-3 mt-4 pb-3">
+<Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Customer Maintenance</h4>
           <Button
