@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Modal, Table, Container,Col,Row, Spinner, } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  Container,
+  Col,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -40,8 +51,8 @@ export default function CustomerMaintenance() {
         setRows(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -203,7 +214,11 @@ export default function CustomerMaintenance() {
           </Button>
         </div>
 
-        <Modal show={openAddModal} onHide={() => setOpenAddModal(false)} className="p-2">
+        <Modal
+          show={openAddModal}
+          onHide={() => setOpenAddModal(false)}
+          className="p-2"
+        >
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit Customer" : "Add Customer"}
@@ -211,157 +226,154 @@ export default function CustomerMaintenance() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-            <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="name" >
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter Name"
-                />
-              </Form.Group>
-              </Col>
-              <Col>
-              
-              <Form.Group as={Col} controlId="state" >
-                <Form.Label>State</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.state}
-                  onChange={handleChange}
-                  placeholder="Enter State"
-                />
-              </Form.Group>
-              </Col>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="name">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter Name"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group as={Col} controlId="state">
+                    <Form.Label>State</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.state}
+                      onChange={handleChange}
+                      placeholder="Enter State"
+                    />
+                  </Form.Group>
+                </Col>
               </Row>
               <Row className="mb-3">
-              <Col>
-              <Form.Group as={Col} controlId="country" >
-                <Form.Label>Country</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.country}
-                  onChange={handleChange}
-                  placeholder="Enter Country"
-                />
-              </Form.Group>
-              </Col>
-              
-         
-              <Col>
-              <Form.Group as={Col} controlId="cin" >
-                <Form.Label>CIN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.cin}
-                  onChange={handleChange}
-                  placeholder="Enter CIN"
-                />
-              </Form.Group>
-              </Col>
-              </Row>
-              <Row className="mb-3">
-              <Col>
-              <Form.Group as={Col} controlId="pan" >
-                <Form.Label>PAN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.pan}
-                  onChange={handleChange}
-                  placeholder="Enter PAN"
-                />
-              </Form.Group>
-              </Col>
-              <Col>
+                <Col>
+                  <Form.Group as={Col} controlId="country">
+                    <Form.Label>Country</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.country}
+                      onChange={handleChange}
+                      placeholder="Enter Country"
+                    />
+                  </Form.Group>
+                </Col>
 
-              <Form.Group controlId="gstin" >
-                <Form.Label>GSTIN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.gstin}
-                  onChange={handleChange}
-                  placeholder="Enter GSTIN"
-                />
-              </Form.Group>
-              </Col>
+                <Col>
+                  <Form.Group as={Col} controlId="cin">
+                    <Form.Label>CIN</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.cin}
+                      onChange={handleChange}
+                      placeholder="Enter CIN"
+                    />
+                  </Form.Group>
+                </Col>
               </Row>
               <Row className="mb-3">
-              <Col>
-              <Form.Group controlId="revision">
-                <Form.Label>Revision</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.revision}
-                  onChange={handleChange}
-                  placeholder="Enter Revision"
-                />
-              </Form.Group>
-              </Col>
-              <Col>
-              <Form.Group controlId="alloted_manager" >
-                <Form.Label>Manager</Form.Label>
-                {userRole === "manager" ? (
-                  <Form.Control
-                    type="text"
-                    value={userManagerName}
-                    readOnly
-                    // placeholder = {userManagerName}
+                <Col>
+                  <Form.Group as={Col} controlId="pan">
+                    <Form.Label>PAN</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.pan}
+                      onChange={handleChange}
+                      placeholder="Enter PAN"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="gstin">
+                    <Form.Label>GSTIN</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.gstin}
+                      onChange={handleChange}
+                      placeholder="Enter GSTIN"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="revision">
+                    <Form.Label>Revision</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.revision}
+                      onChange={handleChange}
+                      placeholder="Enter Revision"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="alloted_manager">
+                    <Form.Label>Manager</Form.Label>
+                    {userRole === "manager" ? (
+                      <Form.Control
+                        type="text"
+                        value={userManagerName}
+                        readOnly
+                        // placeholder = {userManagerName}
+                      />
+                    ) : (
+                      <Form.Control
+                        as="select"
+                        value={formData.alloted_manager}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Manager</option>
+                        {managers.map((manager) => (
+                          <option key={manager.id} value={manager.id}>
+                            {manager.name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-4">
+                <Form.Group as={Col} controlId="o">
+                  <Form.Check
+                    type="checkbox"
+                    label="O"
+                    checked={formData.o}
+                    onChange={handleCheckboxChange}
                   />
-                ) : (
-                  <Form.Control
-                    as="select"
-                    value={formData.alloted_manager}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Manager</option>
-                    {managers.map((manager) => (
-                      <option key={manager.id} value={manager.id}>
-                        {manager.name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                )}
-              </Form.Group>
-              </Col>
-              </Row>
-<Row className="mb-4">
-              <Form.Group as={Col} controlId="o" >
-                <Form.Check
-                  type="checkbox"
-                  label="O"
-                  checked={formData.o}
-                  onChange={handleCheckboxChange}
-                />
-              </Form.Group>
+                </Form.Group>
 
-              <Form.Group as={Col} controlId="c" >
-                <Form.Check
-                  type="checkbox"
-                  label="C"
-                  checked={formData.c}
-                  onChange={handleCheckboxChange}
-                />
-              </Form.Group>
+                <Form.Group as={Col} controlId="c">
+                  <Form.Check
+                    type="checkbox"
+                    label="C"
+                    checked={formData.c}
+                    onChange={handleCheckboxChange}
+                  />
+                </Form.Group>
 
-              <Form.Group as={Col} controlId="v" >
-                <Form.Check
-                  type="checkbox"
-                  label="V"
-                  checked={formData.v}
-                  onChange={handleCheckboxChange}
-                />
-              </Form.Group>
+                <Form.Group as={Col} controlId="v">
+                  <Form.Check
+                    type="checkbox"
+                    label="V"
+                    checked={formData.v}
+                    onChange={handleCheckboxChange}
+                  />
+                </Form.Group>
 
-              <Form.Group as={Col} controlId="ro" >
-                <Form.Check
-                  type="checkbox"
-                  label="RO"
-                  checked={formData.ro}
-                  onChange={handleCheckboxChange}
-                />
-              </Form.Group>
+                <Form.Group as={Col} controlId="ro">
+                  <Form.Check
+                    type="checkbox"
+                    label="RO"
+                    checked={formData.ro}
+                    onChange={handleCheckboxChange}
+                  />
+                </Form.Group>
               </Row>
               <Button type="submit" variant="primary" className="me-2">
                 Save
@@ -383,70 +395,111 @@ export default function CustomerMaintenance() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? (  
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-        <div className="table-responsive mt-5">
-          <Table striped bordered hover align="center">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>State</th>
-                <th>Country</th>
-                <th>CIN</th>
-                <th>PAN</th>
-                <th>GSTIN</th>
-                <th>O?</th>
-                <th>C?</th>
-                <th>V?</th>
-                <th>RO?</th>
-                <th>Revision</th>
-                <th>Alloted Manager</th>
-                <th>Directors</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.name}</td>
-                  <td>{row.state}</td>
-                  <td>{row.country}</td>
-                  <td>{row.cin}</td>
-                  <td>{row.pan}</td>
-                  <td>{row.gstin}</td>
-                  <td>{row.o ? "Yes" : "No"}</td>
-                  <td>{row.c ? "Yes" : "No"}</td>
-                  <td>{row.v ? "Yes" : "No"}</td>
-                  <td>{row.ro ? "Yes" : "No"}</td>
-                  <td className="text-center">{row.revision}</td>
-                  <td className="text-center">
-                    {row.alloted_manager?.name || "-"}
-                  </td>
-                  <td><button className="director-btn" onClick={() => handleViewDirectors(row.id)}>View Directors</button></td>
-                  
-                  <td>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => handleEditClick(row)}
-                      className="me-2"
+          <div className="table-responsive mt-5">
+            <Table striped bordered hover align="center">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>State</th>
+                  <th>Country</th>
+                  <th>CIN</th>
+                  <th>PAN</th>
+                  <th>GSTIN</th>
+                  <th>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip id="tooltip-o">Ownership</Tooltip>}
                     >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => handleDeleteClick(row)}
+                      <span>O?</span>
+                    </OverlayTrigger>
+                  </th>
+
+                  <th>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip id="tooltip-c">Certified</Tooltip>}
                     >
-                      <FaTrash />
-                    </Button>
-                  </td>
+                      <span>C?</span>
+                    </OverlayTrigger>
+                  </th>
+
+                  <th>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip id="tooltip-v">Verified</Tooltip>}
+                    >
+                      <span>V?</span>
+                    </OverlayTrigger>
+                  </th>
+
+                  <th>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={
+                        <Tooltip id="tooltip-ro">Registered Office</Tooltip>
+                      }
+                    >
+                      <span>RO?</span>
+                    </OverlayTrigger>
+                  </th>
+
+                  <th>Revision</th>
+                  <th>Alloted Manager</th>
+                  <th>Directors</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.name}</td>
+                    <td>{row.state}</td>
+                    <td>{row.country}</td>
+                    <td>{row.cin}</td>
+                    <td>{row.pan}</td>
+                    <td>{row.gstin}</td>
+                    <td>{row.o ? "Yes" : "No"}</td>
+                    <td>{row.c ? "Yes" : "No"}</td>
+                    <td>{row.v ? "Yes" : "No"}</td>
+                    <td>{row.ro ? "Yes" : "No"}</td>
+                    <td className="text-center">{row.revision}</td>
+                    <td className="text-center">
+                      {row.alloted_manager?.name || "-"}
+                    </td>
+                    <td>
+                      <button
+                        className="director-btn"
+                        onClick={() => handleViewDirectors(row.id)}
+                      >
+                        View Directors
+                      </button>
+                    </td>
+
+                    <td>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleEditClick(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         )}
       </Container>
       <ToastContainer />

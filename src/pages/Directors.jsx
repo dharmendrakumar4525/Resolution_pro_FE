@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from 'react-router-dom';
-import { Button, Form, Modal, Table, Container, Col, Row , Spinner,} from "react-bootstrap";
+import { useParams } from "react-router-dom";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  Container,
+  Col,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -10,19 +19,18 @@ export default function Directors() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    company_id: "",    
-    name: "",            
-    designation: "",     
-    begin_date: "",      
-    "din/pan": "",       
-    email: "",          
+    company_id: "",
+    name: "",
+    designation: "",
+    begin_date: "",
+    "din/pan": "",
+    email: "",
   });
 
   const { id } = useParams();
 
-  // Fetch director data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,8 +39,8 @@ export default function Directors() {
         setRows(data);
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -42,13 +50,9 @@ export default function Directors() {
     console.log("Rows after state update:", rows);
   }, [rows]);
 
-
-  
-
-  // Open modal for adding a new director
   const handleOpenAddModal = () => {
     setFormData({
-      company_id: `${id}`,   // Set company_id based on URL param
+      company_id: `${id}`,
       name: "",
       designation: "",
       begin_date: "",
@@ -59,18 +63,15 @@ export default function Directors() {
     setOpenAddModal(true);
   };
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
 
-  // Handle form submission for adding/editing a director
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingRow) {
-        // Update an existing director
         await fetch(`${apiURL}/director-data/${editingRow.id}`, {
           method: "PATCH",
           headers: {
@@ -85,7 +86,6 @@ export default function Directors() {
         );
         toast.success("Director updated successfully");
       } else {
-        // Add a new director
         const response = await fetch(`${apiURL}/director-data`, {
           method: "POST",
           headers: {
@@ -115,7 +115,6 @@ export default function Directors() {
     }
   };
 
-  // Handle delete director
   const handleDeleteClick = async (row) => {
     try {
       await fetch(`${apiURL}/director-data/${row.id}`, {
@@ -131,7 +130,6 @@ export default function Directors() {
     }
   };
 
-  // Open modal for editing a director
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
@@ -150,15 +148,24 @@ export default function Directors() {
       <Container className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Directors</h4>
-          <Button variant="primary" className="btn-box" onClick={handleOpenAddModal}>
+          <Button
+            variant="primary"
+            className="btn-box"
+            onClick={handleOpenAddModal}
+          >
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
         </div>
 
-        {/* Add/Edit Modal */}
-        <Modal show={openAddModal} onHide={() => setOpenAddModal(false)} className="p-2">
+        <Modal
+          show={openAddModal}
+          onHide={() => setOpenAddModal(false)}
+          className="p-2"
+        >
           <Modal.Header closeButton>
-            <Modal.Title>{editingRow ? "Edit Director" : "Add Director"}</Modal.Title>
+            <Modal.Title>
+              {editingRow ? "Edit Director" : "Add Director"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
@@ -219,7 +226,11 @@ export default function Directors() {
               <Button type="submit" variant="primary" className="me-2">
                 Save
               </Button>
-              <Button variant="secondary" onClick={() => setOpenAddModal(false)} className="ml-2">
+              <Button
+                variant="secondary"
+                onClick={() => setOpenAddModal(false)}
+                className="ml-2"
+              >
                 Cancel
               </Button>
             </Form>
@@ -232,46 +243,53 @@ export default function Directors() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? ( 
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-        <div className="table-responsive mt-5">
-          <Table striped bordered hover align="center">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Designation</th>
-                <th>Start Date</th>
-                <th>DIN/PAN</th>
-                <th>End Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.name}</td>
-                  <td>{row.email}</td>
-                  <td>{row.designation}</td>
-                  <td>{row.begin_date}</td>
-                  <td>{row["din/pan"]}</td>
-                  <td>{row.end_date || "-"}</td>
-                  <td>
-                    <Button variant="outline-secondary" onClick={() => handleEditClick(row)} className="me-2">
-                      <FaEdit />
-                    </Button>
-                    <Button variant="outline-danger" onClick={() => handleDeleteClick(row)}>
-                      <FaTrash />
-                    </Button>
-                  </td>
+          <div className="table-responsive mt-5">
+            <Table striped bordered hover align="center">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Designation</th>
+                  <th>Start Date</th>
+                  <th>DIN/PAN</th>
+                  <th>End Date</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.name}</td>
+                    <td>{row.email}</td>
+                    <td>{row.designation}</td>
+                    <td>{row.begin_date}</td>
+                    <td>{row["din/pan"]}</td>
+                    <td>{row.end_date || "-"}</td>
+                    <td>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleEditClick(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         )}
       </Container>
       <ToastContainer />
