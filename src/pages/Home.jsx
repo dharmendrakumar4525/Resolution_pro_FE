@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Form, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Form, Modal, Table} from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+
 
 const themeColors = {
   primary: "#2e3650",
@@ -13,7 +15,6 @@ const themeColors = {
 };
 
 const Home = () => {
-  // const [rows, setRows] = useState([]);
   const [file, setFile] = useState(null);
   const [resolutions, setResolutions] = useState([]);
   const [resolutionData, setResolutionData] = useState({
@@ -23,6 +24,7 @@ const Home = () => {
   });
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
+
   const [managers, setManagers] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [selectedManager, setSelectedManager] = useState("");
@@ -33,36 +35,53 @@ const Home = () => {
   const [inProcessCount, setInProcessCount] = useState(0);
   const [totalResolutions, setTotalResolutions] = useState(0);
 
-  // Modal state
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [openUploadModal, setOpenUploadModal] = useState(false);
+  // New state to track selected resolution type
+  const [selectedResolutionType, setSelectedResolutionType] = useState("");
 
-  const handleCreateResolution = (event) => {
-    event.preventDefault();
-    console.log("Resolution Created:", resolutionData);
-    setOpenCreateModal(false);
-  };
 
-  const handleUploadFile = () => {
-    console.log("File Uploaded:", file);
-    setOpenUploadModal(false);
-  };
+  // Fetch resolutions for admin if no manager or company is selected
+// useEffect(() => {
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+//   if (!selectedManager && !selectedCompany && user.role === "admin") {
+//     const fetchAdminResolutions = async () => {
+//       try {
+//         const response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
+//         const data = await response.json();
+//         const companyResolutions = data.data.resolutiondata[selectedCompany] || [];
 
-  // Fetch managers from the users API
+//         console.log(data.data.resolutiondata,"hello");
+        
+//         // Assuming data comes in similar structure as before
+//         const adminResolutions = data.data.resolutiondata || [];
+
+//         setResolutions(adminResolutions);
+
+//         // Count resolutions by status
+//         const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
+//         const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
+//         const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
+//         const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
+
+//         setDraftCount(draftResolutions);
+//         setCompletedCount(completedResolutions);
+//         setInProcessCount(inProcessResolutions);
+//         setTotalResolutions(totalCount);
+//       } catch (error) {
+//         toast.error("Error fetching resolutions for admin");
+//       }
+//     };
+
+//     fetchAdminResolutions();
+//   }
+// }, [selectedManager, selectedCompany, user.role, user.id]);
+
+
   useEffect(() => {
     const fetchManagers = async () => {
       try {
         const response = await fetch(`${apiURL}/users`);
         const data = await response.json();
-
-        // Filter users by role "manager"
         const managerList = data.results.filter(user => user.role === "manager");
-       
-        
         setManagers(managerList);
       } catch (error) {
         toast.error("Error fetching data");
@@ -71,53 +90,25 @@ const Home = () => {
     fetchManagers();
   }, []);
 
-
-
-  // Fetch companies from the customer-maintenance API based on the selected manager
   useEffect(() => {
-    console.log("Selected Manager ID:", selectedManager);
     if (selectedManager) {
       const fetchCompanies = async () => {
         try {
           const response = await fetch(`${apiURL}/customer-maintenance`);
-
-          // Check if the response is successful (status code 200)
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
-          }
-
           const data = await response.json();
-          console.log("Customer Maintenance Data:", data);
-
-          // Verify if the data has results and is an array
-          if (Array.isArray(data.results)) {
-            // Safely filter companies by the selected manager's ID
-            const filteredCompanies = data.results.filter(
-              company => company.alloted_manager?.id === selectedManager
-            );
-
-            setCompanies(filteredCompanies);
-            console.log("Companies associated with selected manager:", filteredCompanies);
-          } else {
-            throw new Error("Invalid data format: expected 'results' to be an array.");
-          }
-          
+          const filteredCompanies = data.results.filter(
+            company => company.alloted_manager?.id === selectedManager
+          );
+          setCompanies(filteredCompanies);
         } catch (error) {
-          console.error("Error fetching companies:", error.message);
           toast.error(`Error fetching companies: ${error.message}`);
         }
       };
       fetchCompanies();
     }
-  }, [selectedManager]); // Re-fetch companies when the selected manager changes
+  }, [selectedManager]);
 
-  // Fetch resolutions for the selected company
   useEffect(() => {
-
-    console.log(selectedManager,"Manager ");
-    console.log(selectedCompany,"Company");
-    
-    
     if (selectedManager && selectedCompany) {
       const fetchResolutions = async () => {
         try {
@@ -127,18 +118,15 @@ const Home = () => {
 
           setResolutions(companyResolutions);
 
-          // Count resolutions by status
-          const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "draft").length;
+          const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
           const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
-          const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "inprocess").length;
+          const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
           const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
-
 
           setDraftCount(draftResolutions);
           setCompletedCount(completedResolutions);
           setInProcessCount(inProcessResolutions);
           setTotalResolutions(totalCount);
-
         } catch (error) {
           toast.error("Error fetching resolutions");
         }
@@ -147,8 +135,58 @@ const Home = () => {
     }
   }, [selectedCompany, selectedManager]);
 
+  useEffect(() => {
+    const fetchResolutions = async () => {
+      try {
+        let response;
+        let data;
+        let companyResolutions = [];
+  
+        // Check if manager and company are selected
+        if (selectedManager && selectedCompany) {
+          // Fetch resolutions for selected manager and company
+          response = await fetch(`${apiURL}/resolutions/dashboard/${selectedManager}`);
+          data = await response.json();
+          companyResolutions = data.data.resolutiondata[selectedCompany] || [];
+        } else if (user.role === "admin") {
+          // Fetch all resolutions for admin if no manager and company are selected
+          response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
+          data = await response.json();
+          companyResolutions = data.data.resolutiondata[selectedCompany] || [];
+          // For admin, use the resolutions of all companies
+          companyResolutions = data.data.resolutiondata || [];
+        }
+  
+        // Set the resolutions
+        setResolutions(companyResolutions);
+  
+        // Count resolutions by status
+        const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
+        const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
+        const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
+        const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
+  
+        setDraftCount(draftResolutions);
+        setCompletedCount(completedResolutions);
+        setInProcessCount(inProcessResolutions);
+        setTotalResolutions(totalCount);
+      } catch (error) {
+        toast.error("Error fetching resolutions");
+      }
+    };
+  
+    // Call fetchResolutions when page loads, or when selectedManager, selectedCompany, or user.role changes
+    fetchResolutions();
+  }, [selectedManager, selectedCompany, user.role, user.id]);
 
-
+   // Filter resolutions based on selected type
+   const filteredResolutions = resolutions.filter(res => {
+    if (selectedResolutionType === "created") return res.status.toLowerCase() === "created";
+    if (selectedResolutionType === "completed") return res.status.toLowerCase() === "completed";
+    if (selectedResolutionType === "review") return res.status.toLowerCase() === "review";
+    if (selectedResolutionType === "total") return true; // Return all resolutions for "Total Resolutions"
+    return false;
+  });
 
   return (
     <Container fluid className="mt-5">
@@ -156,11 +194,10 @@ const Home = () => {
         Dashboard
       </h2>
 
-      {/* Filter Section */}
       <Row className="mb-4">
         {user.role === "admin" && (
           <Col md={6}>
-          <Form.Group controlId="managerFilter">
+            <Form.Group controlId="managerFilter">
               <Form.Label>Select Manager</Form.Label>
               <Form.Select
                 value={selectedManager}
@@ -178,12 +215,12 @@ const Home = () => {
         )}
 
         <Col md={6}>
-        <Form.Group controlId="companyFilter">
+          <Form.Group controlId="companyFilter">
             <Form.Label>Select Company</Form.Label>
             <Form.Select
               value={selectedCompany}
               onChange={(e) => setSelectedCompany(e.target.value)}
-              disabled={!selectedManager} // Disable company dropdown if no manager is selected
+              disabled={!selectedManager}
             >
               <option value="">Select Company</option>
               {companies.map(company => (
@@ -196,24 +233,14 @@ const Home = () => {
         </Col>
       </Row>
 
-      {/* Cards Section */}
       <Row className="g-4">
         <Col xs={12} md={6} lg={3}>
-          <Card style={{ backgroundColor: themeColors.background }}>
+          <Card
+            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            onClick={() => setSelectedResolutionType("created")}
+          >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Total Resolutions</h5>
-            </Card.Header>
-            <Card.Body>
-            <h4>{totalResolutions}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-
-
-        <Col xs={12} md={6} lg={3}>
-          <Card style={{ backgroundColor: themeColors.background }}>
-            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Created Resolutions</h5>
+              <h5 className="mb-0">Draft Resolutions</h5>
             </Card.Header>
             <Card.Body>
               <h4>{draftCount}</h4>
@@ -222,7 +249,10 @@ const Home = () => {
         </Col>
 
         <Col xs={12} md={6} lg={3}>
-          <Card style={{ backgroundColor: themeColors.background }}>
+          <Card
+            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            onClick={() => setSelectedResolutionType("review")}
+          >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
               <h5 className="mb-0">In Process Resolutions</h5>
             </Card.Header>
@@ -233,7 +263,10 @@ const Home = () => {
         </Col>
 
         <Col xs={12} md={6} lg={3}>
-          <Card style={{ backgroundColor: themeColors.background }}>
+          <Card
+            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            onClick={() => setSelectedResolutionType("completed")}
+          >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
               <h5 className="mb-0">Completed Resolutions</h5>
             </Card.Header>
@@ -242,79 +275,80 @@ const Home = () => {
             </Card.Body>
           </Card>
         </Col>
+
+        <Col xs={12} md={6} lg={3}>
+          <Card
+            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            onClick={() => setSelectedResolutionType("total")}
+          >
+            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
+              <h5 className="mb-0">Total Resolutions</h5>
+            </Card.Header>
+            <Card.Body>
+              <h4>{totalResolutions}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
 
-      {/* Create Resolution Modal */}
-      <Modal show={openCreateModal} onHide={() => setOpenCreateModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Resolution</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleCreateResolution}>
-            <Form.Group className="mb-3">
-              <Form.Label>Resolution Number</Form.Label>
-              <Form.Control
-                type="text"
-                value={resolutionData.number}
-                onChange={(e) => setResolutionData({ ...resolutionData, number: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Issue Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={resolutionData.issueDate}
-                onChange={(e) => setResolutionData({ ...resolutionData, issueDate: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={resolutionData.status}
-                onChange={(e) => setResolutionData({ ...resolutionData, status: e.target.value })}
-              >
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setOpenCreateModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" type="submit">
-                Create
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Upload Documents Modal */}
-      <Modal show={openUploadModal} onHide={() => setOpenUploadModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Upload Documents</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>Upload File</Form.Label>
-            <Form.Control type="file" onChange={handleFileChange} />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setOpenUploadModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleUploadFile}>
-            Upload
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* Resolution Table */}
+      {selectedResolutionType && (
+        <Row className="mt-4">
+          <Col>
+            <h3>{selectedResolutionType.charAt(0).toUpperCase() + selectedResolutionType.slice(1)} Resolutions</h3>
+            <Table striped bordered hover responsive >
+              <thead>
+                <tr>
+                  {/* <th>Resolution Number</th> */}
+                  <th>Status</th>
+                  <th>Type</th>
+                  <th>Client Name</th>
+                  <th>Description</th>
+                  <th>Issue Date</th>
+                  <th>Issue From</th>
+                  <th>Actions</th>
+                  {/* <th>By</th>
+                  <th>At</th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredResolutions.map((res, index) => (
+                  <tr key={index}>
+                    {/* <td>{res.number}</td> */}
+                    
+                    <td>{res.status}</td>
+                    <td>{res.type}</td>
+                    <td>{res.clientName}</td>
+                    <td>{res.description}</td>
+                    <td>{res.issueDate}</td>
+                    <td>{res.issueFrom}</td>
+                    <td>
+                    <Button
+                      variant="outline-secondary"
+                      // onClick={() => handleEditClick(row)}
+                      className="me-2"
+                    >
+                      <FaEdit />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      // onClick={() => handleDeleteClick(row)}
+                    >
+                      <FaTrash />
+                    </Button>
+                  </td>
+                    <td>{res.by}</td>
+                    <td>{res.at}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };
 
 export default Home;
+
