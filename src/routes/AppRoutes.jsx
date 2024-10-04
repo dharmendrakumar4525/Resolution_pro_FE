@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
-import ResolutionMasterData from "../pages/ResolutionMasterData";
 import TemplateGroup from "../pages/TemplateGroup";
 import Meeting from "../pages/Meeting";
 import LoginPage from "../pages/Login";
@@ -15,6 +14,8 @@ import MeetingAgendaTemplate from "../pages/MeetingAgendaTemplate";
 import CommitteeMembers from "../pages/CommitteeMembers";
 import Preloader from "../components/Preloader";
 import Sidebar from "../components/Sidebar";
+import MembersResolution from "../pages/MembersResolution";
+import BoardResolution from "../pages/BoardResolution";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -73,10 +74,20 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/resolution-master-data"
+        path="/members-resolution"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<ResolutionMasterData />} />
+            <RouteWithSidebar element={<MembersResolution />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/board-resolution"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<BoardResolution />} />
           ) : (
             <Navigate to="/login" />
           )

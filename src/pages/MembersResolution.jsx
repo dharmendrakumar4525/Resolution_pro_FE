@@ -14,7 +14,7 @@ import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const ResolutionMasterData = () => {
+const MembersResolution = () => {
   const [isDocOpen, setIsDocOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [templateNames, setTemplateNames] = useState([]);
@@ -244,7 +244,7 @@ const ResolutionMasterData = () => {
     <>
       <Container className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Resolution Master Data</h4>
+          <h4 className="h4-heading-style">Members Resolution</h4>
           <Button variant="primary" className="btn-box" onClick={handleOpen}>
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
@@ -708,4 +708,4 @@ const ResolutionMasterData = () => {
   );
 };
 
-export default ResolutionMasterData;
+export default MembersResolution;

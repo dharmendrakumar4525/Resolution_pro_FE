@@ -97,8 +97,12 @@ export default function Sidebar() {
               icon={faTable}
             >
               <NavItem
-                title="Resolution Master Data"
-                link="/resolution-master-data"
+                title="Members Resolution"
+                link="/members-resolution"
+              />
+              <NavItem
+                title="Board Resolution"
+                link="/board-resolution"
               />
             </CollapsableNavItem>
 
