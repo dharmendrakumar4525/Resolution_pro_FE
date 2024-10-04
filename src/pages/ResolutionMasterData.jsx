@@ -10,7 +10,7 @@ import {
   Container,
   Spinner,
 } from "react-bootstrap";
-import { FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -24,25 +24,26 @@ const ResolutionMasterData = () => {
   const [selectedResolution, setSelectedResolution] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [templateList, setTemplateList] = useState([]);
+  const [editingRow, setEditingRow] = useState(null);
 
   const [formData, setFormData] = useState({
     type: "",
     status: "created",
     description: "",
-    itemFile: "https://example.com/files/resolution.pdf", // Updated default file
-    itemVariable: "Variable content", // Updated default content
-    clientName: "", // This should be an empty string, not an array
-    resolutionItem: "", // This should be an empty string, not an array
+    itemFile: "https://example.com/files/resolution.pdf",
+    itemVariable: "Variable content",
+    clientName: "",
+    resolutionItem: "",
     isFinancialSequence: false,
     issueDate: "",
     passedDate: "",
     issueFrom: "",
-    emailTo: "director@example.com", // Updated default email
-    emailAt: "direct@example.com", // Updated default email
+    emailTo: "director@example.com",
+    emailAt: "direct@example.com",
     dueDate: "",
-    resolutionNo: "", // Added missing field
-    decisionType: "", // Added missing field
-    committeeType: "", // Added committeeType
+    resolutionNo: "",
+    decisionType: "",
+    committeeType: "",
   });
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const ResolutionMasterData = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
-
+        console.log(data.data.results,"fdsfdsfds");
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -109,7 +110,7 @@ const ResolutionMasterData = () => {
     // Ensure required fields are provided
     if (
       !resolutionData.type ||
-      !resolutionData.resolutionItem ||
+      !resolutionData.resolutionItem.fileName ||
       !resolutionData.issueDate ||
       !resolutionData.issueFrom ||
       !resolutionData.dueDate ||
@@ -119,16 +120,19 @@ const ResolutionMasterData = () => {
       !resolutionData.resolutionNo ||
       !resolutionData.itemFile ||
       !resolutionData.itemVariable ||
-      !resolutionData.clientName
+      !resolutionData.clientName.name
     ) {
       toast.error("All required fields must be filled.");
       return;
     }
 
     try {
-      const response = await fetch(`${apiURL}/resolutions`);
-      let data = await response.json();
-      setRows(data.data.results);
+      const response = await fetch(`${apiURL}/resolutions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resolutionData), // Send modified data
+      });
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error message:", errorData);
@@ -136,6 +140,15 @@ const ResolutionMasterData = () => {
       }
 
       toast.success("Resolution added successfully");
+
+      const fetchUpdatedResolutions = async () => {
+        const refreshedResponse = await fetch(`${apiURL}/resolutions`);
+        const refreshedData = await refreshedResponse.json();
+
+        setRows(refreshedData.data.results);
+        console.log(refreshedData.data.results, "dsdsds");
+      };
+      await fetchUpdatedResolutions();
 
       handleClose();
       resetForm();
@@ -181,6 +194,50 @@ const ResolutionMasterData = () => {
 
   const backToList = () => {
     setSelectedResolution(null);
+  };
+  const handleEditResolutionClick = (row) => {
+    setEditingRow(row);
+    setFormData({
+      clientName: row.clientName.name,
+      type: row.type,
+      status: row.status,
+      description: row.description,
+      itemFile: row.itemFile || "https://example.com/files/resolution.pdf",
+      itemVariable: row.itemVariable || "Variable content",
+      resolutionItem: row.resolutionItem.fileName || "",
+      isFinancialSequence: row.isFinancialSequence || false,
+      issueDate: row.issueDate || "",
+      passedDate: row.passedDate || "",
+      issueFrom: row.issueFrom || "",
+      emailTo: row.emailTo || "director@example.com",
+      emailAt: row.emailAt || "direct@example.com",
+      dueDate: row.dueDate || "",
+      resolutionNo: row.resolutionNo || "",
+      decisionType: row.decisionType || "",
+      committeeType: row.committeeType || "",
+    });
+    setOpen(true);
+  };
+
+  const handleDeleteClick = async (row) => {
+    try {
+      const response = await fetch(`${apiURL}/resolutions/${row.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete item");
+      }
+
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      toast.success("Item deleted successfully");
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Failed to delete item. Please try again.");
+    }
   };
 
   return (
@@ -561,10 +618,10 @@ const ResolutionMasterData = () => {
             </Button>
 
             <div className="bg-light p-4 rounded">
-              <h5>Details for: {selectedResolution.clientName}</h5>
+              <h5>Details for: {selectedResolution.clientName.name}</h5>
               <p>
                 <strong>Resolution Item:</strong>{" "}
-                {selectedResolution.resolutionItem}
+                {selectedResolution.resolutionItem.fileName}
               </p>
               <p>
                 <strong>Issue Date:</strong> {selectedResolution.issueDate}
@@ -596,14 +653,13 @@ const ResolutionMasterData = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>Status</th>
-                  <th>Type</th>
                   <th>Client Name</th>
+                  <th>Type</th>
                   <th>Description</th>
+                  <th>Status</th>
                   <th>Issue From</th>
                   <th>Issue Date</th>
-                  <th>By</th>
-                  <th>At</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -613,14 +669,30 @@ const ResolutionMasterData = () => {
                     onClick={() => showResolutionDetails(row)}
                     style={{ cursor: "pointer" }}
                   >
-                    <td>{row.status}</td>
+                    <td>{row.clientName.name}</td>
                     <td>{row.type}</td>
-                    <td>{row.clientName}</td>
                     <td>{row.description}</td>
+                    <td>{row.status}</td>
                     <td>{row.issueFrom}</td>
                     <td>{row.issueDate}</td>
-                    <td>{row.by}</td>
-                    <td>{row.at}</td>
+                    <td>
+                      {/* <Button
+                      variant="outline-secondary"
+                      onClick={() => handleEditClick(row)}
+                      className="me-2"
+                    > */}
+                      {/* <FaEdit />
+                    </Button> */}
+                      <Button
+                        variant="outline-danger"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click
+                          handleDeleteClick(row);
+                        }}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
