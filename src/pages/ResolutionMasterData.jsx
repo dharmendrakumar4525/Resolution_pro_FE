@@ -195,7 +195,7 @@ const ResolutionMasterData = () => {
   const backToList = () => {
     setSelectedResolution(null);
   };
-  const handleEditResolutionClick = (row) => {
+  const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
       clientName: row.clientName.name,
@@ -252,7 +252,7 @@ const ResolutionMasterData = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Add Resolution Master Data</Modal.Title>
+            <Modal.Title>{editingRow ? "Edit Resolution Master Data" : "Add Resolution Master Data"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
@@ -676,13 +676,16 @@ const ResolutionMasterData = () => {
                     <td>{row.issueFrom}</td>
                     <td>{row.issueDate}</td>
                     <td>
-                      {/* <Button
+                      <Button
                       variant="outline-secondary"
-                      onClick={() => handleEditClick(row)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click
+                        handleEditClick(row);
+                      }}
                       className="me-2"
-                    > */}
-                      {/* <FaEdit />
-                    </Button> */}
+                    >
+                      <FaEdit />
+                    </Button>
                       <Button
                         variant="outline-danger"
                         onClick={(e) => {

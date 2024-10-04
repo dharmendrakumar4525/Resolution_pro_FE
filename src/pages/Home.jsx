@@ -213,7 +213,7 @@ const Home = () => {
         <Col xs={12} md={6} lg={3}>
           <Card style={{ backgroundColor: themeColors.background }}>
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Draft Resolutions</h5>
+              <h5 className="mb-0">Created Resolutions</h5>
             </Card.Header>
             <Card.Body>
               <h4>{draftCount}</h4>
