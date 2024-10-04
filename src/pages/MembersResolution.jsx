@@ -252,7 +252,7 @@ const MembersResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>{editingRow ? "Edit Resolution Master Data" : "Add Resolution Master Data"}</Modal.Title>
+            <Modal.Title>Add Resolution Master Data</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
