@@ -240,7 +240,7 @@ const Home = () => {
             onClick={() => setSelectedResolutionType("created")}
           >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Draft Resolutions</h5>
+              <h5 className="mb-0">Draft</h5>
             </Card.Header>
             <Card.Body>
               <h4>{draftCount}</h4>
@@ -254,7 +254,7 @@ const Home = () => {
             onClick={() => setSelectedResolutionType("review")}
           >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">In Process Resolutions</h5>
+              <h5 className="mb-0">In Review</h5>
             </Card.Header>
             <Card.Body>
               <h4>{inProcessCount}</h4>
@@ -268,7 +268,7 @@ const Home = () => {
             onClick={() => setSelectedResolutionType("completed")}
           >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Completed Resolutions</h5>
+              <h5 className="mb-0">Pending for Signature</h5>
             </Card.Header>
             <Card.Body>
               <h4>{completedCount}</h4>
@@ -282,7 +282,7 @@ const Home = () => {
             onClick={() => setSelectedResolutionType("total")}
           >
             <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
-              <h5 className="mb-0">Total Resolutions</h5>
+              <h5 className="mb-0">Completed</h5>
             </Card.Header>
             <Card.Body>
               <h4>{totalResolutions}</h4>
