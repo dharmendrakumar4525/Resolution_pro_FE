@@ -35,7 +35,23 @@ export default function CustomerMaintenance() {
     v: false,
     ro: false,
     revision: "",
-    alloted_manager: "",
+    alloted_manager: {
+      name: "",
+    },
+    locations: [
+      {
+        locationId: "",
+        locationName: "",
+        addressLine1: "",
+        addressLine2: "",
+        postalCode: "",
+        country: "",
+        state: "",
+        salesTaxType: "",
+        gst: "",
+        registeredOffice: false,
+      },
+    ],
   });
 
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
@@ -50,8 +66,6 @@ export default function CustomerMaintenance() {
         const data = await response.json();
         setRows(data.results);
         console.log(data.results);
-        
-
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -73,8 +87,50 @@ export default function CustomerMaintenance() {
     };
     fetchManagers();
   }, []);
+  const handleLocationChange = (e, index) => {
+    const { name, value } = e.target;
+    const updatedLocations = [...formData.locations];
+    updatedLocations[index] = { ...updatedLocations[index], [name]: value };
+    setFormData({ ...formData, locations: updatedLocations });
+  };
+  const addLocation = () => {
+    setFormData({
+      ...formData,
+      locations: [
+        ...formData.locations,
+        {
+          locationId: "",
+          locationName: "",
+          addressLine1: "",
+          addressLine2: "",
+          postalCode: "",
+          country: "",
+          state: "",
+          salesTaxType: "",
+          gst: "",
+          registeredOffice: false,
+        },
+      ],
+    });
+  };
+  const handleLocationCheckboxChange = (index, field) => (event) => {
+    const newLocations = [...formData.locations];
+    newLocations[index][field] = event.target.checked;
+    setFormData({
+      ...formData,
+      locations: newLocations,
+    });
+  };
 
-  const handleDeleteClick = async (row) => {
+  const removeLocation = (index) => {
+    const updatedLocations = formData.locations.filter(
+      (location, i) => i !== index
+    );
+    setFormData({ ...formData, locations: updatedLocations });
+  };
+
+  const handleDeleteClick = async (row, e) => {
+    e.stopPropagation();
     try {
       const response = await fetch(`${apiURL}/customer-maintenance/${row.id}`, {
         method: "DELETE",
@@ -120,12 +176,27 @@ export default function CustomerMaintenance() {
       ro: false,
       revision: "",
       alloted_manager: userRole === "manager" ? userManagerId : "",
+      locations: [
+        {
+          locationId: "",
+          locationName: "",
+          addressLine1: "",
+          addressLine2: "",
+          postalCode: "",
+          country: "",
+          state: "",
+          salesTaxType: "",
+          gst: "",
+          registeredOffice: false,
+        },
+      ],
     });
     setEditingRow(null);
     setOpenAddModal(true);
   };
 
-  const handleEditClick = (row) => {
+  const handleEditClick = (row, e) => {
+    e.stopPropagation();
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
@@ -140,7 +211,24 @@ export default function CustomerMaintenance() {
       v: row.v,
       ro: row.ro,
       revision: row.revision,
-      alloted_manager: row.alloted_manager || "",
+      alloted_manager: row.alloted_manager.name || "",
+      locations:
+        row.locations && row.locations.length > 0
+          ? row.locations
+          : [
+              {
+                locationId: "",
+                locationName: "",
+                addressLine1: "",
+                addressLine2: "",
+                postalCode: "",
+                country: "",
+                state: "",
+                salesTaxType: "",
+                gst: "",
+                registeredOffice: false,
+              },
+            ],
     });
   };
 
@@ -203,9 +291,12 @@ export default function CustomerMaintenance() {
     navigate(`/directors/${id}`);
   };
 
+  const handleRowClick = (row) => {
+    navigate(`/customer-maintenance-detail/${row.id}`, { state: { row } });
+  };
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Customer Maintenance</h4>
           <Button
@@ -327,7 +418,7 @@ export default function CustomerMaintenance() {
                     ) : (
                       <Form.Control
                         as="select"
-                        value={formData.alloted_manager}
+                        value={formData.alloted_manager.name}
                         onChange={handleChange}
                       >
                         <option value="">Select Manager</option>
@@ -341,6 +432,7 @@ export default function CustomerMaintenance() {
                   </Form.Group>
                 </Col>
               </Row>
+
               <Row className="mb-4">
                 <Form.Group as={Col} controlId="o">
                   <Form.Check
@@ -378,6 +470,161 @@ export default function CustomerMaintenance() {
                   />
                 </Form.Group>
               </Row>
+              <h5 className="mt-4">Locations</h5>
+              {formData.locations.map((location, index) => (
+                <div key={index} className="location-block mb-4">
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Group controlId={`locationId-${index}`}>
+                        <Form.Label>Location ID</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="locationId"
+                          value={location.locationId}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Location Id"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId={`locationName-${index}`}>
+                        <Form.Label>Location Name</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="locationName"
+                          value={location.locationName}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Location Name"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Group controlId={`addressLine1-${index}`}>
+                        <Form.Label>Address Line 1</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="addressLine1"
+                          value={location.addressLine1}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Address Line 1"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId={`addressLine2-${index}`}>
+                        <Form.Label>Address Line 2</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="addressLine2"
+                          value={location.addressLine2}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Address Line 2"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId={`postalCode-${index}`}>
+                        <Form.Label>Postal Code</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="postalCode"
+                          value={location.postalCode}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Postal Code"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Group controlId={`country-${index}`}>
+                        <Form.Label>Country</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="country"
+                          value={location.country}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Country"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId={`state-${index}`}>
+                        <Form.Label>State</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="state"
+                          value={location.state}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter State"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Group controlId={`salesTaxType-${index}`}>
+                        <Form.Label>Sales Tax Type</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="salesTaxType"
+                          value={location.salesTaxType}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter Sales Tax Type"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId={`gst-${index}`}>
+                        <Form.Label>GST</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="gst"
+                          value={location.gst}
+                          onChange={(e) => handleLocationChange(e, index)}
+                          placeholder="Enter GST"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Check
+                        type="checkbox"
+                        label="Registered Office"
+                        checked={location.registeredOffice}
+                        onChange={handleLocationCheckboxChange(
+                          index,
+                          "registeredOffice"
+                        )}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Button
+                    variant="danger"
+                    onClick={() => removeLocation(index)}
+                    className="me-2"
+                  >
+                    Remove Location
+                  </Button>
+                  <Button
+                    className="ml-2"
+                    variant="secondary"
+                    onClick={addLocation}
+                  >
+                    Add New Location
+                  </Button>
+                  <hr />
+                </div>
+              ))}
+
               <Button type="submit" variant="primary" className="me-2">
                 Save
               </Button>
@@ -411,9 +658,9 @@ export default function CustomerMaintenance() {
                   <th>State</th>
                   <th>Country</th>
                   <th>CIN</th>
-                  <th>PAN</th>
+                  {/* <th>PAN</th> */}
                   <th>GSTIN</th>
-                  <th>
+                  {/* <th>
                     <OverlayTrigger
                       placement="top"
                       overlay={<Tooltip id="tooltip-o">Ownership</Tooltip>}
@@ -451,7 +698,7 @@ export default function CustomerMaintenance() {
                     </OverlayTrigger>
                   </th>
 
-                  <th>Revision</th>
+                  <th>Revision</th> */}
                   <th>Alloted Manager</th>
                   <th>Directors</th>
                   <th>Actions</th>
@@ -459,18 +706,18 @@ export default function CustomerMaintenance() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row.id} onClick={() => handleRowClick(row)}>
                     <td>{row.name}</td>
                     <td>{row.state}</td>
                     <td>{row.country}</td>
                     <td>{row.cin}</td>
-                    <td>{row.pan}</td>
+                    {/* <td>{row.pan}</td> */}
                     <td>{row.gstin}</td>
-                    <td>{row.o ? "Yes" : "No"}</td>
+                    {/* <td>{row.o ? "Yes" : "No"}</td>
                     <td>{row.c ? "Yes" : "No"}</td>
                     <td>{row.v ? "Yes" : "No"}</td>
                     <td>{row.ro ? "Yes" : "No"}</td>
-                    <td className="text-center">{row.revision}</td>
+                    <td className="text-center">{row.revision}</td> */}
                     <td className="text-center">
                       {row.alloted_manager?.name || "-"}
                     </td>
@@ -486,14 +733,14 @@ export default function CustomerMaintenance() {
                     <td>
                       <Button
                         variant="outline-secondary"
-                        onClick={() => handleEditClick(row)}
+                        onClick={(e) => handleEditClick(row, e)}
                         className="me-2"
                       >
                         <FaEdit />
                       </Button>
                       <Button
                         variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
+                        onClick={(e) => handleDeleteClick(row, e)}
                       >
                         <FaTrash />
                       </Button>

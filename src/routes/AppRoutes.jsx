@@ -16,6 +16,7 @@ import Preloader from "../components/Preloader";
 import Sidebar from "../components/Sidebar";
 import MembersResolution from "../pages/MembersResolution";
 import BoardResolution from "../pages/BoardResolution";
+import CustomerMaintenanceDetail from "../pages/CustomerMaintenanceDetails";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -148,6 +149,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenance />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/customer-maintenance-detail/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CustomerMaintenanceDetail />} />
           ) : (
             <Navigate to="/login" />
           )

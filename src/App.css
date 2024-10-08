@@ -186,18 +186,37 @@
 
 /* Modal Form css */
 
-.f-label{
+.f-label {
   margin-top: 10px !important;
 }
 
 /* Directors btn */
 
-.director-btn{
-  border: none ;
+.director-btn {
+  border: none;
   background: transparent;
 }
-.director-btn:hover{
+.director-btn:hover {
   color: blue;
 }
 
+/* for customer-mantenance detail page*/
+.details-container {
+  margin: 20px;
+  padding: 10px;
+}
 
+.details-grid {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  row-gap: 10px;
+  column-gap: 20px;
+}
+
+.details-grid div {
+  padding: 5px 0;
+}
+
+h2 {
+  margin-bottom: 20px;
+}

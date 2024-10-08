@@ -52,7 +52,7 @@ const BoardResolution = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
-        console.log(data.data.results,"fdsfdsfds");
+        console.log(data.data.results, "fdsfdsfds");
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -252,350 +252,159 @@ const BoardResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Add Resolution Master Data</Modal.Title>
+            <Modal.Title>Add Board Resolution </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="type" className="mb-3">
-                <Form.Label>Resolution Type</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={formData.type}
-                  onChange={(e) => {
-                    handleChange(e);
-                    setResolutionType(e.target.value);
-                  }}
-                >
-                  <option value="">Select Type</option>
-                  <option value="board">Board Resolution</option>
-                  <option value="committee">Committee Resolution</option>
-                </Form.Control>
-              </Form.Group>
+              <div>
+                <Form.Group controlId="clientName" className="mb-3">
+                  <Form.Label>Client Name</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="clientName"
+                    value={formData.clientName}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select client name</option>
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.id}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="description" className="mb-3">
+                      <Form.Label>Description</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.description}
+                        onChange={handleChange}
+                        placeholder="Enter description"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="resolutionItem" className="mb-3">
+                      <Form.Label>Template Name</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="resolutionItem"
+                        value={formData.resolutionItem}
+                        onChange={handleChange}
+                        disabled={loading}
+                      >
+                        <option value="">Select template name</option>
+                        {templateList.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.templateName}
+                          </option>
+                        ))}
+                      </Form.Control>
+                      {loading && <Spinner animation="border" size="sm" />}{" "}
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group controlId="issueDate" className="mb-3">
+                      <Form.Label>Issue Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.issueDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-              {resolutionType === "board" && (
-                <>
-                  <Form.Group controlId="clientName" className="mb-3">
-                    <Form.Label>Client Name</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="clientName"
-                      value={formData.clientName}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select client name</option>
-                      {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
-                          {company.name}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="description" className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.description}
-                          onChange={handleChange}
-                          placeholder="Enter description"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="resolutionItem" className="mb-3">
-                        <Form.Label>Template Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="resolutionItem"
-                          value={formData.resolutionItem}
-                          onChange={handleChange}
-                          disabled={loading}
-                        >
-                          <option value="">Select template name</option>
-                          {templateList.map((template) => (
-                            <option key={template.id} value={template.id}>
-                              {template.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
-                        {loading && <Spinner animation="border" size="sm" />}{" "}
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group controlId="issueDate" className="mb-3">
-                        <Form.Label>Issue Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.issueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={6}>
-                      <Form.Group controlId="passedDate" className="mb-3">
-                        <Form.Label>Passed Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.passedDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="dueDate" className="mb-3">
-                        <Form.Label>Due Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.dueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="issueFrom" className="mb-3">
-                        <Form.Label>Issue From</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.issueFrom}
-                          onChange={handleChange}
-                          placeholder="Enter issue source"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="resolutionNo" className="mb-3">
-                        <Form.Label>Resolution No.</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.resolutionNo}
-                          onChange={handleChange}
-                          placeholder="Enter resolution number"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="decisionType" className="mb-3">
-                        <Form.Label>Decision Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="decisionType"
-                          value={formData.decisionType}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select Decision Type</option>
-                          <option value="unanimously">Unanimously</option>
-                          <option value="majority">Majority</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="itemFile" className="mb-3">
-                        <Form.Label>Item File</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemFile}
-                          onChange={handleChange}
-                          placeholder="Enter file URL"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="itemVariable" className="mb-3">
-                        <Form.Label>Item Variable</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemVariable}
-                          onChange={handleChange}
-                          placeholder="Enter item variable content"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </>
-              )}
-
-              {resolutionType === "committee" && (
-                <>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="clientName" className="mb-3">
-                        <Form.Label>Client Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="clientName"
-                          value={formData.clientName}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select client name</option>
-                          {companies.map((company) => (
-                            <option key={company.id} value={company.id}>
-                              {company.name}
-                            </option>
-                          ))}
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="committeeType" className="mb-3">
-                        <Form.Label>Committee Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="committeeType"
-                          value={formData.committeeType}
-                          onChange={handleChange}
-                          required
-                        >
-                          <option value="">Select committee type</option>
-                          <option value="CSR">CSR</option>
-                          <option value="Audit">Audit</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="description" className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.description}
-                          onChange={handleChange}
-                          placeholder="Enter description"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="resolutionItem" className="mb-3">
-                        <Form.Label>Template Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="resolutionItem"
-                          value={formData.resolutionItem}
-                          onChange={handleChange}
-                          disabled={loading}
-                        >
-                          <option value="">Select template name</option>
-                          {templateList.map((template) => (
-                            <option key={template.id} value={template.id}>
-                              {template.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
-                        {loading && <Spinner animation="border" size="sm" />}{" "}
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group controlId="issueDate" className="mb-3">
-                        <Form.Label>Issue Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.issueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={6}>
-                      <Form.Group controlId="passedDate" className="mb-3">
-                        <Form.Label>Passed Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.passedDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="dueDate" className="mb-3">
-                        <Form.Label>Due Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.dueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="issueFrom" className="mb-3">
-                        <Form.Label>Issue From</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.issueFrom}
-                          onChange={handleChange}
-                          placeholder="Enter issue source"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="resolutionNo" className="mb-3">
-                        <Form.Label>Resolution No.</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.resolutionNo}
-                          onChange={handleChange}
-                          placeholder="Enter resolution number"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="decisionType" className="mb-3">
-                        <Form.Label>Decision Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="decisionType"
-                          value={formData.decisionType}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select Decision Type</option>
-                          <option value="unanimously">Unanimously</option>
-                          <option value="majority">Majority</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="itemFile" className="mb-3">
-                        <Form.Label>Item File</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemFile}
-                          onChange={handleChange}
-                          placeholder="Enter file URL"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="itemVariable" className="mb-3">
-                        <Form.Label>Item Variable</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemVariable}
-                          onChange={handleChange}
-                          placeholder="Enter item variable content"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </>
-              )}
+                  <Col md={6}>
+                    <Form.Group controlId="passedDate" className="mb-3">
+                      <Form.Label>Passed Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.passedDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="dueDate" className="mb-3">
+                      <Form.Label>Due Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.dueDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="issueFrom" className="mb-3">
+                      <Form.Label>Issue From</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.issueFrom}
+                        onChange={handleChange}
+                        placeholder="Enter issue source"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="resolutionNo" className="mb-3">
+                      <Form.Label>Resolution No.</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.resolutionNo}
+                        onChange={handleChange}
+                        placeholder="Enter resolution number"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="decisionType" className="mb-3">
+                      <Form.Label>Decision Type</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="decisionType"
+                        value={formData.decisionType}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Decision Type</option>
+                        <option value="unanimously">Unanimously</option>
+                        <option value="majority">Majority</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="itemFile" className="mb-3">
+                      <Form.Label>Item File</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.itemFile}
+                        onChange={handleChange}
+                        placeholder="Enter file URL"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="itemVariable" className="mb-3">
+                      <Form.Label>Item Variable</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.itemVariable}
+                        onChange={handleChange}
+                        placeholder="Enter item variable content"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
 
               <Button type="submit" variant="primary" className="me-2">
                 Save
@@ -677,15 +486,15 @@ const BoardResolution = () => {
                     <td>{row.issueDate}</td>
                     <td>
                       <Button
-                      variant="outline-secondary"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click
-                        handleEditClick(row);
-                      }}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
+                        variant="outline-secondary"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click
+                          handleEditClick(row);
+                        }}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
                       <Button
                         variant="outline-danger"
                         onClick={(e) => {
