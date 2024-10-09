@@ -35,8 +35,12 @@ export default function CustomerMaintenance() {
     v: false,
     ro: false,
     revision: "",
-    alloted_manager: {
+    alloted_manager:  {            // Reset `alloted_manager` to its proper structure
+      role: "manager",
+      isEmailVerified: false,
       name: "",
+      email: "",
+      id: "",
     },
     locations: [
       {
@@ -65,7 +69,7 @@ export default function CustomerMaintenance() {
         const response = await fetch(`${apiURL}/customer-maintenance`);
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results);
+        console.log(data.results,"deedede");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -196,6 +200,7 @@ export default function CustomerMaintenance() {
   };
 
   const handleEditClick = (row, e) => {
+
     e.stopPropagation();
     setEditingRow(row);
     setOpenAddModal(true);
@@ -211,7 +216,7 @@ export default function CustomerMaintenance() {
       v: row.v,
       ro: row.ro,
       revision: row.revision,
-      alloted_manager: row.alloted_manager.name || "",
+      alloted_manager: row.alloted_manager.id || "",
       locations:
         row.locations && row.locations.length > 0
           ? row.locations
@@ -235,21 +240,37 @@ export default function CustomerMaintenance() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const sanitizedFormData = {
+        ...formData,
+        locations: formData.locations.map((location) => {
+          const { _id, ...rest } = location; 
+          return rest;
+        }),
+      };
+  
       if (editingRow) {
-        await fetch(`${apiURL}/customer-maintenance/${editingRow.id}`, {
+        // PATCH request for editing an existing row
+        const response = await fetch(`${apiURL}/customer-maintenance/${editingRow.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(sanitizedFormData), 
         });
+  
+        if (!response.ok) {
+          throw new Error("Failed to edit item");
+        }
+  
+        // Update local rows with edited data
         setRows((prevRows) =>
           prevRows.map((row) =>
             row.id === editingRow.id ? { ...row, ...formData } : row
           )
         );
-        toast.success("Maintainance edited successfully");
+        toast.success("Maintenance edited successfully");
       } else {
+        // POST request for adding a new row
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           method: "POST",
           headers: {
@@ -257,17 +278,21 @@ export default function CustomerMaintenance() {
           },
           body: JSON.stringify(formData),
         });
-
-        if (!response.ok) {
-          toast.error("Failed to add item");
-        }
-        toast.success("Maintainance added successfully");
-
-        const data = await response.json();
-        setRows((prevRows) => [...prevRows, data]);
+  
+       
+        toast.success("Maintenance added successfully");
+        setOpenAddModal(false);
+        // Fetch updated maintenance list
+        const fetchUpdatedMaintenance = async () => {
+          const refreshedResponse = await fetch(`${apiURL}/customer-maintenance`);
+          const refreshedData = await refreshedResponse.json();
+          setRows(refreshedData.data.results);
+        };
+        await fetchUpdatedMaintenance();
       }
-
-      setOpenAddModal(false);
+  
+      
+     
       setFormData({
         name: "",
         state: "",
@@ -280,12 +305,32 @@ export default function CustomerMaintenance() {
         v: false,
         ro: false,
         revision: "",
-        alloted_manager: "",
+        alloted_manager: {            // Reset `alloted_manager` to its proper structure
+          role: "manager",
+          isEmailVerified: false,
+          name: "",
+          email: "",
+          id: "",
+        },
+        locations: [
+          {
+            locationName: "",
+            addressLine1: "",
+            addressLine2: "",
+            postalCode: "",
+            country: "",
+            state: "",
+            salesTaxType: "",
+            gst: "",
+            registeredOffice: false,
+          },
+        ],
       });
     } catch (error) {
-      toast.error("Failed to add/edit item. Please try again.");
+      console.error("Failed to add/edit item. Please try again.");
     }
   };
+  
 
   const handleViewDirectors = (id) => {
     navigate(`/directors/${id}`);

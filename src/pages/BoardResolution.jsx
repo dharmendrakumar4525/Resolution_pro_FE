@@ -27,7 +27,6 @@ const BoardResolution = () => {
   const [editingRow, setEditingRow] = useState(null);
 
   const [formData, setFormData] = useState({
-    type: "",
     status: "created",
     description: "",
     itemFile: "https://example.com/files/resolution.pdf",
@@ -43,7 +42,6 @@ const BoardResolution = () => {
     dueDate: "",
     resolutionNo: "",
     decisionType: "",
-    committeeType: "",
   });
 
   useEffect(() => {
@@ -96,35 +94,9 @@ const BoardResolution = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Log formData before submission to verify its contents
-    console.log(formData);
+    console.log(formData, "hjjjjjjj");
 
-    // Create a copy of formData to modify conditionally
     const resolutionData = { ...formData };
-
-    // If the type is not 'committee', remove committeeType
-    if (resolutionData.type !== "committee") {
-      delete resolutionData.committeeType;
-    }
-
-    // Ensure required fields are provided
-    if (
-      !resolutionData.type ||
-      !resolutionData.resolutionItem.fileName ||
-      !resolutionData.issueDate ||
-      !resolutionData.issueFrom ||
-      !resolutionData.dueDate ||
-      !resolutionData.decisionType ||
-      !resolutionData.emailTo ||
-      !resolutionData.emailAt ||
-      !resolutionData.resolutionNo ||
-      !resolutionData.itemFile ||
-      !resolutionData.itemVariable ||
-      !resolutionData.clientName.name
-    ) {
-      toast.error("All required fields must be filled.");
-      return;
-    }
 
     try {
       const response = await fetch(`${apiURL}/resolutions`, {
@@ -159,7 +131,6 @@ const BoardResolution = () => {
 
   const resetForm = () => {
     setFormData({
-      type: "",
       status: "created",
       description: "",
       itemFile: "https://example.com/files/resolution.pdf",
@@ -175,13 +146,14 @@ const BoardResolution = () => {
       dueDate: "",
       resolutionNo: "",
       decisionType: "",
-      committeeType: "", // Resetting committeeType
     });
   };
 
   const handleOpen = () => {
+    setEditingRow(null)
     setOpen(true);
     resetForm();
+    
   };
 
   const handleClose = () => {
@@ -198,13 +170,13 @@ const BoardResolution = () => {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      clientName: row.clientName.name,
-      type: row.type,
+      clientName: row.clientName.id || "",
+
       status: row.status,
       description: row.description,
       itemFile: row.itemFile || "https://example.com/files/resolution.pdf",
       itemVariable: row.itemVariable || "Variable content",
-      resolutionItem: row.resolutionItem.fileName || "",
+      resolutionItem: row.resolutionItem.id || "",
       isFinancialSequence: row.isFinancialSequence || false,
       issueDate: row.issueDate || "",
       passedDate: row.passedDate || "",
@@ -214,7 +186,6 @@ const BoardResolution = () => {
       dueDate: row.dueDate || "",
       resolutionNo: row.resolutionNo || "",
       decisionType: row.decisionType || "",
-      committeeType: row.committeeType || "",
     });
     setOpen(true);
   };
@@ -252,7 +223,7 @@ const BoardResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Add Board Resolution </Modal.Title>
+            {editingRow ? "Edit Board Resolution" : "Add Board Resolution"}
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
@@ -488,7 +459,7 @@ const BoardResolution = () => {
                       <Button
                         variant="outline-secondary"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent row click
+                          e.stopPropagation();
                           handleEditClick(row);
                         }}
                         className="me-2"
