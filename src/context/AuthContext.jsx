@@ -9,24 +9,49 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false); // New state for OTP verification
+  const [otpVerified, setOtpVerified] = useState(false);
   const [emailForOtp, setEmailForOtp] = useState("");
+  const [rolePermissions, setRolePermissions] = useState([]);
   const navigate = useNavigate();
-  const navigate2 = useNavigate();
 
+  // Fetch user from localStorage if exists
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+
+  // Check if the user is authenticated on component mount
   useEffect(() => {
-    const checkAuthentication = () => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (accessToken) {
-        setIsAuthenticated(true);
-        setIsVerified(true);
-        setOtpVerified(true);
-      } else {
-        setIsAuthenticated(false);
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      setIsAuthenticated(true);
+      setIsVerified(true);
+      setOtpVerified(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  // Fetch user permissions based on their role
+  useEffect(() => {
+    const fetchUserPermissions = async () => {
+      if (user.role) {
+        try {
+          const response = await fetch(`${apiURL}/role`);
+          const rolePermissionData = await response.json();
+          const permittedRole = rolePermissionData.results.find(
+            (result) => result.role === user.role
+          );
+
+          if (permittedRole && permittedRole.dashboard_permissions.length > 0) {
+            const permissions =
+              permittedRole.dashboard_permissions[0].ParentChildchecklist;
+            setRolePermissions(permissions);
+          }
+        } catch (error) {
+          console.error("Error fetching role permissions:", error);
+        }
       }
     };
-    checkAuthentication();
-  }, [navigate]);
+    fetchUserPermissions();
+  }, [user.role]);
 
   const login = async (email, password) => {
     try {
@@ -39,17 +64,16 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         const data = await res.json();
         setEmailForOtp(email);
-        toast.info("Please enter the OTP sent to your email.");
         setIsVerified(true);
-        navigate2("/otp");
-        console.log("chll gyaaa");
+        toast.info("Please enter the OTP sent to your email.");
+        navigate("/otp");
       } else {
         const errorData = await res.json();
         toast.error(errorData.message || "Login failed. Please try again.");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("An error occurred. Please try again.");
+      console.error("Login error:", err);
+      toast.error("An error occurred during login. Please try again.");
     }
   };
 
@@ -78,8 +102,10 @@ export const AuthProvider = ({ children }) => {
         toast.error(errorData.message || "Invalid OTP. Please try again.");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("An error occurred. Please try again.");
+      console.error("OTP verification error:", err);
+      toast.error(
+        "An error occurred during OTP verification. Please try again."
+      );
     }
   };
 
@@ -103,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         verifyOtp,
+        rolePermissions,
       }}
     >
       {children}
