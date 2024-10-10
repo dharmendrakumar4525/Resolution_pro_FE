@@ -27,7 +27,6 @@ const MembersResolution = () => {
   const [editingRow, setEditingRow] = useState(null);
 
   const [formData, setFormData] = useState({
-    type: "",
     status: "created",
     description: "",
     itemFile: "https://example.com/files/resolution.pdf",
@@ -95,71 +94,52 @@ const MembersResolution = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Log formData before submission to verify its contents
     console.log(formData);
-
+  
     // Create a copy of formData to modify conditionally
     const resolutionData = { ...formData };
+  
 
-    // If the type is not 'committee', remove committeeType
-    if (resolutionData.type !== "committee") {
-      delete resolutionData.committeeType;
-    }
-
-    // Ensure required fields are provided
-    if (
-      !resolutionData.type ||
-      !resolutionData.resolutionItem.fileName ||
-      !resolutionData.issueDate ||
-      !resolutionData.issueFrom ||
-      !resolutionData.dueDate ||
-      !resolutionData.decisionType ||
-      !resolutionData.emailTo ||
-      !resolutionData.emailAt ||
-      !resolutionData.resolutionNo ||
-      !resolutionData.itemFile ||
-      !resolutionData.itemVariable ||
-      !resolutionData.clientName.name
-    ) {
-      toast.error("All required fields must be filled.");
-      return;
-    }
-
+   
+   
+  
     try {
       const response = await fetch(`${apiURL}/resolutions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(resolutionData), // Send modified data
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error message:", errorData);
-        throw new Error("Failed to add item");
+        throw new Error("Failed to add resolution");
       }
-
+  
       toast.success("Resolution added successfully");
-
+  
+      // Fetch updated resolutions and update the table
       const fetchUpdatedResolutions = async () => {
         const refreshedResponse = await fetch(`${apiURL}/resolutions`);
         const refreshedData = await refreshedResponse.json();
-
+  
         setRows(refreshedData.data.results);
-        console.log(refreshedData.data.results, "dsdsds");
+        console.log(refreshedData.data.results);
       };
       await fetchUpdatedResolutions();
-
+  
       handleClose();
-      resetForm();
+      resetForm(); 
     } catch (error) {
       toast.error("Failed to add resolution. Please try again.");
     }
   };
+  
 
   const resetForm = () => {
     setFormData({
-      type: "",
       status: "created",
       description: "",
       itemFile: "https://example.com/files/resolution.pdf",
@@ -175,11 +155,12 @@ const MembersResolution = () => {
       dueDate: "",
       resolutionNo: "",
       decisionType: "",
-      committeeType: "", // Resetting committeeType
+      committeeType: "", 
     });
   };
 
   const handleOpen = () => {
+    setEditingRow(null)
     setOpen(true);
     resetForm();
   };
@@ -199,7 +180,6 @@ const MembersResolution = () => {
     setEditingRow(row);
     setFormData({
       clientName: row.clientName.name,
-      type: row.type,
       status: row.status,
       description: row.description,
       itemFile: row.itemFile || "https://example.com/files/resolution.pdf",
@@ -252,179 +232,13 @@ const MembersResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Add Resolution Master Data</Modal.Title>
+            <Modal.Title>{editingRow ? "Edit Member Resolution" : "Add Member Resolution"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="type" className="mb-3">
-                <Form.Label>Resolution Type</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={formData.type}
-                  onChange={(e) => {
-                    handleChange(e);
-                    setResolutionType(e.target.value);
-                  }}
-                >
-                  <option value="">Select Type</option>
-                  <option value="board">Board Resolution</option>
-                  <option value="committee">Committee Resolution</option>
-                </Form.Control>
-              </Form.Group>
+             
 
-              {resolutionType === "board" && (
-                <>
-                  <Form.Group controlId="clientName" className="mb-3">
-                    <Form.Label>Client Name</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="clientName"
-                      value={formData.clientName}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select client name</option>
-                      {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
-                          {company.name}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="description" className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.description}
-                          onChange={handleChange}
-                          placeholder="Enter description"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="resolutionItem" className="mb-3">
-                        <Form.Label>Template Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="resolutionItem"
-                          value={formData.resolutionItem}
-                          onChange={handleChange}
-                          disabled={loading}
-                        >
-                          <option value="">Select template name</option>
-                          {templateList.map((template) => (
-                            <option key={template.id} value={template.id}>
-                              {template.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
-                        {loading && <Spinner animation="border" size="sm" />}{" "}
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group controlId="issueDate" className="mb-3">
-                        <Form.Label>Issue Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.issueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={6}>
-                      <Form.Group controlId="passedDate" className="mb-3">
-                        <Form.Label>Passed Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.passedDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="dueDate" className="mb-3">
-                        <Form.Label>Due Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.dueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="issueFrom" className="mb-3">
-                        <Form.Label>Issue From</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.issueFrom}
-                          onChange={handleChange}
-                          placeholder="Enter issue source"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="resolutionNo" className="mb-3">
-                        <Form.Label>Resolution No.</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.resolutionNo}
-                          onChange={handleChange}
-                          placeholder="Enter resolution number"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="decisionType" className="mb-3">
-                        <Form.Label>Decision Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="decisionType"
-                          value={formData.decisionType}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select Decision Type</option>
-                          <option value="unanimously">Unanimously</option>
-                          <option value="majority">Majority</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="itemFile" className="mb-3">
-                        <Form.Label>Item File</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemFile}
-                          onChange={handleChange}
-                          placeholder="Enter file URL"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="itemVariable" className="mb-3">
-                        <Form.Label>Item Variable</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemVariable}
-                          onChange={handleChange}
-                          placeholder="Enter item variable content"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </>
-              )}
-
-              {resolutionType === "committee" && (
+              
                 <>
                   <Row>
                     <Col>
@@ -595,7 +409,7 @@ const MembersResolution = () => {
                     </Col>
                   </Row>
                 </>
-              )}
+            
 
               <Button type="submit" variant="primary" className="me-2">
                 Save

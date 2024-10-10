@@ -17,6 +17,7 @@ import Sidebar from "../components/Sidebar";
 import MembersResolution from "../pages/MembersResolution";
 import BoardResolution from "../pages/BoardResolution";
 import CustomerMaintenanceDetail from "../pages/CustomerMaintenanceDetails";
+import ManagePermissions from "../pages/ManagePermissions";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -169,6 +170,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Directors />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/role"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ManagePermissions />} />
           ) : (
             <Navigate to="/login" />
           )
