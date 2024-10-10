@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import { apiURL } from "../API/api";
+import { toast, ToastContainer } from "react-toastify";
 
 const ManagePermissions = () => {
   const [roles, setRoles] = useState([]);
@@ -9,29 +10,15 @@ const ManagePermissions = () => {
   const [selectedPermissions, setSelectedPermissions] = useState({});
 
   useEffect(() => {
-    const fetchRolePermissionData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/role`);
-        const rolePermissionData = await response.json();
-        setDashboardPermission(
-          rolePermissionData.results[0].dashboard_permissions[0].ParentChildchecklist
-        );
-      } catch (error) {
-        console.error("Error fetching role permission data:", error);
-      }
-    };
-    fetchRolePermissionData();
-  }, []);
-
-  useEffect(() => {
     const fetchRoleData = async () => {
       try {
         const response = await fetch(`${apiURL}/role`);
         const rolePermissionData = await response.json();
         if (rolePermissionData && rolePermissionData.results) {
-          const roleArray = rolePermissionData.results.map(
-            (result) => result.role
-          );
+          const roleArray = rolePermissionData.results.map((result) => ({
+            role: result.role,
+            id: result.id,
+          }));
           setRoles(roleArray);
         }
       } catch (error) {
@@ -47,7 +34,9 @@ const ManagePermissions = () => {
       if (!updatedPermissions[moduleId]) {
         updatedPermissions[moduleId] = {};
       }
-      updatedPermissions[moduleId][childId] = !updatedPermissions[moduleId][childId];
+      updatedPermissions[moduleId][childId] =
+        !updatedPermissions[moduleId][childId];
+      console.log(selectedPermissions, "select", updatedPermissions);
       return updatedPermissions;
     });
   };
@@ -55,6 +44,23 @@ const ManagePermissions = () => {
   const handleRoleChange = (event) => {
     setSelectedRole(event.target.value);
   };
+  useEffect(() => {
+    const fetchRolePermissionData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/role/${selectedRole}`);
+        const rolePermissionData = await response.json();
+        console.log(rolePermissionData, "111111");
+
+        setDashboardPermission(
+          rolePermissionData.dashboard_permissions[0].ParentChildchecklist
+        );
+        console.log(rolePermissionData, "qdqqw");
+      } catch (error) {
+        console.error("Error fetching role permission data:", error);
+      }
+    };
+    fetchRolePermissionData();
+  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -62,19 +68,28 @@ const ManagePermissions = () => {
     const permissionsToUpdate = dashboardPermissions.map((permission) => ({
       moduleName: permission.moduleName,
       isSelected: permission.isSelected,
+      isAllCollapsed:permission.isAllCollapsed,
+
       childList: permission.childList.map((child) => ({
         id: child.id,
+        parent_id:child.parent_id,
+        value:child.value,
         isSelected: selectedPermissions[permission.id]?.[child.id] || false,
       })),
     }));
 
     const data = {
-      role: selectedRole,
-      dashboard_permissions: permissionsToUpdate,
+      dashboard_permissions: [
+        {
+          isAllCollapsed: false,
+          isAllSelected: false,
+          ParentChildchecklist: permissionsToUpdate,
+        },
+      ],
     };
 
     try {
-      const response = await fetch(`${apiURL}/role`, {
+      const response = await fetch(`${apiURL}/role/${selectedRole}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -83,10 +98,10 @@ const ManagePermissions = () => {
       });
 
       const result = await response.json();
-      console.log("Update result:", result);
+      toast.success("Permission got Updated");
       // Optionally, you can reset state or show a success message here
     } catch (error) {
-      console.error("Error updating role permissions:", error);
+      toast.error("Error updating role permissions:");
     }
   };
 
@@ -107,8 +122,8 @@ const ManagePermissions = () => {
                   Select a role
                 </option>
                 {roles.map((role, index) => (
-                  <option key={index} value={role}>
-                    {role}
+                  <option key={index} value={role.id}>
+                    {role.role}
                   </option>
                 ))}
               </select>
@@ -121,17 +136,15 @@ const ManagePermissions = () => {
           <div key={index}>
             <h3>{permission.moduleName}</h3>
             {permission.childList.map((module) => (
-              <div key={module.id}>
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedPermissions[permission.id]?.[module.id] || false
-                  }
-                  onChange={() => handleCheckboxChange(permission.id, module.id)}
-                />
-                <span> {module.value}</span>
-              </div>
-            ))}
+  <div key={module.id}>
+    <input
+      type="checkbox"
+      checked={selectedPermissions[permission.id]?.[module.id] ?? module.isSelected} // Use module.isSelected for initial state
+      onChange={() => handleCheckboxChange(permission.id, module.id)}
+    />
+    <span> {module.value}</span>
+  </div>
+))}
           </div>
         ))}
         <button type="submit">Update Role Permissions</button>
