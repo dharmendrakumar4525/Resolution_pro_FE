@@ -1,22 +1,45 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Table, Button, Form, Modal, Container, Alert, Spinner, } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Form,
+  Modal,
+  Container,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { apiURL } from "../API/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     role: "",
   });
+  const [roleList, setRoleList] = useState([]);
+  const { rolePermissions } = useAuth();
+
+  useEffect(() => {
+    axios
+      .get(`${apiURL}/role`)
+      .then((response) => {
+        setRoleList(response.data.results);
+      })
+      .catch((error) => {
+        console.error("Error fetching roles:", error);
+      });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,12 +47,10 @@ export default function CustomerMaintenance() {
         const response = await fetch(`${apiURL}/users`);
         const data = await response.json();
         setRows(data.results);
-
-        console.log(data.results)
       } catch (error) {
         toast.error("Error fetching data");
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -45,8 +66,6 @@ export default function CustomerMaintenance() {
     setEditingRow(null);
     setOpenAddModal(true);
   };
-
-  
 
   const handleCloseAddModal = () => setOpenAddModal(false);
 
@@ -109,14 +128,14 @@ export default function CustomerMaintenance() {
         setRows(updatedRows);
 
         // Update localStorage user data if the edited user is the logged-in user
-        const localStorageUser = JSON.parse(localStorage.getItem('user'));
+        const localStorageUser = JSON.parse(localStorage.getItem("user"));
         if (localStorageUser && localStorageUser.id === editingRow.id) {
           const updatedUser = { ...localStorageUser, ...formData };
-          localStorage.setItem('user', JSON.stringify(updatedUser));
+          localStorage.setItem("user", JSON.stringify(updatedUser));
         }
 
         toast.success("User edited successfully");
-      }  else {
+      } else {
         const response = await fetch(`${apiURL}/users`, {
           method: "POST",
           headers: {
@@ -129,30 +148,36 @@ export default function CustomerMaintenance() {
           throw new Error("Failed to add item");
         }
 
+        toast.success("User added successfully");
         const data = await response.json();
         setRows((prevRows) => [...prevRows, data]);
       }
 
       handleCloseAddModal();
-      toast.success("User added successfully");
     } catch (error) {
-      console.error("Error adding/editing item:", error);
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Users")?.childList ||
+    [];
 
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Users</h4>
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
         {error && (
           <Alert variant="danger" className="text-center">
@@ -190,13 +215,16 @@ export default function CustomerMaintenance() {
                 <Form.Label>Role</Form.Label>
                 <Form.Control
                   as="select"
+                  name="role"
                   value={formData.role}
                   onChange={handleChange}
                 >
                   <option value="">Select Role</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
-                  <option value="manager">Manager</option>
+                  {roleList.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.role}
+                    </option>
+                  ))}
                 </Form.Control>
               </Form.Group>
 
@@ -230,49 +258,57 @@ export default function CustomerMaintenance() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? (  
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-        <div className="table-responsive mt-5">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Email Verified</th>
-                <th>Role</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.name}</td>
-                  <td>{row.email}</td>
-                  <td>{row.isEmailVerified ? "Yes" : "No"}</td>
-                  <td>{row.role}</td>
-                  <td>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => handleEditClick(row)}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => handleDeleteClick(row)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
+          <div className="table-responsive mt-5">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Email Verified</th>
+                  <th>Role</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.name}</td>
+                    <td>{row.email}</td>
+                    <td>{row.isEmailVerified ? "Yes" : "No"}</td>
+                    <td>{row.role}</td>
+                    <td>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-secondary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         )}
       </Container>
       <ToastContainer />
