@@ -124,6 +124,7 @@ export default function Sidebar() {
                 link="/customer-maintenance"
               />
             </CollapsableNavItem>
+            <NavItem title="Manage Permission" link="/role" />
           </Nav>
         </div>
       </div>
