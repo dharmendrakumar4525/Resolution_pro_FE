@@ -49,22 +49,32 @@ const ManagePermissions = () => {
       try {
         const response = await fetch(`${apiURL}/role/${selectedRole}`);
         const rolePermissionData = await response.json();
-        console.log(rolePermissionData, "111111");
-
-        setDashboardPermission(
-          rolePermissionData.dashboard_permissions[0].ParentChildchecklist
+  
+        const initialSelectedPermissions = rolePermissionData.dashboard_permissions[0].ParentChildchecklist.reduce(
+          (acc, permission) => {
+            acc[permission.id] = permission.childList.reduce((childAcc, child) => {
+              childAcc[child.id] = child.isSelected;
+              return childAcc;
+            }, {});
+            return acc;
+          },
+          {}
         );
-        console.log(rolePermissionData, "qdqqw");
+  
+        setSelectedPermissions(initialSelectedPermissions); // Initialize with current selections
+        setDashboardPermission(rolePermissionData.dashboard_permissions[0].ParentChildchecklist);
       } catch (error) {
         console.error("Error fetching role permission data:", error);
       }
     };
-    fetchRolePermissionData();
+    if (selectedRole) {
+      fetchRolePermissionData();
+    }
   }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     const permissionsToUpdate = dashboardPermissions.map((permission) => ({
       id: permission.id,
       moduleName: permission.moduleName,
@@ -74,20 +84,20 @@ const ManagePermissions = () => {
         id: child.id,
         parent_id: child.parent_id,
         value: child.value,
-        isSelected: selectedPermissions[permission.id]?.[child.id] || false, // Update the child selection
+        isSelected: selectedPermissions[permission.id]?.[child.id] ?? child.isSelected, // Preserve existing selections
       })),
     }));
-
+  
     const data = {
       dashboard_permissions: [
         {
-          isAllCollapsed: false,
           isAllSelected: false,
-          ParentChildchecklist: permissionsToUpdate, // Include the updated permissions
+          isAllCollapsed: false,
+          ParentChildchecklist: permissionsToUpdate,
         },
       ],
     };
-
+  
     try {
       const response = await fetch(`${apiURL}/role/${selectedRole}`, {
         method: "PATCH",
@@ -100,12 +110,13 @@ const ManagePermissions = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error updating role permissions");
       }
-
+  
       toast.success("Permissions updated successfully");
     } catch (error) {
       toast.error(`Error updating role permissions: ${error.message}`);
     }
   };
+  
 
   return (
     <div>
