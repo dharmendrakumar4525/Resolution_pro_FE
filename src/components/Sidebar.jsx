@@ -96,14 +96,8 @@ export default function Sidebar() {
               title="Resolution"
               icon={faTable}
             >
-              <NavItem
-                title="Members Resolution"
-                link="/members-resolution"
-              />
-              <NavItem
-                title="Board Resolution"
-                link="/board-resolution"
-              />
+              <NavItem title="Members Resolution" link="/members-resolution" />
+              <NavItem title="Board Resolution" link="/board-resolution" />
             </CollapsableNavItem>
 
             <CollapsableNavItem
@@ -117,7 +111,9 @@ export default function Sidebar() {
                 title="Meeting Agenda Template"
                 link="/meeting-agenda-template"
               />
+              <NavItem title="Committee" link="/committee" />
               <NavItem title="Committee Members" link="/committee-members" />
+              <NavItem title="Roles" link="/roles" />
               <NavItem title="Users" link="/users" />
               <NavItem
                 title="Customer Maintenance"

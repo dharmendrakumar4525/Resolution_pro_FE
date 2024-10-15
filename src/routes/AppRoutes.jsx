@@ -12,12 +12,14 @@ import CustomerMaintenance from "../pages/CustomerMaintenance";
 import Directors from "../pages/Directors";
 import MeetingAgendaTemplate from "../pages/MeetingAgendaTemplate";
 import CommitteeMembers from "../pages/CommitteeMembers";
+import Committee from "../pages/Committee";
 import Preloader from "../components/Preloader";
 import Sidebar from "../components/Sidebar";
 import MembersResolution from "../pages/MembersResolution";
 import BoardResolution from "../pages/BoardResolution";
 import CustomerMaintenanceDetail from "../pages/CustomerMaintenanceDetails";
 import ManagePermissions from "../pages/ManagePermissions";
+import RoleMaster from "../pages/RoleMaster";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -70,6 +72,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Home />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/committee"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Committee />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/roles"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<RoleMaster />} />
           ) : (
             <Navigate to="/login" />
           )
