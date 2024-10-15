@@ -80,7 +80,7 @@ export default function CustomerMaintenance() {
       name: row.name,
       email: row.email,
       password: row.password,
-      role: row.role,
+      role: row.role.role,
     });
     setOpenAddModal(true);
   };
@@ -216,7 +216,7 @@ export default function CustomerMaintenance() {
                 <Form.Control
                   as="select"
                   name="role"
-                  value={formData.role}
+                  value={formData.role.id}
                   onChange={handleChange}
                 >
                   <option value="">Select Role</option>
@@ -284,7 +284,7 @@ export default function CustomerMaintenance() {
                     <td>{row.name}</td>
                     <td>{row.email}</td>
                     <td>{row.isEmailVerified ? "Yes" : "No"}</td>
-                    <td>{row.role}</td>
+                    <td>{row.role.role}</td>
                     <td>
                       {hasPermission("edit") && (
                         <Button

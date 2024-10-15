@@ -81,10 +81,9 @@ export default function CustomerMaintenance() {
   useEffect(() => {
     const fetchManagers = async () => {
       try {
-        const response = await fetch(`${apiURL}/users?role=manager`);
+        const response = await fetch(`${apiURL}/users?role=6708f0e613afb8a51ad85e3e`);
         const data = await response.json();
         setManagers(data.results);
-        console.log(data.results, "ndsasja");
       } catch (error) {
         console.error("Error fetching managers:", error);
       }
