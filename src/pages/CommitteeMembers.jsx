@@ -4,8 +4,6 @@ import {
   Modal,
   Form,
   Table,
-  InputGroup,
-  FormControl,
   Container,
   Spinner,
 } from "react-bootstrap";
@@ -16,153 +14,191 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function CommitteeMembers() {
   const [rows, setRows] = useState([]);
-  const [templateNames, setTemplateNames] = useState([]);
+  const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
+  const [directorList, setDirectorList] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    meetingType: "",
-    groupName: "",
-    createdBy: "",
-    groupItems: [],
+    clientName: "",
+    committee: "",
+    isEmail: false,
+    committeeMembers: [],
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/template-group`);
+        const response = await fetch(`${apiURL}/committee-member`);
         const data = await response.json();
-
-        const responseMeetingAgendaTemplate = await fetch(
-          `${apiURL}/meeting-agenda-template`
-        );
-        const dataMeetingAgendaTemplate =
-          await responseMeetingAgendaTemplate.json();
-
-        const templateNames = dataMeetingAgendaTemplate.results.map(
-          (item) => item.templateName
-        );
-        setTemplateNames(templateNames);
-
-        const updatedRows = data.results.map((item) => ({
-          ...item,
-          numberOfTemplate: item.groupItems.length,
-        }));
-        setRows(updatedRows);
+        setRows(data.results);
+        console.log(data.results, "Deew");
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
-      
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const data = await response.json();
+        setClientList(data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchCommitteeData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/committee-master`);
+        const data = await response.json();
+        setCommitteeList(data.results);
+      } catch (error) {
+        console.error("Error fetching committee data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCommitteeData();
+  }, []);
+
+  const fetchDirectors = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/director-data/directors/${clientId}`
+      );
+      const data = await response.json();
+      setDirectorList(data);
+    } catch (error) {
+      console.error("Error fetching director data:", error);
+    }
+  };
+
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
-  const handleChange = (e) => {
-    const { id, name, value } = e.target;
-    setFormData({ ...formData, [id || name]: value });
+  const handleChange = async (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === "clientName" && value) {
+      await fetchDirectors(value);
+    }
+  };
+
+  const handleMemberChange = (index, field, value) => {
+    const updatedMembers = [...formData.committeeMembers];
+    updatedMembers[index][field] = value;
+    setFormData({ ...formData, committeeMembers: updatedMembers });
+  };
+
+  const addMember = () => {
+    setFormData({
+      ...formData,
+      committeeMembers: [
+        ...formData.committeeMembers,
+        { name: "", from: "", to: "", email: "" },
+      ],
+    });
+  };
+
+  const removeMember = (index) => {
+    const updatedMembers = [...formData.committeeMembers];
+    updatedMembers.splice(index, 1);
+    setFormData({ ...formData, committeeMembers: updatedMembers });
   };
 
   const handleEditClick = (row) => {
     setEditingRow(row);
-    setOpenModal(true);
     setFormData({
-      meetingType: row.meetingType,
-      groupName: row.groupName,
-      createdBy: row.createdBy,
-      groupItems: row.groupItems,
+      clientName: row.client_name.id,
+      committee: row.committee.id,
+      isEmail: row.isEmail,
+      committeeMembers: row.committeeMembers || [],
     });
+
+    setOpenModal(true);
   };
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/template-group/${row.id}`, {
+      const response = await fetch(`${apiURL}/committee-member/${row.id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
-      }
+      if (!response.ok) throw new Error("Failed to delete item");
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
-
-      alert("Item deleted successfully");
+      toast.success("Committee member deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
+      toast.error("Failed to delete item. Please try again.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        client_name: formData.clientName,
+        committee: formData.committee,
+        is_email: formData.isEmail,
+        committee_members: formData.committeeMembers,
+      };
+
       if (editingRow) {
-        await fetch(`${apiURL}/template-group/${editingRow.id}`, {
+        await fetch(`${apiURL}/committee-member/${editingRow.id}`, {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
+
         setRows((prevRows) =>
           prevRows.map((row) =>
             row.id === editingRow.id ? { ...row, ...formData } : row
           )
         );
-        toast.success("Committe member edited successfully");
+        toast.success("Committee member updated successfully");
       } else {
-        const response = await fetch(`${apiURL}/template-group`, {
+        const response = await fetch(`${apiURL}/committee-member`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
+
         const data = await response.json();
         setRows((prevRows) => [...prevRows, data]);
+        toast.success("Committee member added successfully");
       }
+
       handleCloseModal();
-      toast.success("Committe member added successfully");
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
 
   const columns = [
-    { header: "Client Name", field: "clientName" },
+    { header: "Client Name", field: "client_name" },
     { header: "Committee", field: "committee" },
-    { header: "No. Of Members", field: "numberOfMembers" },
-    { header: "Created By", field: "createdBy" },
+    { header: "No. Of Members", field: "committee_members.length" },
+    { header: "Email Notifications", field: "is_email" },
     { header: "Actions", field: "action" },
-  ];
-
-  const sampleData = [
-    {
-      id: 1,
-      clientName: "John Doe",
-      committee: "Finance Committee",
-      numberOfMembers: 5,
-      createdBy: "Jane Smith",
-    },
-    {
-      id: 2,
-      clientName: "Jane Doe",
-      committee: "Marketing Committee",
-      numberOfMembers: 7,
-      createdBy: "Bob Johnson",
-    },
   ];
 
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Members</h4>
           <Button
@@ -177,99 +213,166 @@ export default function CommitteeMembers() {
         <Modal show={openModal} onHide={handleCloseModal}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {editingRow ? "Edit Committee" : "Add Committee"}
+              {editingRow ? "Edit Committee Member" : "Add Committee Member"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="clientName">
-                <Form.Label >Client Name</Form.Label>
+                <Form.Label>Client Name</Form.Label>
                 <Form.Control
                   as="select"
+                  name="clientName"
                   value={formData.clientName}
                   onChange={handleChange}
                 >
-                  <option>Select Client</option>
-                  <option value="Client 1">Client 1</option>
-                  <option value="Client 2">Client 2</option>
-                </Form.Control>
-              </Form.Group>
-
-              <Form.Group controlId="committee">
-                <Form.Label className="f-label">Committee</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={formData.committee}
-                  onChange={handleChange}
-                >
-                  <option>Select Committee</option>
-                  <option value="CSR Committee">CSR Committee</option>
-                  <option value="Audit Committee">Audit Committee</option>
-                </Form.Control>
-              </Form.Group>
-
-              <Form.Group controlId="groupItems">
-                <Form.Label className="f-label">Committee Members</Form.Label>
-                <Form.Control
-                  as="select"
-                  multiple
-                  value={formData.groupItems}
-                  onChange={(e) => {
-                    const selectedOptions = Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    );
-                    setFormData({ ...formData, groupItems: selectedOptions });
-                  }}
-                >
-                  {templateNames.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
+                  <option value="">Select Client</option>
+                  {clientList.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
                     </option>
                   ))}
                 </Form.Control>
               </Form.Group>
 
-              <Button variant="primary" type="submit" className="mt-3 me-2">
+              <Form.Group controlId="committee">
+                <Form.Label>Committee</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="committee"
+                  value={formData.committee}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Committee</option>
+                  {committeeList.map((committee) => (
+                    <option key={committee.id} value={committee.id}>
+                      {committee.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+              <Form.Group controlId="isEmail">
+                <Form.Label>Email Notifications</Form.Label>
+                <Form.Check
+                  type="checkbox"
+                  label="Send Email Notifications"
+                  checked={formData.isEmail}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isEmail: e.target.checked })
+                  }
+                />
+              </Form.Group>
+
+              {formData.committeeMembers.map((member, index) => (
+                <div key={index}>
+                  <h6>Committee Member {index + 1}</h6>
+                  <Form.Group>
+                    <Form.Label>Director</Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={member.name}
+                      onChange={(e) =>
+                        handleMemberChange(index, "name", e.target.value)
+                      }
+                    >
+                      <option value="">Select Director</option>
+                      {directorList.map((director) => (
+                        <option key={director.id} value={director.id}>
+                          {director.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>From Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={member.from}
+                      onChange={(e) =>
+                        handleMemberChange(index, "from", e.target.value)
+                      }
+                    />
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>To Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={member.to}
+                      onChange={(e) =>
+                        handleMemberChange(index, "to", e.target.value)
+                      }
+                    />
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={member.email}
+                      onChange={(e) =>
+                        handleMemberChange(index, "email", e.target.value)
+                      }
+                    />
+                  </Form.Group>
+
+                  <Button
+                    variant="danger"
+                    className="mb-3"
+                    onClick={() => removeMember(index)}
+                  >
+                    Remove Member
+                  </Button>
+                  <hr />
+                </div>
+              ))}
+
+              <Button onClick={addMember} variant="primary" className="mb-3">
+                Add Committee Member
+              </Button>
+
+              <Button variant="primary" type="submit">
                 Save
               </Button>
             </Form>
           </Modal.Body>
         </Modal>
 
-        {loading ? (
-          <div className="text-center mt-5">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
-          </div>
-        ): rows.length === 0 ? ( 
-          <div className="text-center mt-5">
-            <h5>No data available</h5>
-          </div>
-        ) : (
-
-        <div className="table-responsive mt-5">
-          <Table striped bordered hover>
-            <thead>
+        <Table responsive hover className="mt-3">
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th key={column.header}>{column.header}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && loading ? (
               <tr>
-                {columns.map((col, idx) => (
-                  <th key={idx}>{col.header}</th>
-                ))}
+                <td colSpan={5} className="text-center">
+                  <Spinner animation="border" />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {sampleData.map((row) => (
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center">
+                  No data available
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => (
                 <tr key={row.id}>
-                  <td>{row.clientName}</td>
-                  <td>{row.committee}</td>
-                  <td>{row.numberOfMembers}</td>
-                  <td>{row.createdBy}</td>
+                  <td>{row.client_name.name}</td>
+                  <td>{row.committee.name}</td>
+                  <td>{row.committee_members.length}</td>
+                  <td>{row.is_email ? "Yes" : "No"}</td>
                   <td>
                     <Button
-                      variant="outline-secondary"
+                      variant="outline-primary"
+                      className="mr-2"
                       onClick={() => handleEditClick(row)}
-                      className="me-2"
                     >
                       <FaEdit />
                     </Button>
@@ -281,11 +384,10 @@ export default function CommitteeMembers() {
                     </Button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-        )}
+              ))
+            )}
+          </tbody>
+        </Table>
       </Container>
       <ToastContainer />
     </>
