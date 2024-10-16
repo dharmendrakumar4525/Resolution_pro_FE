@@ -20,6 +20,9 @@ import BoardResolution from "../pages/BoardResolution";
 import CustomerMaintenanceDetail from "../pages/CustomerMaintenanceDetails";
 import ManagePermissions from "../pages/ManagePermissions";
 import RoleMaster from "../pages/RoleMaster";
+import WordGenerator from "../pages/WordGenerator";
+import DocumentEditor from "../pages/DocumentEditor";
+import WordPage from "../pages/WordPage";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -112,6 +115,36 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<BoardResolution />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/wordgenerator"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<WordGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+        <Route
+        path="/word-page"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<WordPage />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+       <Route
+        path="/doc-editor"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DocumentEditor />} />
           ) : (
             <Navigate to="/login" />
           )

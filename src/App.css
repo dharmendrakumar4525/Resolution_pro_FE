@@ -220,3 +220,84 @@
 h2 {
   margin-bottom: 20px;
 }
+
+
+
+/* Word-file editor */
+
+.word-editor-container {
+  padding: 20px;
+  background-color: #f3f3f3;
+  font-family: "Arial", sans-serif;
+}
+
+.toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.editor-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: auto;
+}
+
+.generate-button,
+.download-button {
+  padding: 8px 16px;
+  margin-left: 10px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.generate-button:hover,
+.download-button:hover {
+  background-color: #45a049;
+}
+
+.editing-mode select {
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.ruler {
+  background-color: white;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.ruler span {
+  margin-right: 40px;
+}
+
+.ruler-marker {
+  height: 100%;
+  width: 1px;
+  background-color: black;
+  margin-right: 40px;
+}
+
+.document-editor {
+  width: 100%;
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  min-height: 500px;
+}
+
+.quill-editor {
+  height: 500px;
+  width: 100%;
+  border: none;
+}
