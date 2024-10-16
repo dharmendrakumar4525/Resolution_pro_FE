@@ -113,14 +113,21 @@ export default function Sidebar() {
               />
               <NavItem title="Committee" link="/committee" />
               <NavItem title="Committee Members" link="/committee-members" />
-              <NavItem title="Roles" link="/roles" />
-              <NavItem title="Users" link="/users" />
               <NavItem
                 title="Customer Maintenance"
                 link="/customer-maintenance"
               />
             </CollapsableNavItem>
+            <CollapsableNavItem
+              eventKey="users/"
+              title="Users"
+              icon={faFileAlt}
+            >
+              
+              <NavItem title="Roles" link="/roles" />
+              <NavItem title="Users" link="/users" />
             <NavItem title="Manage Permission" link="/role" />
+            </CollapsableNavItem>
           </Nav>
         </div>
       </div>
