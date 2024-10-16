@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
           const response = await fetch(`${apiURL}/role`);
           const rolePermissionData = await response.json();
           const permittedRole = rolePermissionData.results.find(
-            (result) => result.role === user.role
+            (result) => result.id === user.role
           );
 
           if (permittedRole && permittedRole.dashboard_permissions.length > 0) {
