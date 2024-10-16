@@ -33,7 +33,7 @@ export default function CommitteeMembers() {
         const response = await fetch(`${apiURL}/committee-member`);
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results, "Deew");
+       
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -47,7 +47,8 @@ export default function CommitteeMembers() {
       try {
         const response = await fetch(`${apiURL}/customer-maintenance`);
         const data = await response.json();
-        setClientList(data.results);
+        setClientList(data.docs);
+        console.log(data)
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -62,6 +63,7 @@ export default function CommitteeMembers() {
       try {
         const response = await fetch(`${apiURL}/committee-master`);
         const data = await response.json();
+        console.log(data.results, "Deew");
         setCommitteeList(data.results);
       } catch (error) {
         console.error("Error fetching committee data:", error);
@@ -78,6 +80,7 @@ export default function CommitteeMembers() {
         `${apiURL}/director-data/directors/${clientId}`
       );
       const data = await response.json();
+      console.log(data, "Deew-1");
       setDirectorList(data);
     } catch (error) {
       console.error("Error fetching director data:", error);

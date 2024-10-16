@@ -77,7 +77,7 @@ const BoardResolution = () => {
         }
 
         const data = await response.json();
-        setCompanies(data.results);
+        setCompanies(data.docs);
       } catch (error) {
         toast.error(`Error fetching companies: ${error.message}`);
       }

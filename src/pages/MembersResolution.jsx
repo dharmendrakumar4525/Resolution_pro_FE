@@ -51,7 +51,6 @@ const MembersResolution = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
-        console.log(data.data.results,"fdsfdsfds");
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -78,7 +77,7 @@ const MembersResolution = () => {
         }
 
         const data = await response.json();
-        setCompanies(data.results);
+        setCompanies(data.docs);
       } catch (error) {
         toast.error(`Error fetching companies: ${error.message}`);
       }

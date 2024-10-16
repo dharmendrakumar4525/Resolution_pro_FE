@@ -81,7 +81,7 @@ const Home = () => {
       try {
         const response = await fetch(`${apiURL}/users`);
         const data = await response.json();
-        const managerList = data.results.filter(user => user.role === "manager");
+        const managerList = data.results.filter(user => user.role.role === "manager");
         setManagers(managerList);
       } catch (error) {
         toast.error("Error fetching data");
@@ -195,7 +195,7 @@ const Home = () => {
       </h2>
 
       <Row className="mb-4">
-        {user.role === "admin" && (
+        {user.role === "670cbe9a5a015431b1d2d513" && (
           <Col md={6}>
             <Form.Group controlId="managerFilter">
               <Form.Label>Select Manager</Form.Label>
