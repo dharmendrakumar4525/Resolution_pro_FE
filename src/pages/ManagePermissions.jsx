@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Container } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  Container,
+  InputGroup,
+  Row,
+  Col,
+  Spinner,
+} from "react-bootstrap";
 
 const ManagePermissions = () => {
   const [roles, setRoles] = useState([]);
@@ -20,6 +30,11 @@ const ManagePermissions = () => {
             id: result.id,
           }));
           setRoles(roleArray);
+
+          const adminRole = roleArray.find((role) => role.role === "admin");
+          if (adminRole) {
+            setSelectedRole(adminRole.id);
+          }
         }
       } catch (error) {
         console.error("Error fetching role data:", error);
@@ -49,20 +64,26 @@ const ManagePermissions = () => {
       try {
         const response = await fetch(`${apiURL}/role/${selectedRole}`);
         const rolePermissionData = await response.json();
-  
-        const initialSelectedPermissions = rolePermissionData.dashboard_permissions[0].ParentChildchecklist.reduce(
-          (acc, permission) => {
-            acc[permission.id] = permission.childList.reduce((childAcc, child) => {
-              childAcc[child.id] = child.isSelected;
-              return childAcc;
-            }, {});
-            return acc;
-          },
-          {}
-        );
-  
+
+        const initialSelectedPermissions =
+          rolePermissionData.dashboard_permissions[0].ParentChildchecklist.reduce(
+            (acc, permission) => {
+              acc[permission.id] = permission.childList.reduce(
+                (childAcc, child) => {
+                  childAcc[child.id] = child.isSelected;
+                  return childAcc;
+                },
+                {}
+              );
+              return acc;
+            },
+            {}
+          );
+
         setSelectedPermissions(initialSelectedPermissions); // Initialize with current selections
-        setDashboardPermission(rolePermissionData.dashboard_permissions[0].ParentChildchecklist);
+        setDashboardPermission(
+          rolePermissionData.dashboard_permissions[0].ParentChildchecklist
+        );
       } catch (error) {
         console.error("Error fetching role permission data:", error);
       }
@@ -74,7 +95,7 @@ const ManagePermissions = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     const permissionsToUpdate = dashboardPermissions.map((permission) => ({
       id: permission.id,
       moduleName: permission.moduleName,
@@ -84,10 +105,11 @@ const ManagePermissions = () => {
         id: child.id,
         parent_id: child.parent_id,
         value: child.value,
-        isSelected: selectedPermissions[permission.id]?.[child.id] ?? child.isSelected, // Preserve existing selections
+        isSelected:
+          selectedPermissions[permission.id]?.[child.id] ?? child.isSelected, // Preserve existing selections
       })),
     }));
-  
+
     const data = {
       dashboard_permissions: [
         {
@@ -97,7 +119,7 @@ const ManagePermissions = () => {
         },
       ],
     };
-  
+
     try {
       const response = await fetch(`${apiURL}/role/${selectedRole}`, {
         method: "PATCH",
@@ -110,13 +132,12 @@ const ManagePermissions = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error updating role permissions");
       }
-  
+
       toast.success("Permissions updated successfully");
     } catch (error) {
       toast.error(`Error updating role permissions: ${error.message}`);
     }
   };
-  
 
   return (
     <div>
@@ -127,10 +148,14 @@ const ManagePermissions = () => {
       </Container>
       <form onSubmit={handleSubmit}>
         <div>
-          <h2>Roles</h2>
           <ul>
             {roles.length > 0 ? (
-              <select value={selectedRole} onChange={handleRoleChange}>
+              <Form.Control
+                as="select"
+                value={selectedRole}
+                onChange={handleRoleChange}
+                style={{ width: "400px" }}
+              >
                 <option value="" disabled>
                   Select a role
                 </option>
@@ -139,33 +164,52 @@ const ManagePermissions = () => {
                     {role.role}
                   </option>
                 ))}
-              </select>
+              </Form.Control>
             ) : (
               <p>No roles found.</p>
             )}
           </ul>
         </div>
-        {dashboardPermissions.map((permission, index) => (
-          <div key={index}>
-            <h3>{permission.moduleName}</h3>
-            {permission.childList.map((module) => (
-              <div key={module.id}>
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedPermissions[permission.id]?.[module.id] ??
-                    module.isSelected
-                  } // Use module.isSelected for initial state
-                  onChange={() =>
-                    handleCheckboxChange(permission.id, module.id)
-                  }
-                />
-                <span> {module.value}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-        <button type="submit">Update Role Permissions</button>
+        <Row>
+          {dashboardPermissions.map((permission, index) => (
+            <Col
+              key={index}
+              xs={12}
+              xl={8}
+              className="mb-3 mt-2"
+              style={{ marginLeft: "40px" }}
+            >
+              <h3>{permission.moduleName}</h3>
+              <Row>
+                {permission.childList.map((module) => (
+                  <Col
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    key={module.id}
+                    className="mb-2"
+                  >
+                    <div className="d-flex align-items-center">
+                      <InputGroup.Checkbox
+                        checked={
+                          selectedPermissions[permission.id]?.[module.id] ??
+                          module.isSelected
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(permission.id, module.id)
+                        }
+                      />
+                      <span style={{ marginLeft: "10px" }}>{module.value}</span>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+          ))}
+        </Row>
+
+        <Button type="submit">Update Role Permissions</Button>
       </form>
     </div>
   );
