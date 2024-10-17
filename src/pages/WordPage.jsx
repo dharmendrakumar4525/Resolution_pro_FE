@@ -4,13 +4,57 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { Button, Form, Table, Container, Row, Col } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styling
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const WordEditorModule = () => {
   const [documents, setDocuments] = useState([]); // List of saved documents
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [isEditing, setIsEditing] = useState(false); // Edit mode state
   const [currentDocName, setCurrentDocName] = useState(""); // Track current doc
+  const [inputFields, setInputFields] = useState({}); // Placeholder values
+  const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
+  const [docFile, setDocFile] = useState(null); // For storing the original DOCX file
+
+  // Detect placeholders and generate input fields
+  const handleEditorChange = (content) => {
+    setEditorContent(content);
+
+    // Regex to detect placeholders in the format ${placeholder}
+    const regex = /\$\{([a-zA-Z0-9_]+)\}/g;
+    let match;
+    const fields = {};
+
+    while ((match = regex.exec(content)) !== null) {
+      const placeholder = match[1];
+      fields[placeholder] = inputFields[placeholder] || ""; // Initialize if not present
+    }
+
+    setInputFields(fields);
+  };
+
+  // Handle input changes for each placeholder
+  const handleInputChange = (placeholder, value) => {
+    setInputFields((prevState) => ({
+      ...prevState,
+      [placeholder]: value,
+    }));
+  };
+
+  // Confirm the value and replace the placeholder in the content
+  const handleConfirm = (placeholder) => {
+    const value = inputFields[placeholder] || placeholder;
+    const updatedContent = editorContent.replace(
+      new RegExp(`\\$\\{${placeholder}\\}`, "g"),
+      value
+    );
+    setEditorContent(updatedContent);
+    setConfirmedFields((prevState) => ({
+      ...prevState,
+      [placeholder]: true,
+    })); // Mark placeholder as confirmed
+  };
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
   const parseHtmlToDocx = (htmlContent) => {
@@ -54,7 +98,7 @@ const WordEditorModule = () => {
     return children;
   };
 
-  // Generate and save the Word file from the editor
+  // Generate and save the Word file from the editor content
   const createWordDocument = async () => {
     const parsedContent = parseHtmlToDocx(editorContent); // Parse HTML content to docx-friendly format
 
@@ -99,163 +143,151 @@ const WordEditorModule = () => {
     setIsEditing(false);
   };
 
-  // Save changes as a new document (create a new version)
-  const saveChangesAsNew = () => {
-    let baseName = currentDocName;
-    const match = baseName.match(/(\d+)$/);
-    let version = 1;
-
-    // Check if the document already has a number version, and increment it
-    if (match) {
-      baseName = baseName.replace(/ \d+$/, ""); // Remove the existing number
-      version = parseInt(match[0]) + 1;
-    } else {
-      // Find the last version and increment it
-      const existingVersions = documents.filter((doc) =>
-        doc.name.startsWith(baseName)
-      );
-      if (existingVersions.length > 0) {
-        const lastVersion = existingVersions.reduce((max, doc) => {
-          const versionMatch = doc.name.match(/(\d+)$/);
-          if (versionMatch) {
-            const versionNumber = parseInt(versionMatch[0]);
-            return Math.max(max, versionNumber);
-          }
-          return max;
-        }, 1);
-        version = lastVersion + 1;
-      }
-    }
-
-    const newDocName = `${baseName} ${version}`;
-
-    const newDoc = {
-      name: newDocName,
-      content: editorContent,
-    };
-
-    setDocuments([...documents, newDoc]);
-    setCurrentDocName(newDocName);
-    setEditorContent("");
-    setCurrentDocName("");
-    setIsEditing(false);
-  };
-
-  // Open a saved document for editing
-  const openDocument = (doc) => {
-    setEditorContent(doc.content);
-    setCurrentDocName(doc.name);
-    setIsEditing(true);
-  };
-
-  // Cancel editing and return to the document list
-  const cancelEditing = () => {
-    setEditorContent("");
-    setCurrentDocName("");
-    setIsEditing(false);
-  };
+  // Check for unconfirmed placeholders
+  const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
+    (placeholder) => !confirmedFields[placeholder]
+  );
 
   return (
     <Container className="mt-5">
-      <h1 className="mb-4">Meeting Template </h1>
+      <h1 className="mb-4">Word Editor with Dynamic Fields</h1>
 
-      {!isEditing ? (
-        <>
-          {/* Form for creating a new document */}
-          <Form>
-            <Form.Group controlId="documentName">
-              <Form.Label>Document Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter document name"
-                value={currentDocName}
-                onChange={(e) => setCurrentDocName(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-
-          {/* CKEditor for writing content */}
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => setEditorContent(editor.getData())}
+      {/* Form for creating a new document */}
+      <Form>
+        <Form.Group controlId="documentName">
+          <Form.Label>Document Name</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter document name"
+            value={currentDocName}
+            onChange={(e) => setCurrentDocName(e.target.value)}
           />
+        </Form.Group>
+      </Form>
 
-          <Button variant="success" onClick={saveDocument} className="mt-5">
-            Save Document
-          </Button>
+      {/* CKEditor for writing content */}
+      <CKEditor
+        editor={ClassicEditor}
+        data={editorContent}
+        onChange={(event, editor) => handleEditorChange(editor.getData())}
+      />
 
-          {/* Document List */}
-          {documents.length > 0 && (
-            <div className="mt-5">
-              <h3>Saved Documents</h3>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Document Name</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((doc, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{doc.name}</td>
-                      <td>
-                        <Button
-                          variant="primary"
-                          onClick={() => openDocument(doc)}
-                          className="me-2"
-                        >
-                          Open
-                        </Button>
-                        <Button variant="secondary" onClick={createWordDocument}>
-                          Download as .docx
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {/* Edit Mode */}
-          <Row>
-            <Col>
-              <h2>Editing: {currentDocName}</h2>
+      <Button variant="success" onClick={saveDocument} className="mt-5">
+        Save Document
+      </Button>
 
-              <CKEditor
-                editor={ClassicEditor}
-                data={editorContent}
-                onChange={(event, editor) => setEditorContent(editor.getData())}
+      {/* Detected Placeholder Input Fields */}
+      <div className="dynamic-inputs mt-4">
+        <h3>Detected Placeholders:</h3>
+        {Object.keys(inputFields).length > 0 ? (
+          Object.keys(inputFields).map((placeholder) => (
+            <div key={placeholder}>
+              <label>{placeholder}:</label>
+              <input
+                type="text"
+                value={inputFields[placeholder]}
+                onChange={(e) =>
+                  handleInputChange(placeholder, e.target.value)
+                }
+                placeholder={`Enter ${placeholder}`}
+                disabled={confirmedFields[placeholder]} // Disable if confirmed
               />
+              <Button
+                variant="secondary"
+                className="ms-2"
+                onClick={() => handleConfirm(placeholder)}
+                disabled={confirmedFields[placeholder]} // Disable if already confirmed
+              >
+                Confirm
+              </Button>
+            </div>
+          ))
+        ) : (
+          <p>No placeholders detected yet. Use the format ${"{name}"} in your content.</p>
+        )}
+      </div>
 
-              <div className="toolbar-header mt-5">
-                <Button variant="success" onClick={saveChanges} className="mt-3 me-2">
-                  Save Changes
-                </Button>
-                <Button
-                  variant="info"
-                  onClick={saveChangesAsNew}
-                  className="mt-3 me-2"
-                >
-                  Save Changes as New File
-                </Button>
-                <Button variant="danger" onClick={cancelEditing} className="mt-3 me-2">
-                  Cancel
-                </Button>
-                <Button variant="primary" onClick={createWordDocument} className="mt-3">
-                  Download as .docx
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </>
+      {/* Download and Save Actions */}
+      <div className="download-options mt-5">
+        <Button
+          onClick={createWordDocument}
+          disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
+        >
+          Download Updated Word File
+        </Button>
+        {hasUnconfirmedPlaceholders && (
+          <p style={{ color: "red" }}>
+            Some placeholders are unconfirmed. Please confirm all before downloading the Word file.
+          </p>
+        )}
+      </div>
+
+      {/* Document List */}
+      {documents.length > 0 && (
+        <div className="mt-5">
+          <h3>Saved Documents</h3>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Document Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map((doc, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{doc.name}</td>
+                  <td>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setEditorContent(doc.content);
+                        setCurrentDocName(doc.name);
+                        setIsEditing(true);
+                      }}
+                      className="me-2"
+                    >
+                      Open
+                    </Button>
+                    <Button variant="secondary" onClick={createWordDocument}>
+                      Download as .docx
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
       )}
+
+      <style>{`
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .dynamic-inputs div {
+          margin-bottom: 10px;
+        }
+        .dynamic-inputs input {
+          padding: 10px;
+          font-size: 16px;
+        }
+        .dynamic-inputs button {
+          margin-left: 10px;
+          padding: 5px 10px;
+          font-size: 14px;
+        }
+        .download-options {
+          margin-top: 20px;
+        }
+        .download-options button {
+          padding: 10px 15px;
+          margin-right: 10px;
+          font-size: 16px;
+        }
+      `}</style>
     </Container>
   );
 };
