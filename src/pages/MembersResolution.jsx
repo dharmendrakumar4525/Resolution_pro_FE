@@ -51,6 +51,7 @@ const MembersResolution = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
+        console.log(data.data.results,"10101")
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -78,6 +79,8 @@ const MembersResolution = () => {
 
         const data = await response.json();
         setCompanies(data.docs);
+        console.log(data,"0101")
+
       } catch (error) {
         toast.error(`Error fetching companies: ${error.message}`);
       }
@@ -101,7 +104,7 @@ const MembersResolution = () => {
     const resolutionData = { ...formData };
   
 
-   
+    delete resolutionData.committeeType;
    
   
     try {
@@ -154,7 +157,7 @@ const MembersResolution = () => {
       dueDate: "",
       resolutionNo: "",
       decisionType: "",
-      committeeType: "", 
+      // committeeType: "", 
     });
   };
 
@@ -178,7 +181,7 @@ const MembersResolution = () => {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      clientName: row.clientName.name,
+      clientName: row.clientName?.name,
       status: row.status,
       description: row.description,
       itemFile: row.itemFile || "https://example.com/files/resolution.pdf",
@@ -251,7 +254,7 @@ const MembersResolution = () => {
                         >
                           <option value="">Select client name</option>
                           {companies.map((company) => (
-                            <option key={company.id} value={company.id}>
+                            <option key={company._id} value={company._id}>
                               {company.name}
                             </option>
                           ))}
@@ -461,13 +464,15 @@ const MembersResolution = () => {
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
-        ) : (
+        )
+        :
+        (
           <div className="table-responsive mt-5">
             <Table striped bordered hover>
               <thead>
                 <tr>
                   <th>Client Name</th>
-                  <th>Type</th>
+                  {/* <th>Type</th> */}
                   <th>Description</th>
                   <th>Status</th>
                   <th>Issue From</th>
@@ -482,8 +487,8 @@ const MembersResolution = () => {
                     onClick={() => showResolutionDetails(row)}
                     style={{ cursor: "pointer" }}
                   >
-                    <td>{row.clientName.name}</td>
-                    <td>{row.type}</td>
+                    <td>{row.clientName?.name}</td>
+                    {/* <td>{row.type}</td> */}
                     <td>{row.description}</td>
                     <td>{row.status}</td>
                     <td>{row.issueFrom}</td>
@@ -514,7 +519,8 @@ const MembersResolution = () => {
               </tbody>
             </Table>
           </div>
-        )}
+        )
+        }
       </Container>
       <ToastContainer />
     </>

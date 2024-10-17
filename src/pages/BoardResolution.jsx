@@ -170,7 +170,7 @@ const BoardResolution = () => {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      clientName: row.clientName.id || "",
+      clientName: row.clientName._id || "",
 
       status: row.status,
       description: row.description,
@@ -238,7 +238,7 @@ const BoardResolution = () => {
                   >
                     <option value="">Select client name</option>
                     {companies.map((company) => (
-                      <option key={company.id} value={company.id}>
+                      <option key={company._id} value={company._id}>
                         {company.name}
                       </option>
                     ))}
@@ -398,7 +398,7 @@ const BoardResolution = () => {
             </Button>
 
             <div className="bg-light p-4 rounded">
-              <h5>Details for: {selectedResolution.clientName.name}</h5>
+              <h5>Details for: {selectedResolution.clientName?.name}</h5>
               <p>
                 <strong>Resolution Item:</strong>{" "}
                 {selectedResolution.resolutionItem.fileName}
@@ -434,7 +434,7 @@ const BoardResolution = () => {
               <thead>
                 <tr>
                   <th>Client Name</th>
-                  <th>Type</th>
+                  {/* <th>Type</th> */}
                   <th>Description</th>
                   <th>Status</th>
                   <th>Issue From</th>
@@ -449,8 +449,8 @@ const BoardResolution = () => {
                     onClick={() => showResolutionDetails(row)}
                     style={{ cursor: "pointer" }}
                   >
-                    <td>{row.clientName.name}</td>
-                    <td>{row.type}</td>
+                    <td>{row.clientName?.name}</td>
+                    {/* <td>{row.type}</td> */}
                     <td>{row.description}</td>
                     <td>{row.status}</td>
                     <td>{row.issueFrom}</td>

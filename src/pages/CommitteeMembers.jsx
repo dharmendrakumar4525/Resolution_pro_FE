@@ -33,7 +33,6 @@ export default function CommitteeMembers() {
         const response = await fetch(`${apiURL}/committee-member`);
         const data = await response.json();
         setRows(data.results);
-       
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -46,9 +45,10 @@ export default function CommitteeMembers() {
     const fetchData = async () => {
       try {
         const response = await fetch(`${apiURL}/customer-maintenance`);
+
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data)
+        console.log(data, "mukul");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -76,12 +76,10 @@ export default function CommitteeMembers() {
 
   const fetchDirectors = async (clientId) => {
     try {
-      const response = await fetch(
-        `${apiURL}/director-data/directors/${clientId}`
-      );
+      const response = await fetch(`${apiURL}/director-data`);
       const data = await response.json();
       console.log(data, "Deew-1");
-      setDirectorList(data);
+      setDirectorList(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching director data:", error);
     }
@@ -124,7 +122,7 @@ export default function CommitteeMembers() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      clientName: row.client_name.id,
+      clientName: row.client_name?.id,
       committee: row.committee.id,
       isEmail: row.isEmail,
       committeeMembers: row.committeeMembers || [],
@@ -231,7 +229,7 @@ export default function CommitteeMembers() {
                 >
                   <option value="">Select Client</option>
                   {clientList.map((client) => (
-                    <option key={client.id} value={client.id}>
+                    <option key={client.id} value={client._id}>
                       {client.name}
                     </option>
                   ))}
@@ -367,7 +365,7 @@ export default function CommitteeMembers() {
             ) : (
               rows.map((row, index) => (
                 <tr key={row.id}>
-                  <td>{row.client_name.name}</td>
+                  <td>{row.client_name?.name}</td>
                   <td>{row.committee.name}</td>
                   <td>{row.committee_members.length}</td>
                   <td>{row.is_email ? "Yes" : "No"}</td>
