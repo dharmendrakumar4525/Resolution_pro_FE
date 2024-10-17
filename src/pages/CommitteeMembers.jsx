@@ -11,6 +11,7 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function CommitteeMembers() {
   const [rows, setRows] = useState([]);
@@ -26,6 +27,7 @@ export default function CommitteeMembers() {
     isEmail: false,
     committeeMembers: [],
   });
+  const { rolePermissions } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,12 +198,19 @@ export default function CommitteeMembers() {
     { header: "Email Notifications", field: "is_email" },
     { header: "Actions", field: "action" },
   ];
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Committee_Members")
+      ?.childList || [];
+
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Members</h4>
+          {hasPermission("add") && (
           <Button
             variant="primary"
             className="btn-box"
@@ -209,6 +218,7 @@ export default function CommitteeMembers() {
           >
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
+          )}
         </div>
 
         <Modal show={openModal} onHide={handleCloseModal}>
@@ -356,6 +366,10 @@ export default function CommitteeMembers() {
                   <Spinner animation="border" />
                 </td>
               </tr>
+            ) : !hasPermission("view") ? (
+              <div className="text-center mt-5">
+                <h5>You do not have permission to view the data</h5>
+              </div>
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center">
@@ -370,19 +384,23 @@ export default function CommitteeMembers() {
                   <td>{row.committee_members.length}</td>
                   <td>{row.is_email ? "Yes" : "No"}</td>
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      className="mr-2"
-                      onClick={() => handleEditClick(row)}
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => handleDeleteClick(row)}
-                    >
-                      <FaTrash />
-                    </Button>
+                    {hasPermission("edit") && (
+                      <Button
+                        variant="outline-primary"
+                        className="mr-2"
+                        onClick={() => handleEditClick(row)}
+                      >
+                        <FaEdit />
+                      </Button>
+                    )}
+                    {hasPermission("delete") && (
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))

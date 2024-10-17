@@ -16,6 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import { useAuth } from "../context/AuthContext";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
@@ -58,6 +59,7 @@ export default function CustomerMaintenance() {
       },
     ],
   });
+  const { rolePermissions } = useAuth();
 
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
   const userManagerName = JSON.parse(localStorage.getItem("user"))?.name;
@@ -346,18 +348,25 @@ export default function CustomerMaintenance() {
   const handleRowClick = (row) => {
     navigate(`/customer-maintenance-detail/${row.id}`, { state: { row } });
   };
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Customer_Maintenance")
+      ?.childList || [];
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
 
         <Modal
@@ -697,6 +706,10 @@ export default function CustomerMaintenance() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
         ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
@@ -783,6 +796,7 @@ export default function CustomerMaintenance() {
                     </td>
 
                     <td>
+                    {hasPermission("edit") && (
                       <Button
                         variant="outline-secondary"
                         onClick={(e) => handleEditClick(row, e)}
@@ -790,12 +804,15 @@ export default function CustomerMaintenance() {
                       >
                         <FaEdit />
                       </Button>
+                    )}
+                    {hasPermission("delete") && (
                       <Button
                         variant="outline-danger"
                         onClick={(e) => handleDeleteClick(row, e)}
                       >
                         <FaTrash />
                       </Button>
+                    )}
                     </td>
                   </tr>
                 ))}

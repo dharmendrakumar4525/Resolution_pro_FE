@@ -12,6 +12,7 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext"; 
 
 export default function RoleMaster() {
   const [rows, setRows] = useState([]);
@@ -21,7 +22,7 @@ export default function RoleMaster() {
   const [formData, setFormData] = useState({
     roleName: "",
   });
-
+  const { rolePermissions } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -117,11 +118,21 @@ export default function RoleMaster() {
     // { header: "Actions", field: "action" },
   ];
 
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Roles")?.childList ||
+    [];
+
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
+
+
+
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Role Master</h4>
+          {hasPermission("add") && (
           <Button
             variant="primary"
             className="btn-box"
@@ -129,6 +140,7 @@ export default function RoleMaster() {
           >
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
+          )}
         </div>
 
         <Modal show={openModal} onHide={handleCloseModal}>
@@ -161,7 +173,11 @@ export default function RoleMaster() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? (
+        ) : !hasPermission("view") ? (  // Check if user has 'view' permission
+        <div className="text-center mt-5">
+          <h5>You do not have permission to view the data</h5>
+        </div>
+      ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
