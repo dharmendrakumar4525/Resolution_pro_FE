@@ -35,7 +35,8 @@ export default function CustomerMaintenance() {
     v: false,
     ro: false,
     revision: "",
-    alloted_manager:  {            // Reset `alloted_manager` to its proper structure
+    alloted_manager: {
+      // Reset `alloted_manager` to its proper structure
       role: "manager",
       isEmailVerified: false,
       name: "",
@@ -80,7 +81,9 @@ export default function CustomerMaintenance() {
   useEffect(() => {
     const fetchManagers = async () => {
       try {
-        const response = await fetch(`${apiURL}/users?role=6708f0e613afb8a51ad85e3e`);
+        const response = await fetch(
+          `${apiURL}/users?role=6708f0e613afb8a51ad85e3e`
+        );
         const data = await response.json();
         setManagers(data.results);
       } catch (error) {
@@ -134,18 +137,23 @@ export default function CustomerMaintenance() {
   const handleDeleteClick = async (row, e) => {
     e.stopPropagation();
     try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${row.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${apiURL}/customer-maintenance/${row._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      const newResponse = await fetch(`${apiURL}/customer-maintenance`);
+      const data = await newResponse.json();
+      setRows(data.docs);
 
       alert("Item deleted successfully");
     } catch (error) {
@@ -198,7 +206,6 @@ export default function CustomerMaintenance() {
   };
 
   const handleEditClick = (row, e) => {
-
     e.stopPropagation();
     setEditingRow(row);
     setOpenAddModal(true);
@@ -241,32 +248,34 @@ export default function CustomerMaintenance() {
       const sanitizedFormData = {
         ...formData,
         locations: formData.locations.map((location) => {
-          const { _id, ...rest } = location; 
+          const { _id, ...rest } = location;
           return rest;
         }),
       };
-  
+
       if (editingRow) {
         // PATCH request for editing an existing row
-        const response = await fetch(`${apiURL}/customer-maintenance/${editingRow.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(sanitizedFormData), 
-        });
-  
+        const response = await fetch(
+          `${apiURL}/customer-maintenance/${editingRow._id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(sanitizedFormData),
+          }
+        );
+
         if (!response.ok) {
           throw new Error("Failed to edit item");
         }
-  
+
         // Update local rows with edited data
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
-        );
+        const newResponse = await fetch(`${apiURL}/customer-maintenance`);
+        const data = await newResponse.json();
+        setRows(data.docs);
         toast.success("Maintenance edited successfully");
+        setOpenAddModal(false);
       } else {
         // POST request for adding a new row
         const response = await fetch(`${apiURL}/customer-maintenance`, {
@@ -276,21 +285,20 @@ export default function CustomerMaintenance() {
           },
           body: JSON.stringify(formData),
         });
-  
-       
+
         toast.success("Maintenance added successfully");
         setOpenAddModal(false);
         // Fetch updated maintenance list
         const fetchUpdatedMaintenance = async () => {
-          const refreshedResponse = await fetch(`${apiURL}/customer-maintenance`);
+          const refreshedResponse = await fetch(
+            `${apiURL}/customer-maintenance`
+          );
           const refreshedData = await refreshedResponse.json();
           setRows(refreshedData.data.results);
         };
         await fetchUpdatedMaintenance();
       }
-  
-      
-     
+
       setFormData({
         name: "",
         state: "",
@@ -303,7 +311,8 @@ export default function CustomerMaintenance() {
         v: false,
         ro: false,
         revision: "",
-        alloted_manager: {            // Reset `alloted_manager` to its proper structure
+        alloted_manager: {
+          // Reset `alloted_manager` to its proper structure
           role: "manager",
           isEmailVerified: false,
           name: "",
@@ -328,10 +337,10 @@ export default function CustomerMaintenance() {
       console.error("Failed to add/edit item. Please try again.");
     }
   };
-  
 
-  const handleViewDirectors = (id) => {
-    navigate(`/directors/${id}`);
+  const handleViewDirectors = (row, e) => {
+    e.stopPropagation();
+    navigate(`/directors/${row._id}`);
   };
 
   const handleRowClick = (row) => {
@@ -341,7 +350,7 @@ export default function CustomerMaintenance() {
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Customer Maintenance</h4>
+          <h4 className="h4-heading-style">Client Records</h4>
           <Button
             variant="primary"
             className="btn-box"
@@ -762,12 +771,12 @@ export default function CustomerMaintenance() {
                     <td>{row.ro ? "Yes" : "No"}</td>
                     <td className="text-center">{row.revision}</td> */}
                     <td className="text-center">
-                      {row.alloted_manager?.name || "-"}
+                      {row.alloted_manager[0]?.name || "-"}
                     </td>
                     <td>
                       <button
                         className="director-btn"
-                        onClick={() => handleViewDirectors(row.id)}
+                        onClick={(e) => handleViewDirectors(row, e)}
                       >
                         View Directors
                       </button>

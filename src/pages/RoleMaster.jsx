@@ -114,7 +114,7 @@ export default function RoleMaster() {
 
   const columns = [
     { header: "Role Master Name", field: "name" },
-    { header: "Actions", field: "action" },
+    // { header: "Actions", field: "action" },
   ];
 
   return (
@@ -179,7 +179,7 @@ export default function RoleMaster() {
                 {rows.map((row) => (
                   <tr key={row.id}>
                     <td>{row.role}</td>
-                    <td>
+                    {/* <td>
                       <Button
                         variant="outline-secondary"
                         onClick={() => handleEditClick(row)}
@@ -193,7 +193,7 @@ export default function RoleMaster() {
                       >
                         <FaTrash />
                       </Button>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>
