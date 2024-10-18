@@ -50,7 +50,6 @@ export default function CommitteeMembers() {
 
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data, "mukul");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -78,9 +77,11 @@ export default function CommitteeMembers() {
 
   const fetchDirectors = async (clientId) => {
     try {
-      const response = await fetch(`${apiURL}/director-data`);
+      const response = await fetch(
+        `${apiURL}/director-data/directors/${clientId}`
+      );
       const data = await response.json();
-      console.log(data, "Deew-1");
+      console.log(data, "directorData");
       setDirectorList(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching director data:", error);
@@ -172,6 +173,7 @@ export default function CommitteeMembers() {
             row.id === editingRow.id ? { ...row, ...formData } : row
           )
         );
+        handleCloseModal();
         toast.success("Committee member updated successfully");
       } else {
         const response = await fetch(`${apiURL}/committee-member`, {
@@ -201,7 +203,6 @@ export default function CommitteeMembers() {
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Committee_Members")
       ?.childList || [];
-
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
@@ -211,13 +212,13 @@ export default function CommitteeMembers() {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Members</h4>
           {hasPermission("add") && (
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
           )}
         </div>
 
@@ -283,9 +284,17 @@ export default function CommitteeMembers() {
                     <Form.Control
                       as="select"
                       value={member.name}
-                      onChange={(e) =>
-                        handleMemberChange(index, "name", e.target.value)
-                      }
+                      onChange={(e) => {
+                        const selectedDirector = directorList.find(
+                          (director) => director.id === e.target.value
+                        );
+                        handleMemberChange(index, "name", selectedDirector.id);
+                        handleMemberChange(
+                          index,
+                          "email",
+                          selectedDirector.email
+                        ); 
+                      }}
                     >
                       <option value="">Select Director</option>
                       {directorList.map((director) => (
@@ -317,7 +326,6 @@ export default function CommitteeMembers() {
                       }
                     />
                   </Form.Group>
-
                   <Form.Group>
                     <Form.Label>Email</Form.Label>
                     <Form.Control
