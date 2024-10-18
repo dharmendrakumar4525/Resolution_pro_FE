@@ -13,20 +13,21 @@ import {
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function MeetingAgendaTemplate() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
-    status: "",
     meetingType: "",
     templateName: "",
     fileName: "",
-    by: "",
-    at: "",
+    by: user.id,
   });
+  const { rolePermissions } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,10 +35,11 @@ export default function MeetingAgendaTemplate() {
         const response = await fetch(`${apiURL}/meeting-agenda-template`);
         const data = await response.json();
         setRows(data.results);
+        console.log(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -46,17 +48,13 @@ export default function MeetingAgendaTemplate() {
   const handleOpenAddModal = () => {
     setEditingRow(null);
     setFormData({
-      status: "",
       meetingType: "",
       templateName: "",
       fileName: "",
-      by: "",
-      at: "",
+      by: user.id,
     });
     setOpenAddModal(true);
   };
-
-  
 
   const handleCloseAddModal = () => setOpenAddModal(false);
 
@@ -93,12 +91,9 @@ export default function MeetingAgendaTemplate() {
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
-      status: row.status,
       meetingType: row.meetingType,
       templateName: row.templateName,
       fileName: row.fileName,
-      by: row.by,
-      at: row.at,
     });
   };
 
@@ -154,19 +149,28 @@ export default function MeetingAgendaTemplate() {
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
+  const userPermissions =
+    rolePermissions.find(
+      (perm) => perm.moduleName === "Meeting_agenda_template"
+    )?.childList || [];
+
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Meeting Agenda Template</h4>
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
 
         <Modal show={openAddModal} onHide={handleCloseAddModal}>
@@ -178,7 +182,7 @@ export default function MeetingAgendaTemplate() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Row>
-                <Col md={6}>
+                {/* <Col md={6}>
                   <Form.Group controlId="status">
                     <Form.Label className="f-label">Status</Form.Label>
                     <Form.Control
@@ -194,28 +198,26 @@ export default function MeetingAgendaTemplate() {
                   </Form.Group>
                 </Col>
 
-                <Col md={6}>
-                  <Form.Group controlId="meetingType">
-                    <Form.Label className="f-label">Meeting Type</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={formData.meetingType}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Meeting Type</option>
-                      <option value="Board Meeting">Board Meeting</option>
-                      <option value="Committee Meeting">
-                        Committee Meeting
-                      </option>
-                      <option value="Circular Resolution">
-                        Circular Resolution
-                      </option>
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
+                <Col md={6}> */}
+                <Form.Group controlId="meetingType">
+                  <Form.Label className="f-label">Meeting Type</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={formData.meetingType}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Meeting Type</option>
+                    <option value="board_meeting">Board Meeting</option>
+                    <option value="committee_meeting">Committee Meeting</option>
+                    <option value="annual_general_meeting">
+                      Annual General Meeting
+                    </option>
+                  </Form.Control>
+                </Form.Group>
+                {/* </Col> */}
               </Row>
 
-              <Row>
+              <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group controlId="templateName">
                     <Form.Label className="f-label">Template Name</Form.Label>
@@ -241,32 +243,6 @@ export default function MeetingAgendaTemplate() {
                 </Col>
               </Row>
 
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group controlId="by">
-                    <Form.Label className="f-label">By</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.by}
-                      onChange={handleChange}
-                      placeholder="Enter By"
-                    />
-                  </Form.Group>
-                </Col>
-
-                <Col md={6}>
-                  <Form.Group controlId="at">
-                    <Form.Label className="f-label">At</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.at}
-                      onChange={handleChange}
-                      placeholder="Enter At"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-
               <Button type="submit" variant="primary" className="me-2">
                 Save
               </Button>
@@ -287,51 +263,57 @@ export default function MeetingAgendaTemplate() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? ( 
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-        <Table striped bordered hover responsive className="mt-5 ">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Meeting Type</th>
-              <th>Template Name</th>
-              <th>File Name</th>
-              <th>By</th>
-              <th>At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.status}</td>
-                <td>{row.meetingType}</td>
-                <td>{row.templateName}</td>
-                <td>{row.fileName}</td>
-                <td>{row.by}</td>
-                <td>{row.at}</td>
-                <td>
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => handleEditClick(row)}
-                    className="me-2"
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    variant="outline-danger"
-                    onClick={() => handleDeleteClick(row)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </td>
+          <Table striped bordered hover responsive className="mt-5 ">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Meeting Type</th>
+                <th>Template Name</th>
+                <th>File Name</th>
+                <th>By</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.status}</td>
+                  <td>{row.meetingType}</td>
+                  <td>{row.templateName}</td>
+                  <td>{row.fileName}</td>
+                  <td>{row.by?.name}</td>
+                  <td>
+                    {hasPermission("edit") && (
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleEditClick(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                    )}
+                    {hasPermission("delete") && (
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         )}
       </Container>
       <ToastContainer />
