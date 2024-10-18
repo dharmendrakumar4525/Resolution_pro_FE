@@ -1,0 +1,42 @@
+.parentContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.leftContainer {
+  width: 50%;
+  overflow-y: auto;
+}
+.rightContainer {
+  width: 40%;
+  overflow-y: auto;
+}
+.container {
+  /* max-width: 800px; */
+  margin: 0 auto;
+}
+
+.dynamic-inputs div {
+  margin-bottom: 10px;
+}
+
+.dynamic-inputs input {
+  padding: 10px;
+  font-size: 16px;
+}
+
+.dynamic-inputs button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.download-options {
+  margin-top: 20px;
+}
+
+.download-options button {
+  padding: 10px 15px;
+  margin-right: 10px;
+  font-size: 16px;
+}

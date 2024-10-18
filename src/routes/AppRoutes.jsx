@@ -22,7 +22,7 @@ import ManagePermissions from "../pages/ManagePermissions";
 import RoleMaster from "../pages/RoleMaster";
 import WordGenerator from "../pages/WordGenerator";
 import DocumentEditor from "../pages/DocumentEditor";
-import WordPage from "../pages/WordPage";
+import TemplateEditor from "../pages/TemplateEditor";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -130,17 +130,17 @@ const AppRoutes = () => {
           )
         }
       />
-        <Route
-        path="/word-page"
+      <Route
+        path="/template-edit/:id"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<WordPage />} />
+            <RouteWithSidebar element={<TemplateEditor />} />
           ) : (
             <Navigate to="/login" />
           )
         }
       />
-       <Route
+      <Route
         path="/doc-editor"
         element={
           isAuthenticated ? (
