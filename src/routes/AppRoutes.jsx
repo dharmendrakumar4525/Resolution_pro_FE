@@ -23,6 +23,8 @@ import RoleMaster from "../pages/RoleMaster";
 import WordGenerator from "../pages/WordGenerator";
 import DocumentEditor from "../pages/DocumentEditor";
 import TemplateEditor from "../pages/TemplateEditor";
+import TemplateGenerator from "../pages/TemplateGenerator";
+import TestFile from "../pages/TestFile";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -125,6 +127,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<WordGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/template-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<TemplateGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -235,6 +247,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ManagePermissions />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/test"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<TestFile/>} />
           ) : (
             <Navigate to="/login" />
           )

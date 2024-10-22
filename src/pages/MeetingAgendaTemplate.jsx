@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiURL } from "../API/api";
 import {
   Button,
@@ -28,7 +29,7 @@ export default function MeetingAgendaTemplate() {
     by: user.id,
   });
   const { rolePermissions } = useAuth();
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,6 +45,10 @@ export default function MeetingAgendaTemplate() {
     };
     fetchData();
   }, []);
+  const handleViewTemplate = (row, e) => {
+    e.stopPropagation();
+    navigate(`/template-generate/${row.id}`);
+  };
 
   const handleOpenAddModal = () => {
     setEditingRow(null);
@@ -278,7 +283,7 @@ export default function MeetingAgendaTemplate() {
                 <th>Status</th>
                 <th>Meeting Type</th>
                 <th>Template Name</th>
-                <th>File Name</th>
+                <th>File</th>
                 <th>By</th>
                 <th>Actions</th>
               </tr>
@@ -289,7 +294,15 @@ export default function MeetingAgendaTemplate() {
                   <td>{row.status}</td>
                   <td>{row.meetingType}</td>
                   <td>{row.templateName}</td>
-                  <td>{row.fileName}</td>
+                  <td>
+                    <button
+                      className="director-btn"
+                      onClick={(e) => handleViewTemplate(row, e)}
+                    >
+                      {row.fileName}
+                    </button>
+                  </td>
+                  {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
                   <td>{row.by?.name}</td>
                   <td>
                     {hasPermission("edit") && (
