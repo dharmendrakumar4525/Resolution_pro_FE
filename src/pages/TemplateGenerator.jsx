@@ -145,6 +145,8 @@ const TemplateGenerator = () => {
   };
 
   const createWordDocument = async () => {
+
+  const formattedContent = editorContent.replace(/\n/g, "<br>");
     const parsedContent = parseHtmlToDocx(editorContent); 
 
     const doc = new Document({

@@ -10,6 +10,7 @@ import {
   Table,
   Container,
   Spinner,
+  Pagination
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -18,6 +19,8 @@ import { useAuth } from "../context/AuthContext";
 
 export default function MeetingAgendaTemplate() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,11 +34,12 @@ export default function MeetingAgendaTemplate() {
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const response = await fetch(`${apiURL}/meeting-agenda-template?page=${pageNo}`);
         const data = await response.json();
         setRows(data.results);
+        setTotalPages(data.totalPages);
         console.log(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -43,8 +47,8 @@ export default function MeetingAgendaTemplate() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/template-generate/${row.id}`);
@@ -153,6 +157,9 @@ export default function MeetingAgendaTemplate() {
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     }
+  };
+  const handlePageChange = (newPage) => {
+    setPage(newPage); // Update the page state
   };
   const userPermissions =
     rolePermissions.find(
@@ -277,6 +284,7 @@ export default function MeetingAgendaTemplate() {
             <h5>No data available</h5>
           </div>
         ) : (
+          <>
           <Table striped bordered hover responsive className="mt-5 ">
             <thead>
               <tr>
@@ -299,7 +307,7 @@ export default function MeetingAgendaTemplate() {
                       className="director-btn"
                       onClick={(e) => handleViewTemplate(row, e)}
                     >
-                      {row.fileName}
+                      View Template
                     </button>
                   </td>
                   {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
@@ -327,6 +335,26 @@ export default function MeetingAgendaTemplate() {
               ))}
             </tbody>
           </Table>
+          <Pagination className="mt-4">
+          <Pagination.Prev
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          />
+          {Array.from({ length: totalPages }, (_, index) => (
+            <Pagination.Item
+              key={index + 1}
+              active={index + 1 === page}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </Pagination.Item>
+          ))}
+          <Pagination.Next
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+          />
+        </Pagination>
+        </>
         )}
       </Container>
       <ToastContainer />
