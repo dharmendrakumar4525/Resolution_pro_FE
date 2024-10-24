@@ -7,6 +7,7 @@ import {
   FormControl,
   Container,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
@@ -15,6 +16,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function Committee() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,9 +26,11 @@ export default function Committee() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/committee-master`);
+        const response = await fetch(
+          `${apiURL}/committee-master?page=${pageNo}`
+        );
         const data = await response.json();
         setRows(data.results);
       } catch (error) {
@@ -34,8 +39,8 @@ export default function Committee() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -112,6 +117,9 @@ export default function Committee() {
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     }
+  };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
 
   const columns = [
@@ -200,6 +208,25 @@ export default function Committee() {
                 ))}
               </tbody>
             </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
           </div>
         )}
       </Container>

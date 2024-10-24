@@ -8,6 +8,7 @@ import {
   Col,
   Row,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
@@ -20,6 +21,8 @@ import { useAuth } from "../context/AuthContext";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
@@ -67,9 +70,11 @@ export default function CustomerMaintenance() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const response = await fetch(
+          `${apiURL}/customer-maintenance?page=${pageNo}`
+        );
         const data = await response.json();
         setRows(data.docs);
       } catch (error) {
@@ -78,8 +83,8 @@ export default function CustomerMaintenance() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
   useEffect(() => {
     const fetchManagers = async () => {
       try {
@@ -347,6 +352,9 @@ export default function CustomerMaintenance() {
 
   const handleRowClick = (row) => {
     navigate(`/customer-maintenance-detail/${row.id}`, { state: { row } });
+  };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Customer_Maintenance")
@@ -796,28 +804,47 @@ export default function CustomerMaintenance() {
                     </td>
 
                     <td>
-                    {hasPermission("edit") && (
-                      <Button
-                        variant="outline-secondary"
-                        onClick={(e) => handleEditClick(row, e)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                    )}
-                    {hasPermission("delete") && (
-                      <Button
-                        variant="outline-danger"
-                        onClick={(e) => handleDeleteClick(row, e)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    )}
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-secondary"
+                          onClick={(e) => handleEditClick(row, e)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={(e) => handleDeleteClick(row, e)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
           </div>
         )}
       </Container>

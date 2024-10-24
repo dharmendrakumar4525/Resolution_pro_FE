@@ -8,6 +8,7 @@ import {
   Container,
   Alert,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -17,6 +18,8 @@ import { useAuth } from "../context/AuthContext";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -30,16 +33,19 @@ export default function CustomerMaintenance() {
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
 
-  useEffect(() => {
-    axios
-      .get(`${apiURL}/role`)
-      .then((response) => {
-        setRoleList(response.data.results);
-      })
-      .catch((error) => {
-        console.error("Error fetching roles:", error);
-      });
-  }, []);
+  useEffect(
+    (page) => {
+      axios
+        .get(`${apiURL}/role?page=${page}`)
+        .then((response) => {
+          setRoleList(response.data.results);
+        })
+        .catch((error) => {
+          console.error("Error fetching roles:", error);
+        });
+    },
+    [page]
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -157,6 +163,9 @@ export default function CustomerMaintenance() {
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     }
+  };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Users")?.childList ||
@@ -308,6 +317,25 @@ export default function CustomerMaintenance() {
                 ))}
               </tbody>
             </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
           </div>
         )}
       </Container>

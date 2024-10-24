@@ -6,6 +6,7 @@ import {
   Table,
   Container,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
@@ -15,6 +16,8 @@ import { useAuth } from "../context/AuthContext";
 
 export default function CommitteeMembers() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [clientList, setClientList] = useState([]);
   const [committeeList, setCommitteeList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
@@ -30,9 +33,11 @@ export default function CommitteeMembers() {
   const { rolePermissions } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/committee-member`);
+        const response = await fetch(
+          `${apiURL}/committee-member?page=${pageNo}`
+        );
         const data = await response.json();
         setRows(data.results);
       } catch (error) {
@@ -41,8 +46,8 @@ export default function CommitteeMembers() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -192,7 +197,9 @@ export default function CommitteeMembers() {
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
-
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
   const columns = [
     { header: "Client Name", field: "client_name" },
     { header: "Committee", field: "committee" },
@@ -293,7 +300,7 @@ export default function CommitteeMembers() {
                           index,
                           "email",
                           selectedDirector.email
-                        ); 
+                        );
                       }}
                     >
                       <option value="">Select Director</option>
@@ -415,6 +422,25 @@ export default function CommitteeMembers() {
             )}
           </tbody>
         </Table>
+        <Pagination className="mt-4">
+          <Pagination.Prev
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          />
+          {Array.from({ length: totalPages }, (_, index) => (
+            <Pagination.Item
+              key={index + 1}
+              active={index + 1 === page}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </Pagination.Item>
+          ))}
+          <Pagination.Next
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+          />
+        </Pagination>
       </Container>
       <ToastContainer />
     </>

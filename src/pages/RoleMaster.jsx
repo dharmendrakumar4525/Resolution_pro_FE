@@ -7,15 +7,19 @@ import {
   FormControl,
   Container,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../context/AuthContext"; 
+import { useAuth } from "../context/AuthContext";
 
 export default function RoleMaster() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,9 +28,9 @@ export default function RoleMaster() {
   });
   const { rolePermissions } = useAuth();
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/role`);
+        const response = await fetch(`${apiURL}/role?page=${pageNo}`);
         const data = await response.json();
         setRows(data.results);
       } catch (error) {
@@ -35,8 +39,8 @@ export default function RoleMaster() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -112,7 +116,9 @@ export default function RoleMaster() {
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
-
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
   const columns = [
     { header: "Role Master Name", field: "name" },
     // { header: "Actions", field: "action" },
@@ -125,21 +131,19 @@ export default function RoleMaster() {
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
-
-
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Role Master</h4>
           {hasPermission("add") && (
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
           )}
         </div>
 
@@ -173,11 +177,11 @@ export default function RoleMaster() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : !hasPermission("view") ? (  // Check if user has 'view' permission
-        <div className="text-center mt-5">
-          <h5>You do not have permission to view the data</h5>
-        </div>
-      ) : rows.length === 0 ? (
+        ) : !hasPermission("view") ? ( // Check if user has 'view' permission
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -214,6 +218,25 @@ export default function RoleMaster() {
                 ))}
               </tbody>
             </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
           </div>
         )}
       </Container>
