@@ -10,36 +10,40 @@ import {
   Col,
   Container,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { Dropdown, DropdownButton } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function TemplateGroup() {
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [templateNames, setTemplateNames] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
     meetingType: "",
     groupName: "",
     createdBy: "",
     groupItems: [],
   });
+  const { rolePermissions } = useAuth();
 
   const resetFormData = () => {
     setFormData({
       meetingType: "",
       groupName: "",
-      createdBy: "",
       groupItems: [],
+      createdBy: user.id,
     });
   };
-
-  
 
   const handleOpenAddModal = () => {
     resetFormData();
@@ -55,18 +59,26 @@ export default function TemplateGroup() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenModal(true);
+    // const fileNames = row.groupItems?.map(item => item.templateName) || [];
+    const selectedIds = row.groupItems
+      .map((item) => {
+        const template = templateNames.find(
+          (template) => template.templateName === item.templateName
+        );
+        return template ? template.id : null; // Return the id or null if not found
+      })
+      .filter((id) => id !== null);
     setFormData({
       meetingType: row.meetingType,
       groupName: row.groupName,
-      createdBy: row.createdBy,
-      groupItems: row.groupItems,
+      groupItems: selectedIds,
     });
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/template-group`);
+        const response = await fetch(`${apiURL}/template-group?page=${pageNo}`);
         const data = await response.json();
 
         const responseMeetingAgendaTemplate = await fetch(
@@ -75,11 +87,7 @@ export default function TemplateGroup() {
         const dataMeetingAgendaTemplate =
           await responseMeetingAgendaTemplate.json();
 
-        const templateNames = dataMeetingAgendaTemplate.results.map(
-          (item) => item.templateName
-        );
-
-        setTemplateNames(templateNames);
+        setTemplateNames(dataMeetingAgendaTemplate.results);
 
         const updatedRows = data.results.map((item) => ({
           ...item,
@@ -87,15 +95,16 @@ export default function TemplateGroup() {
         }));
 
         setRows(updatedRows);
+        console.log(updatedRows, "dsdsds");
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
 
   const handleDeleteClick = async (row) => {
     try {
@@ -156,20 +165,29 @@ export default function TemplateGroup() {
           console.log("Failed to add template");
         }
 
+        toast.success("template added successfully");
         const data = await response.json();
         setRows((prevRows) => [...prevRows, data]);
       }
-      toast.success("template added successfully");
       handleCloseModal();
     } catch (error) {
       console.error("Error adding/editing item:", error);
-      alert("Failed to add/edit item. Please try again.");
+      toast.error("Failed to add/edit item. Please try again.");
     }
   };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Template_group")
+      ?.childList || [];
+
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Template Group</h4>
           <Button
@@ -196,15 +214,6 @@ export default function TemplateGroup() {
                 />
               </Form.Group>
 
-              <Form.Group controlId="createdBy" className="mt-2">
-                <Form.Label>Created By</Form.Label>
-                <FormControl
-                  value={formData.createdBy}
-                  onChange={handleChange}
-                  placeholder="Created By"
-                />
-              </Form.Group>
-
               <Form.Group controlId="meetingType" className="mt-2">
                 <Form.Label>Meeting Type</Form.Label>
                 <Form.Control
@@ -213,10 +222,10 @@ export default function TemplateGroup() {
                   onChange={handleChange}
                 >
                   <option value="">Select Meeting Type</option>
-                  <option value="Board Meeting">Board Meeting</option>
-                  <option value="Committee Meeting">Committee Meeting</option>
-                  <option value="Circular Resolution">
-                    Circular Resolution
+                  <option value="board_meeting">Board Meeting</option>
+                  <option value="committee_meeting">Committee Meeting</option>
+                  <option value="annual_general_meeting">
+                    Annual General Meeting
                   </option>
                 </Form.Control>
               </Form.Group>
@@ -232,12 +241,22 @@ export default function TemplateGroup() {
                       e.target.selectedOptions,
                       (option) => option.value
                     );
-                    setFormData({ ...formData, groupItems: selectedOptions });
+
+                    // Check if any of the options are already selected, toggle them
+                    const updatedGroupItems = formData.groupItems.includes(
+                      selectedOptions[0]
+                    )
+                      ? formData.groupItems.filter(
+                          (item) => item !== selectedOptions[0]
+                        )
+                      : [...formData.groupItems, selectedOptions[0]];
+
+                    setFormData({ ...formData, groupItems: updatedGroupItems });
                   }}
                 >
-                  {templateNames.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
+                  {templateNames.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.templateName}
                     </option>
                   ))}
                 </Form.Control>
@@ -256,49 +275,76 @@ export default function TemplateGroup() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? ( 
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-        <div className="table-responsive mt-5">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Meeting Type</th>
-                <th>Group Name</th>
-                <th>No. Of Template</th>
-                <th>Created By</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.meetingType}</td>
-                  <td>{row.groupName}</td>
-                  <td>{row.numberOfTemplate}</td>
-                  <td>{row.createdBy}</td>
-                  <td>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => handleEditClick(row)}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => handleDeleteClick(row)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
+          <div className="table-responsive mt-5">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Meeting Type</th>
+                  <th>Group Name</th>
+                  <th>No. Of Template</th>
+                  <th>Created By</th>
+                  <th>Actions</th>
                 </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.meetingType}</td>
+                    <td>{row.groupName}</td>
+                    <td>{row.numberOfTemplate}</td>
+                    <td>{row.createdBy.name}</td>
+                    <td>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-secondary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
               ))}
-            </tbody>
-          </Table>
-        </div>
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
+          </div>
         )}
       </Container>
       <ToastContainer />
