@@ -25,6 +25,8 @@ import DocumentEditor from "../pages/DocumentEditor";
 import TemplateEditor from "../pages/TemplateEditor";
 import TemplateGenerator from "../pages/TemplateGenerator";
 import TestFile from "../pages/TestFile";
+import AddCommitteeMember from "../pages/AddCommitteeMember";
+import EditCommitteeMember from "../pages/EditCommitteeMember";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -202,6 +204,26 @@ const AppRoutes = () => {
           )
         }
       />
+       <Route
+        path="/committee-members/add-form"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AddCommitteeMember />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/committee-members/edit-form/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<EditCommitteeMember />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
       <Route
         path="/users"
         element={
@@ -242,6 +264,8 @@ const AppRoutes = () => {
           )
         }
       />
+     
+      
       <Route
         path="/role"
         element={

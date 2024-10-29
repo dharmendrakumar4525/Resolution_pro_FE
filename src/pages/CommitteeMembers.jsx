@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   Button,
   Modal,
@@ -31,6 +32,7 @@ export default function CommitteeMembers() {
     committeeMembers: [],
   });
   const { rolePermissions } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
@@ -92,7 +94,7 @@ export default function CommitteeMembers() {
       console.error("Error fetching director data:", error);
     }
   };
-
+  const handleAdd = () => navigate("/committee-members/add-form");
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
@@ -128,15 +130,7 @@ export default function CommitteeMembers() {
   };
 
   const handleEditClick = (row) => {
-    setEditingRow(row);
-    setFormData({
-      clientName: row.client_name?.id,
-      committee: row.committee.id,
-      isEmail: row.isEmail,
-      committeeMembers: row.committeeMembers || [],
-    });
-
-    setOpenModal(true);
+    navigate(`/committee-members/edit-form/${row.id}`);
   };
 
   const handleDeleteClick = async (row) => {
@@ -219,11 +213,7 @@ export default function CommitteeMembers() {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Members</h4>
           {hasPermission("add") && (
-            <Button
-              variant="primary"
-              className="btn-box"
-              onClick={handleOpenModal}
-            >
+            <Button variant="primary" className="btn-box" onClick={handleAdd}>
               <FaPlus style={{ marginRight: "8px" }} /> Add
             </Button>
           )}
