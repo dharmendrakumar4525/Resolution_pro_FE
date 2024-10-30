@@ -179,6 +179,7 @@ export default function CustomerMaintenance() {
     setFormData({ ...formData, [id]: checked });
   };
 
+  const handleAdd = () => navigate("/customer-maintenance-form");
   const handleOpenAddModal = () => {
     setFormData({
       name: "",
@@ -211,7 +212,11 @@ export default function CustomerMaintenance() {
     setEditingRow(null);
     setOpenAddModal(true);
   };
-
+  const handleEdit = (customerId, e) => {
+    console.log(customerId);
+    e.stopPropagation();
+    navigate(`/customer-maintenance-form/${customerId}`);
+  };
   const handleEditClick = (row, e) => {
     e.stopPropagation();
     setEditingRow(row);
@@ -367,346 +372,11 @@ export default function CustomerMaintenance() {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
           {hasPermission("add") && (
-            <Button
-              variant="primary"
-              className="btn-box"
-              onClick={handleOpenAddModal}
-            >
+            <Button variant="primary" className="btn-box" onClick={handleAdd}>
               <FaPlus style={{ marginRight: "8px" }} /> Add
             </Button>
           )}
         </div>
-
-        <Modal
-          show={openAddModal}
-          onHide={() => setOpenAddModal(false)}
-          className="p-2"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              {editingRow ? "Edit Customer" : "Add Customer"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleSubmit}>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId="name">
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Enter Name"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group as={Col} controlId="state">
-                    <Form.Label>State</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.state}
-                      onChange={handleChange}
-                      placeholder="Enter State"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group as={Col} controlId="country">
-                    <Form.Label>Country</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.country}
-                      onChange={handleChange}
-                      placeholder="Enter Country"
-                    />
-                  </Form.Group>
-                </Col>
-
-                <Col>
-                  <Form.Group as={Col} controlId="cin">
-                    <Form.Label>CIN</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.cin}
-                      onChange={handleChange}
-                      placeholder="Enter CIN"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group as={Col} controlId="pan">
-                    <Form.Label>PAN</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.pan}
-                      onChange={handleChange}
-                      placeholder="Enter PAN"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="gstin">
-                    <Form.Label>GSTIN</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.gstin}
-                      onChange={handleChange}
-                      placeholder="Enter GSTIN"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId="revision">
-                    <Form.Label>Revision</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.revision}
-                      onChange={handleChange}
-                      placeholder="Enter Revision"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="alloted_manager">
-                    <Form.Label>Manager</Form.Label>
-                    {userRole === "manager" ? (
-                      <Form.Control
-                        type="text"
-                        value={userManagerName}
-                        readOnly
-                        // placeholder = {userManagerName}
-                      />
-                    ) : (
-                      <Form.Control
-                        as="select"
-                        value={formData.alloted_manager.name}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Manager</option>
-                        {managers.map((manager) => (
-                          <option key={manager.id} value={manager.id}>
-                            {manager.name}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <Row className="mb-4">
-                <Form.Group as={Col} controlId="o">
-                  <Form.Check
-                    type="checkbox"
-                    label="O"
-                    checked={formData.o}
-                    onChange={handleCheckboxChange}
-                  />
-                </Form.Group>
-
-                <Form.Group as={Col} controlId="c">
-                  <Form.Check
-                    type="checkbox"
-                    label="C"
-                    checked={formData.c}
-                    onChange={handleCheckboxChange}
-                  />
-                </Form.Group>
-
-                <Form.Group as={Col} controlId="v">
-                  <Form.Check
-                    type="checkbox"
-                    label="V"
-                    checked={formData.v}
-                    onChange={handleCheckboxChange}
-                  />
-                </Form.Group>
-
-                <Form.Group as={Col} controlId="ro">
-                  <Form.Check
-                    type="checkbox"
-                    label="RO"
-                    checked={formData.ro}
-                    onChange={handleCheckboxChange}
-                  />
-                </Form.Group>
-              </Row>
-              <h5 className="mt-4">Locations</h5>
-              {formData.locations.map((location, index) => (
-                <div key={index} className="location-block mb-4">
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Group controlId={`locationId-${index}`}>
-                        <Form.Label>Location ID</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="locationId"
-                          value={location.locationId}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Location Id"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`locationName-${index}`}>
-                        <Form.Label>Location Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="locationName"
-                          value={location.locationName}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Location Name"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Group controlId={`addressLine1-${index}`}>
-                        <Form.Label>Address Line 1</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="addressLine1"
-                          value={location.addressLine1}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Address Line 1"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`addressLine2-${index}`}>
-                        <Form.Label>Address Line 2</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="addressLine2"
-                          value={location.addressLine2}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Address Line 2"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`postalCode-${index}`}>
-                        <Form.Label>Postal Code</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="postalCode"
-                          value={location.postalCode}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Postal Code"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Group controlId={`country-${index}`}>
-                        <Form.Label>Country</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="country"
-                          value={location.country}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Country"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`state-${index}`}>
-                        <Form.Label>State</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="state"
-                          value={location.state}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter State"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Group controlId={`salesTaxType-${index}`}>
-                        <Form.Label>Sales Tax Type</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="salesTaxType"
-                          value={location.salesTaxType}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter Sales Tax Type"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`gst-${index}`}>
-                        <Form.Label>GST</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="gst"
-                          value={location.gst}
-                          onChange={(e) => handleLocationChange(e, index)}
-                          placeholder="Enter GST"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Check
-                        type="checkbox"
-                        label="Registered Office"
-                        checked={location.registeredOffice}
-                        onChange={handleLocationCheckboxChange(
-                          index,
-                          "registeredOffice"
-                        )}
-                      />
-                    </Col>
-                  </Row>
-
-                  <Button
-                    variant="danger"
-                    onClick={() => removeLocation(index)}
-                    className="me-2"
-                  >
-                    Remove Location
-                  </Button>
-                  <Button
-                    className="ml-2"
-                    variant="secondary"
-                    onClick={addLocation}
-                  >
-                    Add New Location
-                  </Button>
-                  <hr />
-                </div>
-              ))}
-
-              <Button type="submit" variant="primary" className="me-2">
-                Save
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setOpenAddModal(false)}
-                className="ml-2"
-              >
-                Cancel
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
 
         {loading ? (
           <div className="text-center mt-5">
@@ -807,7 +477,7 @@ export default function CustomerMaintenance() {
                       {hasPermission("edit") && (
                         <Button
                           variant="outline-secondary"
-                          onClick={(e) => handleEditClick(row, e)}
+                          onClick={(e) => handleEdit(row._id, e)}
                           className="me-2"
                         >
                           <FaEdit />

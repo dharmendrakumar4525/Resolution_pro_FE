@@ -27,6 +27,7 @@ import TemplateGenerator from "../pages/TemplateGenerator";
 import TestFile from "../pages/TestFile";
 import AddCommitteeMember from "../pages/AddCommitteeMember";
 import EditCommitteeMember from "../pages/EditCommitteeMember";
+import CustomerMaintenanceForm from "../pages/CustomerMaintenanceForm";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -239,6 +240,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenance />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/customer-maintenance-form"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CustomerMaintenanceForm />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/customer-maintenance-form/:customerId"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CustomerMaintenanceForm />} />
           ) : (
             <Navigate to="/login" />
           )
