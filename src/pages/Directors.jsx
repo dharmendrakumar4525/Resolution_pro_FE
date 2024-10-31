@@ -46,10 +46,6 @@ export default function Directors() {
     fetchData();
   }, [id]);
 
-  useEffect(() => {
-    console.log("Rows after state update:", rows);
-  }, [rows]);
-
   const handleOpenAddModal = () => {
     setFormData({
       company_id: `${id}`,
@@ -145,7 +141,7 @@ export default function Directors() {
 
   return (
     <>
-   <Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Directors</h4>
           <Button

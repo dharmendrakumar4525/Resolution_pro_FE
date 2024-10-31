@@ -91,7 +91,6 @@ export default function AddCommitteeMember({ onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log(formData, "submit");
     try {
       const payload = {
         client_name: formData.clientName,

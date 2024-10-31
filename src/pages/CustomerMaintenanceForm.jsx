@@ -151,7 +151,6 @@ export default function CustomerMaintenanceForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(formData, "edit");
       const method = customerId ? "PATCH" : "POST";
       const endpoint = customerId
         ? `${apiURL}/customer-maintenance/${customerId}`

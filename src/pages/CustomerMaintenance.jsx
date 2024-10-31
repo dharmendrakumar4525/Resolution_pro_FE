@@ -213,7 +213,6 @@ export default function CustomerMaintenance() {
     setOpenAddModal(true);
   };
   const handleEdit = (customerId, e) => {
-    console.log(customerId);
     e.stopPropagation();
     navigate(`/customer-maintenance-form/${customerId}`);
   };

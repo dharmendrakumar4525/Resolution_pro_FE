@@ -70,7 +70,6 @@ export default function CommitteeMembers() {
       try {
         const response = await fetch(`${apiURL}/committee-master`);
         const data = await response.json();
-        console.log(data.results, "Deew");
         setCommitteeList(data.results);
       } catch (error) {
         console.error("Error fetching committee data:", error);
@@ -87,7 +86,6 @@ export default function CommitteeMembers() {
         `${apiURL}/director-data/directors/${clientId}`
       );
       const data = await response.json();
-      console.log(data, "directorData");
       setDirectorList(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching director data:", error);

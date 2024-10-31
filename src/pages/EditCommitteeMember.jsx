@@ -18,7 +18,6 @@ export default function EditCommitteeMember() {
     isEmail: false,
     committeeMembers: [],
   });
-  console.log(formData, "Dsds");
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -44,7 +43,6 @@ export default function EditCommitteeMember() {
       try {
         const response = await fetch(`${apiURL}/committee-member/${id}`);
         const data = await response.json();
-        console.log("Fetched committee member data:", data);
 
         if (data) {
           setFormData({

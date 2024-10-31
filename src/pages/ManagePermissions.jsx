@@ -51,7 +51,6 @@ const ManagePermissions = () => {
       }
       updatedPermissions[moduleId][childId] =
         !updatedPermissions[moduleId][childId];
-      console.log(selectedPermissions, "select", updatedPermissions);
       return updatedPermissions;
     });
   };

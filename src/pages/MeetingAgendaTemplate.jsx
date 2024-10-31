@@ -10,7 +10,7 @@ import {
   Table,
   Container,
   Spinner,
-  Pagination
+  Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -36,11 +36,12 @@ export default function MeetingAgendaTemplate() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template?page=${pageNo}`);
+        const response = await fetch(
+          `${apiURL}/meeting-agenda-template?page=${pageNo}`
+        );
         const data = await response.json();
         setRows(data.results);
         setTotalPages(data.totalPages);
-        console.log(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -285,76 +286,76 @@ export default function MeetingAgendaTemplate() {
           </div>
         ) : (
           <>
-          <Table striped bordered hover responsive className="mt-5 ">
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Meeting Type</th>
-                <th>Template Name</th>
-                <th>File</th>
-                <th>By</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.status}</td>
-                  <td>{row.meetingType}</td>
-                  <td>{row.templateName}</td>
-                  <td>
-                    <button
-                      className="director-btn"
-                      onClick={(e) => handleViewTemplate(row, e)}
-                    >
-                      View Template
-                    </button>
-                  </td>
-                  {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
-                  <td>{row.by?.name}</td>
-                  <td>
-                    {hasPermission("edit") && (
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => handleEditClick(row)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                    )}
-                    {hasPermission("delete") && (
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    )}
-                  </td>
+            <Table striped bordered hover responsive className="mt-5 ">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Meeting Type</th>
+                  <th>Template Name</th>
+                  <th>File</th>
+                  <th>By</th>
+                  <th>Actions</th>
                 </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.status}</td>
+                    <td>{row.meetingType}</td>
+                    <td>{row.templateName}</td>
+                    <td>
+                      <button
+                        className="director-btn"
+                        onClick={(e) => handleViewTemplate(row, e)}
+                      >
+                        View Template
+                      </button>
+                    </td>
+                    {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
+                    <td>{row.by?.name}</td>
+                    <td>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-secondary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
               ))}
-            </tbody>
-          </Table>
-          <Pagination className="mt-4">
-          <Pagination.Prev
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          />
-          {Array.from({ length: totalPages }, (_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === page}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          />
-        </Pagination>
-        </>
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
+          </>
         )}
       </Container>
       <ToastContainer />

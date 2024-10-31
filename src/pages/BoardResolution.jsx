@@ -50,7 +50,6 @@ const BoardResolution = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
-        console.log(data.data.results, "fdsfdsfds");
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -94,8 +93,6 @@ const BoardResolution = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData, "hjjjjjjj");
-
     const resolutionData = { ...formData };
 
     try {
@@ -118,7 +115,6 @@ const BoardResolution = () => {
         const refreshedData = await refreshedResponse.json();
 
         setRows(refreshedData.data.results);
-        console.log(refreshedData.data.results, "dsdsds");
       };
       await fetchUpdatedResolutions();
 
@@ -150,10 +146,9 @@ const BoardResolution = () => {
   };
 
   const handleOpen = () => {
-    setEditingRow(null)
+    setEditingRow(null);
     setOpen(true);
     resetForm();
-    
   };
 
   const handleClose = () => {

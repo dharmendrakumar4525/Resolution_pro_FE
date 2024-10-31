@@ -95,7 +95,6 @@ export default function TemplateGroup() {
         }));
 
         setRows(updatedRows);
-        console.log(updatedRows, "dsdsds");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -162,7 +161,7 @@ export default function TemplateGroup() {
         });
 
         if (!response.ok) {
-          console.log("Failed to add template");
+          toast.error("Failed to add template");
         }
 
         toast.success("template added successfully");

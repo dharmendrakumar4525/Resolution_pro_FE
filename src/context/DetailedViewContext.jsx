@@ -9,7 +9,6 @@ export const DetailedViewProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const openDetailedView = (resolution) => {
-    console.log("----resolution----", resolution);
     setSelectedResolution(resolution);
     setIsOpen(true);
   };

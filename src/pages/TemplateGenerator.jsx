@@ -27,7 +27,6 @@ const TemplateGenerator = () => {
   const [docFile, setDocFile] = useState(null);
 
   const { id } = useParams();
-  console.log(id, "iddd");
 
   const handleEditorChange = (content) => {
     setEditorContent(content);
@@ -88,7 +87,6 @@ const TemplateGenerator = () => {
       const result = await mammoth.convertToHtml({ arrayBuffer });
       const htmlContent = result.value;
       setEditorContent(htmlContent);
-      console.log("fetchDocxFile-2", result);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -145,9 +143,8 @@ const TemplateGenerator = () => {
   };
 
   const createWordDocument = async () => {
-
-  const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(editorContent); 
+    const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
       sections: [
@@ -158,44 +155,43 @@ const TemplateGenerator = () => {
     });
 
     const blob = await Packer.toBlob(doc);
-    return blob
+    return blob;
   };
 
   // Save the document in the dashboard list
   const saveDocument = async () => {
-  
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
-  
+
     // Prepare FormData with the document Blob
     const formData = new FormData();
-    formData.append('file', docBlob);
-  
+    formData.append("file", docBlob);
+
     try {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: formData,
       });
-  
+
       if (response.ok) {
-        toast.success('Document saved successfully!');
-        
+        toast.success("Document saved successfully!");
+
         // Optionally update your document list
         const newDoc = {
           name: currentDocName,
           content: editorContent,
         };
-        
+
         setDocuments([...documents, newDoc]);
         setCurrentDocName("");
         setIsEditing(false);
       } else {
-        alert('Failed to save the document.');
+        alert("Failed to save the document.");
       }
     } catch (error) {
-      console.error('Error saving document:', error);
-      toast.error('Error occurred while saving the document.');
+      console.error("Error saving document:", error);
+      toast.error("Error occurred while saving the document.");
     }
   };
   // Save changes to an existing document
@@ -241,9 +237,6 @@ const TemplateGenerator = () => {
       <Button variant="success" onClick={saveDocument} className="mt-5">
         Save Document
       </Button>
-
-     
-   
     </Container>
   );
 };

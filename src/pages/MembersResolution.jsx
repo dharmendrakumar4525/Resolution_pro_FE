@@ -51,7 +51,6 @@ const MembersResolution = () => {
         const response = await fetch(`${apiURL}/resolutions`);
         const data = await response.json();
         setRows(data.data.results);
-        console.log(data.data.results,"10101")
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
         );
@@ -79,8 +78,6 @@ const MembersResolution = () => {
 
         const data = await response.json();
         setCompanies(data.docs);
-        console.log(data,"0101")
-
       } catch (error) {
         toast.error(`Error fetching companies: ${error.message}`);
       }
@@ -96,49 +93,42 @@ const MembersResolution = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    // Log formData before submission to verify its contents
-    console.log(formData);
-  
+
     // Create a copy of formData to modify conditionally
     const resolutionData = { ...formData };
-  
 
     delete resolutionData.committeeType;
-   
-  
+
     try {
       const response = await fetch(`${apiURL}/resolutions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(resolutionData), // Send modified data
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error message:", errorData);
         throw new Error("Failed to add resolution");
       }
-  
+
       toast.success("Resolution added successfully");
-  
+
       // Fetch updated resolutions and update the table
       const fetchUpdatedResolutions = async () => {
         const refreshedResponse = await fetch(`${apiURL}/resolutions`);
         const refreshedData = await refreshedResponse.json();
-  
+
         setRows(refreshedData.data.results);
-        console.log(refreshedData.data.results);
       };
       await fetchUpdatedResolutions();
-  
+
       handleClose();
-      resetForm(); 
+      resetForm();
     } catch (error) {
       toast.error("Failed to add resolution. Please try again.");
     }
   };
-  
 
   const resetForm = () => {
     setFormData({
@@ -157,12 +147,12 @@ const MembersResolution = () => {
       dueDate: "",
       resolutionNo: "",
       decisionType: "",
-      // committeeType: "", 
+      // committeeType: "",
     });
   };
 
   const handleOpen = () => {
-    setEditingRow(null)
+    setEditingRow(null);
     setOpen(true);
     resetForm();
   };
@@ -234,184 +224,182 @@ const MembersResolution = () => {
 
         <Modal show={open} onHide={handleClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>{editingRow ? "Edit Member Resolution" : "Add Member Resolution"}</Modal.Title>
+            <Modal.Title>
+              {editingRow ? "Edit Member Resolution" : "Add Member Resolution"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-             
+              <>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="clientName" className="mb-3">
+                      <Form.Label>Client Name</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="clientName"
+                        value={formData.clientName}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select client name</option>
+                        {companies.map((company) => (
+                          <option key={company._id} value={company._id}>
+                            {company.name}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="committeeType" className="mb-3">
+                      <Form.Label>Committee Type</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="committeeType"
+                        value={formData.committeeType}
+                        onChange={handleChange}
+                        required
+                      >
+                        <option value="">Select committee type</option>
+                        <option value="CSR">CSR</option>
+                        <option value="Audit">Audit</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-              
-                <>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="clientName" className="mb-3">
-                        <Form.Label>Client Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="clientName"
-                          value={formData.clientName}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select client name</option>
-                          {companies.map((company) => (
-                            <option key={company._id} value={company._id}>
-                              {company.name}
-                            </option>
-                          ))}
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="committeeType" className="mb-3">
-                        <Form.Label>Committee Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="committeeType"
-                          value={formData.committeeType}
-                          onChange={handleChange}
-                          required
-                        >
-                          <option value="">Select committee type</option>
-                          <option value="CSR">CSR</option>
-                          <option value="Audit">Audit</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="description" className="mb-3">
+                      <Form.Label>Description</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.description}
+                        onChange={handleChange}
+                        placeholder="Enter description"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="resolutionItem" className="mb-3">
+                      <Form.Label>Template Name</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="resolutionItem"
+                        value={formData.resolutionItem}
+                        onChange={handleChange}
+                        disabled={loading}
+                      >
+                        <option value="">Select template name</option>
+                        {templateList.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.templateName}
+                          </option>
+                        ))}
+                      </Form.Control>
+                      {loading && <Spinner animation="border" size="sm" />}{" "}
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group controlId="issueDate" className="mb-3">
+                      <Form.Label>Issue Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.issueDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="description" className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.description}
-                          onChange={handleChange}
-                          placeholder="Enter description"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="resolutionItem" className="mb-3">
-                        <Form.Label>Template Name</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="resolutionItem"
-                          value={formData.resolutionItem}
-                          onChange={handleChange}
-                          disabled={loading}
-                        >
-                          <option value="">Select template name</option>
-                          {templateList.map((template) => (
-                            <option key={template.id} value={template.id}>
-                              {template.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
-                        {loading && <Spinner animation="border" size="sm" />}{" "}
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group controlId="issueDate" className="mb-3">
-                        <Form.Label>Issue Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.issueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={6}>
-                      <Form.Group controlId="passedDate" className="mb-3">
-                        <Form.Label>Passed Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.passedDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="dueDate" className="mb-3">
-                        <Form.Label>Due Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.dueDate}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="issueFrom" className="mb-3">
-                        <Form.Label>Issue From</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.issueFrom}
-                          onChange={handleChange}
-                          placeholder="Enter issue source"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="resolutionNo" className="mb-3">
-                        <Form.Label>Resolution No.</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.resolutionNo}
-                          onChange={handleChange}
-                          placeholder="Enter resolution number"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="decisionType" className="mb-3">
-                        <Form.Label>Decision Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          name="decisionType"
-                          value={formData.decisionType}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select Decision Type</option>
-                          <option value="unanimously">Unanimously</option>
-                          <option value="majority">Majority</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="itemFile" className="mb-3">
-                        <Form.Label>Item File</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemFile}
-                          onChange={handleChange}
-                          placeholder="Enter file URL"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="itemVariable" className="mb-3">
-                        <Form.Label>Item Variable</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={formData.itemVariable}
-                          onChange={handleChange}
-                          placeholder="Enter item variable content"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </>
-            
+                  <Col md={6}>
+                    <Form.Group controlId="passedDate" className="mb-3">
+                      <Form.Label>Passed Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.passedDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="dueDate" className="mb-3">
+                      <Form.Label>Due Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={formData.dueDate}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="issueFrom" className="mb-3">
+                      <Form.Label>Issue From</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.issueFrom}
+                        onChange={handleChange}
+                        placeholder="Enter issue source"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="resolutionNo" className="mb-3">
+                      <Form.Label>Resolution No.</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.resolutionNo}
+                        onChange={handleChange}
+                        placeholder="Enter resolution number"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="decisionType" className="mb-3">
+                      <Form.Label>Decision Type</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="decisionType"
+                        value={formData.decisionType}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Decision Type</option>
+                        <option value="unanimously">Unanimously</option>
+                        <option value="majority">Majority</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="itemFile" className="mb-3">
+                      <Form.Label>Item File</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.itemFile}
+                        onChange={handleChange}
+                        placeholder="Enter file URL"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="itemVariable" className="mb-3">
+                      <Form.Label>Item Variable</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.itemVariable}
+                        onChange={handleChange}
+                        placeholder="Enter item variable content"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </>
 
               <Button type="submit" variant="primary" className="me-2">
                 Save
@@ -464,9 +452,7 @@ const MembersResolution = () => {
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
-        )
-        :
-        (
+        ) : (
           <div className="table-responsive mt-5">
             <Table striped bordered hover>
               <thead>
@@ -495,15 +481,15 @@ const MembersResolution = () => {
                     <td>{row.issueDate}</td>
                     <td>
                       <Button
-                      variant="outline-secondary"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click
-                        handleEditClick(row);
-                      }}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
+                        variant="outline-secondary"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click
+                          handleEditClick(row);
+                        }}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
                       <Button
                         variant="outline-danger"
                         onClick={(e) => {
@@ -519,8 +505,7 @@ const MembersResolution = () => {
               </tbody>
             </Table>
           </div>
-        )
-        }
+        )}
       </Container>
       <ToastContainer />
     </>
