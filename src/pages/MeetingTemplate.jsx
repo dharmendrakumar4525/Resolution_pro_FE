@@ -1,0 +1,141 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  Container,
+  Col,
+  Row,
+  Spinner,
+} from "react-bootstrap";
+import { apiURL } from "../API/api";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+export default function MeetingTemplate() {
+  const [rows, setRows] = useState([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [editingRow, setEditingRow] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    company_id: "",
+    name: "",
+    designation: "",
+    begin_date: "",
+    "din/pan": "",
+    email: "",
+  });
+  const navigate = useNavigate();
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting/${id}`);
+        const data = await response.json();
+        setRows(data?.agendaItems);
+        console.log(data, "pert");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  const handleDeleteClick = async (row) => {
+    try {
+      await fetch(`${apiURL}/director-data/${row.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      toast.success("Director deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete director");
+    }
+  };
+
+  const handleEditClick = (row) => {
+    console.log(row._id, "m1");
+    console.log(id, "m1");
+    setEditingRow(row);
+    navigate(`/template-edit/:${row._id}`, {
+      state: { id: `${id}` },
+    });
+
+    // setFormData({
+    //   company_id: row.company_id,
+    //   name: row.name,
+    //   designation: row.designation,
+    //   begin_date: row.begin_date,
+    //   "din/pan": row["din/pan"],
+    //   email: row.email,
+    // });
+    // setOpenAddModal(true);
+  };
+
+  return (
+    <>
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
+        <div className="d-flex align-items-center justify-content-between mt-3 head-box">
+          <h4 className="h4-heading-style">Meeting Templates</h4>
+          {/* <Button
+            variant="primary"
+            className="btn-box"
+            onClick={handleOpenAddModal}
+          >
+            <FaPlus style={{ marginRight: "8px" }} /> Add
+          </Button> */}
+        </div>
+
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
+          <div className="table-responsive mt-5">
+            <Table striped bordered hover align="center">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Edit template</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row._id}>
+                    <td>{row.templateName}</td>
+                    <td>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleEditClick(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+      </Container>
+      <ToastContainer />
+    </>
+  );
+}

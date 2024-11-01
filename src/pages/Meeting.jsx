@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiURL } from "../API/api";
 import {
   Table,
@@ -20,7 +21,7 @@ export default function Meeting() {
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => setOpenAddModal(false);
   const [editingRow, setEditingRow] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     status: "",
     meetingType: "",
@@ -30,17 +31,18 @@ export default function Meeting() {
     by: "",
     at: "",
   });
-
+const navigate=useNavigate()
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting-template`);
+        const response = await fetch(`${apiURL}/meeting`);
         const data = await response.json();
-        setRows(data.meetingTemplates);
+        setRows(data.results);
+        console.log(data.results,"sadass");
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
-        setLoading(false); 
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -49,7 +51,7 @@ export default function Meeting() {
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/meeting-template/${row.id}`, {
+      const response = await fetch(`${apiURL}/meeting/${row.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -69,12 +71,9 @@ export default function Meeting() {
     }
   };
 
-  
-
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });
-    console.log(formData);
   };
 
   const handleEditClick = (row) => {
@@ -157,9 +156,9 @@ export default function Meeting() {
 
   return (
     <>
-<Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Meeting Template</h4>
+          <h4 className="h4-heading-style">Meeting</h4>
           <Button
             variant="primary"
             className="btn-box"
@@ -175,16 +174,16 @@ export default function Meeting() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-            <Row>
-              <Form.Group controlId="status">
-                <Form.Label >Status</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.status}
-                  onChange={handleChange}
-                  placeholder="Enter Status"
-                />
-              </Form.Group>
+              <Row>
+                <Form.Group controlId="status">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.status}
+                    onChange={handleChange}
+                    placeholder="Enter Status"
+                  />
+                </Form.Group>
               </Row>
 
               <Row>
@@ -248,28 +247,28 @@ export default function Meeting() {
               </Row>
 
               <Row>
-              <Col>
-              <Form.Group controlId="by">
-                <Form.Label className="f-label">By</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.by}
-                  onChange={handleChange}
-                  placeholder="By"
-                />
-              </Form.Group>
-              </Col>
-              <Col>
-              <Form.Group controlId="at">
-                <Form.Label className="f-label">At</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.at}
-                  onChange={handleChange}
-                  placeholder="At"
-                />
-              </Form.Group>
-              </Col>
+                <Col>
+                  <Form.Group controlId="by">
+                    <Form.Label className="f-label">By</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.by}
+                      onChange={handleChange}
+                      placeholder="By"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="at">
+                    <Form.Label className="f-label">At</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.at}
+                      onChange={handleChange}
+                      placeholder="At"
+                    />
+                  </Form.Group>
+                </Col>
               </Row>
 
               <Button variant="primary" type="submit" className="mt-3 me-2">
@@ -292,54 +291,54 @@ export default function Meeting() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? ( 
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
-
-        <Table striped bordered hover responsive className="mt-5">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Meeting Type</th>
-              <th>Template Name</th>
-              <th>Template Type</th>
-              <th>File Name</th>
-              <th>By</th>
-              <th>At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.status}</td>
-                <td>{row.meetingType}</td>
-                <td>{row.templateName}</td>
-                <td>{row.templateType}</td>
-                <td>{row.fileName}</td>
-                <td>{row.by}</td>
-                <td>{row.at}</td>
-                <td>
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => handleEditClick(row)}
-                    className="me-2"
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    variant="outline-danger"
-                    onClick={() => handleDeleteClick(row)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </td>
+          <Table striped bordered hover responsive className="mt-5">
+            <thead>
+              <tr>
+                <th>Meeting Name</th>
+                <th>Client Name</th>
+                <th>Meeting Type</th>
+                <th>Agendas'</th>
+                <th>Start Time</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.title}</td>
+                  <td>{row.client_name.name}</td>
+                  <td>{row.meetingType}</td>
+                  <td ><button style={{textAlign: 'center'}} className="director-btn" onClick={()=>navigate(`/meeting-template/${row.id}`)}>
+                    View Agendas</button>
+                    </td>
+                  <td style={{textAlign: 'center'}}>{row.startTime}</td>
+                  <td>{new Date(row.date).toLocaleDateString()}</td>
+
+                  <td>
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => handleEditClick(row)}
+                      className="me-2"
+                    >
+                      <FaEdit />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      onClick={() => handleDeleteClick(row)}
+                    >
+                      <FaTrash />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         )}
       </Container>
       <ToastContainer />

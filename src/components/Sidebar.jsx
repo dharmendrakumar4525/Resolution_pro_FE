@@ -106,7 +106,8 @@ export default function Sidebar() {
               icon={faFileAlt}
             >
               <NavItem title="Template Group" link="/template-group" />
-              <NavItem title="Meeting Template" link="/meeting-template" />
+              {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
+              <NavItem title="Meeting" link="/meeting" />
               <NavItem
                 title="Meeting Agenda Template"
                 link="/meeting-agenda-template"
