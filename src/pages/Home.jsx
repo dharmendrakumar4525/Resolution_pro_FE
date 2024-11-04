@@ -324,7 +324,7 @@ const Home = () => {
                     <td>{res.issueFrom}</td>
                     <td>
                     <Button
-                      variant="outline-secondary"
+                      variant="outline-primary"
                       // onClick={() => handleEditClick(row)}
                       className="me-2"
                     >

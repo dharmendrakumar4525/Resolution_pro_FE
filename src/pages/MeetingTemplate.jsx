@@ -113,7 +113,7 @@ export default function MeetingTemplate() {
                     <td>{row.templateName}</td>
                     <td>
                       <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={() => handleEditClick(row, index)}
                         className="me-2"
                       >

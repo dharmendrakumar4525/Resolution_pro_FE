@@ -159,7 +159,7 @@ export default function CommitteeMembers() {
           )}
         </div>
 
-        <Table bordered hover className="Master-table">
+        <Table bordered hover className="Master-table mt-5">
         <thead className="Master-Thead">
             <tr>
               {columns.map((column) => (
@@ -195,8 +195,9 @@ export default function CommitteeMembers() {
                     {hasPermission("edit") && (
                       <Button
                         variant="outline-primary"
-                        className="mr-2"
+                        className=" me-2"
                         onClick={() => handleEditClick(row)}
+                        
                       >
                         <FaEdit />
                       </Button>

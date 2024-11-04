@@ -147,7 +147,7 @@ const ManagePermissions = () => {
           <h4 className="h4-heading-style">Manage Permissions</h4>
         </div>
 
-      <form onSubmit={handleSubmit} className="mt-4">
+      <form onSubmit={handleSubmit} className="mt-5">
         <div>
           <ul className="select-role">
             {roles.length > 0 ? (

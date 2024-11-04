@@ -295,7 +295,7 @@ export default function CustomerMaintenance() {
                     <td>
                       {hasPermission("edit") && (
                         <Button
-                          variant="outline-secondary"
+                          variant="outline-primary"
                           onClick={() => handleEditClick(row)}
                           className="me-2"
                         >

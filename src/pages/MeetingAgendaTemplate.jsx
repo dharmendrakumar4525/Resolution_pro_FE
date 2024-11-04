@@ -12,7 +12,8 @@ import {
   Spinner,
   Pagination,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaEye, FaPencilAlt } from "react-icons/fa";
+
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
@@ -300,15 +301,23 @@ export default function MeetingAgendaTemplate() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{row.status}</td>
+                  <td>
+        {row.status === "draft" ? (
+          <button className="director-btn d-flex align-items-center gap-2" >
+                 <FaPencilAlt /> Draft
+          </button>
+        ) : (
+          row.status
+        )}
+      </td>
                     <td>{row.meetingType}</td>
                     <td>{row.templateName}</td>
                     <td>
                       <button
-                        className="director-btn"
+                        className="director-btn d-flex align-items-center gap-2"
                         onClick={(e) => handleViewTemplate(row, e)}
                       >
-                        View Template
+                           <FaEdit /> View Template
                       </button>
                     </td>
                     {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
@@ -316,7 +325,7 @@ export default function MeetingAgendaTemplate() {
                     <td>
                       {hasPermission("edit") && (
                         <Button
-                          variant="outline-secondary"
+                          variant="outline-primary"
                           onClick={() => handleEditClick(row)}
                           className="me-2"
                         >

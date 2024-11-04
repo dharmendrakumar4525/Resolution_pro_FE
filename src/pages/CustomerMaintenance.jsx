@@ -11,7 +11,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus ,FaUser} from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -460,7 +460,7 @@ export default function CustomerMaintenance() {
                     <td>{row.v ? "Yes" : "No"}</td>
                     <td>{row.ro ? "Yes" : "No"}</td>
                     <td className="text-center">{row.revision}</td> */}
-                    <td className="text-center">
+                    <td className="">
                       {row.alloted_manager[0]?.name || "-"}
                     </td>
                     <td>
@@ -468,14 +468,14 @@ export default function CustomerMaintenance() {
                         className="director-btn"
                         onClick={(e) => handleViewDirectors(row, e)}
                       >
-                        View Directors
+                      <FaUser/>  View Directors
                       </button>
                     </td>
 
                     <td>
                       {hasPermission("edit") && (
                         <Button
-                          variant="outline-secondary"
+                          variant="outline-primary"
                           onClick={(e) => handleEdit(row._id, e)}
                           className="me-2"
                         >

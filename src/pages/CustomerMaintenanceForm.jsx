@@ -5,11 +5,14 @@ import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiURL } from "../API/api";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+
 
 export default function CustomerMaintenanceForm() {
   const navigate = useNavigate();
   const { customerId } = useParams();
   const [managers, setManagers] = useState([]);
+  const [validated, setValidated] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -150,29 +153,35 @@ export default function CustomerMaintenanceForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const method = customerId ? "PATCH" : "POST";
-      const endpoint = customerId
-        ? `${apiURL}/customer-maintenance/${customerId}`
-        : `${apiURL}/customer-maintenance`;
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    } else {
+      try {
+        const method = customerId ? "PATCH" : "POST";
+        const endpoint = customerId
+          ? `${apiURL}/customer-maintenance/${customerId}`
+          : `${apiURL}/customer-maintenance`;
+        const response = await fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to save customer data");
+        if (!response.ok) {
+          throw new Error("Failed to save customer data");
+        }
+
+        toast.success(
+          `Customer ${customerId ? "updated" : "added"} successfully`
+        );
+        navigate("/customer-maintenance");
+      } catch (error) {
+        console.error("Error saving customer data:", error);
+        toast.error("Failed to save customer data");
       }
-
-      toast.success(
-        `Customer ${customerId ? "updated" : "added"} successfully`
-      );
-      navigate("/customer-maintenance");
-    } catch (error) {
-      console.error("Error saving customer data:", error);
-      toast.error("Failed to save customer data");
     }
+    setValidated(true);
   };
 
   return (
@@ -368,9 +377,6 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
                 <Col>
                   <Form.Group controlId={`addressLine1-${index}`}>
                     <Form.Label>Address Line 1</Form.Label>
@@ -389,6 +395,10 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
+              </Row>
+
+              <Row className="mb-3">
+               
                 <Col>
                   <Form.Group controlId={`addressLine2-${index}`}>
                     <Form.Label>Address Line 2</Form.Label>
@@ -425,9 +435,6 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
                 <Col>
                   <Form.Group controlId={`country-${index}`}>
                     <Form.Label>Country</Form.Label>
@@ -442,7 +449,12 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+              </Row>
+
+            
+
+              <Row className="mb-3">
+              <Col>
                   <Form.Group controlId={`state-${index}`}>
                     <Form.Label>State</Form.Label>
                     <Form.Control
@@ -456,9 +468,6 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
                 <Col>
                   <Form.Group controlId={`salesTaxType-${index}`}>
                     <Form.Label>Sales Tax Type</Form.Label>
@@ -491,11 +500,14 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+              
+              </Row>
+              <Row className="mb-3">
+              <Col>
                   <Form.Group>
                     <Form.Check
                       type="checkbox"
-                      label="Registered Office"
+                      label="Registered Location"
                       checked={location.registeredOffice}
                       onChange={() =>
                         handleLocationCheckboxChange(index, "registeredOffice")
@@ -503,17 +515,24 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
+               
               </Row>
-              <Button variant="danger" onClick={() => removeLocation(index)}>
-                Remove Location
-              </Button>
+              <Button className="d-flex align-items-center gap-2"
+                          variant="outline-danger"
+                          onClick={() => removeLocation(index)}
+                        >
+                          <FaTrash /> Location
+                        </Button>
             </div>
           ))}
-          <Button variant="primary" onClick={addLocation}>
-            Add Location
+          <Button variant="primary" onClick={addLocation} className="d-flex align-items-center gap-2">
+          <FaPlus 
+          // style={{ marginRight: "8px" }} 
+
+          />Location
           </Button>
-          <Button variant="success" type="submit" className="mt-4">
-            {customerId ? "Update Customer" : "Add Customer"}
+          <Button variant="success" type="submit" className="ms-3 float-end">
+            {customerId ? "Update Customer" : "Save"}
           </Button>
         </Form>
       </div>

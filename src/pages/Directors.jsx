@@ -268,7 +268,7 @@ export default function Directors() {
                     <td>{row.end_date || "-"}</td>
                     <td>
                       <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={() => handleEditClick(row)}
                         className="me-2"
                       >
