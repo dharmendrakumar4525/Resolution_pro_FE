@@ -31,7 +31,9 @@ const ManagePermissions = () => {
           }));
           setRoles(roleArray);
 
-          const adminRole = roleArray.find((role) => role.role === "admin");
+          const adminRole = roleArray.find(
+            (role) => role.id === "670cbe9a5a015431b1d2d513"
+          );
           if (adminRole) {
             setSelectedRole(adminRole.id);
           }

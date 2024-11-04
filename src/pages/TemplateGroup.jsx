@@ -295,13 +295,14 @@ export default function TemplateGroup() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+               {rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{row.meetingType}</td>
-                    <td>{row.groupName}</td>
-                    <td>{row.numberOfTemplate}</td>
-                    <td>{row.createdBy.name}</td>
-                    <td>
+                   <td>{row?.meetingType }</td>
+  <td>{row?.groupName || "No Group Name"}</td>
+  <td>{row?.numberOfTemplate }</td>
+  <td>{row?.createdBy?.name ||"Unknown" }</td>
+  <td>
+                    
                       {hasPermission("edit") && (
                         <Button
                           variant="outline-secondary"
@@ -321,7 +322,7 @@ export default function TemplateGroup() {
                       )}
                     </td>
                   </tr>
-                ))}
+                ))} 
               </tbody>
             </Table>
             <Pagination className="mt-4">
