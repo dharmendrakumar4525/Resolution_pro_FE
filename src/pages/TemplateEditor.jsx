@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { Button, Form, Table, Container } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
+import { apiURL } from "../API/api";
+import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 
@@ -16,7 +19,11 @@ const TemplateEditor = () => {
   const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
   const [docFile, setDocFile] = useState(null); // For storing the original DOCX file
+  const location = useLocation();
+  const { id } = useParams();
 
+  const index = location.state?.index;
+  const fileUrl = location.state?.fileUrl;
   const handleEditorChange = (content) => {
     setEditorContent(content);
 
@@ -100,9 +107,25 @@ const TemplateEditor = () => {
 
     return children;
   };
+  const handleFileLoad = async (url) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const arrayBuffer = await response.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const htmlContent = result.value;
+      setEditorContent(htmlContent);
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+
+  useEffect(() => {
+    handleFileLoad(fileUrl);
+  }, [fileUrl]);
 
   const createWordDocument = async () => {
-    const parsedContent = parseHtmlToDocx(editorContent); // Parse HTML content to docx-friendly format
+    const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
       sections: [
@@ -113,7 +136,41 @@ const TemplateEditor = () => {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, `${currentDocName || "Document"}.docx`);
+    return blob;
+  };
+  const saveDocument = async () => {
+    const docBlob = await createWordDocument();
+    console.log(docBlob, "docbl");
+    // Prepare FormData with the document Blob
+    const formData = new FormData();
+    formData.append("file", docBlob);
+    formData.append("index", index);
+
+    try {
+      // Make a PATCH request with the document
+      const response = await fetch(`${apiURL}/meeting/${id}`, {
+        method: "PATCH",
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast.success("Document saved successfully!");
+
+        // Optionally update your document list
+        const newDoc = {
+          name: currentDocName,
+          content: editorContent,
+        };
+
+        setDocuments([...documents, newDoc]);
+        setCurrentDocName("");
+        setIsEditing(false);
+      } else {
+        alert("Failed to save the document.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while saving the document.");
+    }
   };
 
   const handleFileUpload = async (event) => {
@@ -128,24 +185,6 @@ const TemplateEditor = () => {
       setEditorContent(htmlContent);
     };
     reader.readAsArrayBuffer(file);
-  };
-
-  // Save the document in the dashboard list
-  const saveDocument = () => {
-    if (!currentDocName) {
-      alert("Please enter a document name.");
-      return;
-    }
-
-    const newDoc = {
-      name: currentDocName,
-      content: editorContent,
-    };
-
-    setDocuments([...documents, newDoc]);
-    setEditorContent("");
-    setCurrentDocName("");
-    setIsEditing(false);
   };
 
   // Save changes to an existing document
@@ -170,16 +209,16 @@ const TemplateEditor = () => {
         <div className="leftContainer">
           <h1 className="mb-4">Template Editor</h1>
 
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Upload DOCX File</Form.Label>
             <Form.Control
               type="file"
               accept=".docx"
               onChange={handleFileUpload}
             />
-          </Form.Group>
+          </Form.Group> */}
 
-          <Form>
+          {/* <Form>
             <Form.Group controlId="documentName">
               <Form.Label>Document Name</Form.Label>
               <Form.Control
@@ -189,7 +228,7 @@ const TemplateEditor = () => {
                 onChange={(e) => setCurrentDocName(e.target.value)}
               />
             </Form.Group>
-          </Form>
+          </Form> */}
 
           <CKEditor
             editor={ClassicEditor}
@@ -202,10 +241,6 @@ const TemplateEditor = () => {
               toolbar: false,
             }}
           />
-
-          <Button variant="success" onClick={saveDocument} className="mt-5">
-            Save Document
-          </Button>
         </div>
         <div className="rightContainer">
           {/* Detected Placeholder Input Fields */}
@@ -235,20 +270,18 @@ const TemplateEditor = () => {
                 </div>
               ))
             ) : (
-              <p>
-                No placeholders detected yet. Use the format ${"{name}"} in your
-                content.
-              </p>
+              <p>All placeholders with ${"{example}"} are filled</p>
             )}
           </div>
 
           {/* Download and Save Actions */}
           <div className="download-options mt-5">
             <Button
-              onClick={createWordDocument}
+              // onClick={createWordDocument}
+              onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
             >
-              Download Updated Word File
+              Save Meeting Template
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>
@@ -258,8 +291,8 @@ const TemplateEditor = () => {
             )}
           </div>
 
-          {/* Document List */}
-          {documents.length > 0 && (
+          {/* Saved documents removed */}
+          {/* {documents.length > 0 && (
             <div className="mt-5">
               <h3>Saved Documents</h3>
               <Table striped bordered hover>
@@ -299,7 +332,7 @@ const TemplateEditor = () => {
                 </tbody>
               </Table>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Container>

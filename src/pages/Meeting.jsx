@@ -23,22 +23,33 @@ export default function Meeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    status: "",
+    title: "",
+    client_name: "",
+    description: "",
     meetingType: "",
-    templateType: "",
-    templateName: "",
-    fileName: "",
-    by: "",
-    at: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    organizer: "",
+    participants: [],
+    agendaItems: [
+      {
+        templateName: "",
+        meetingType: "",
+        fileName: "",
+      },
+    ],
+    location: "",
+    status: "scheduled",
   });
-const navigate=useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${apiURL}/meeting`);
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results,"sadass");
+        console.log(data.results, "sadass");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -88,6 +99,29 @@ const navigate=useNavigate()
       by: row.by,
       at: row.at,
     });
+  };
+  const handleAgendaItemChange = (index, field, value) => {
+    const updatedAgendaItems = formData.agendaItems.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item
+    );
+    setFormData({ ...formData, agendaItems: updatedAgendaItems });
+  };
+
+  const addAgendaItem = () => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      agendaItems: [
+        ...prevFormData.agendaItems,
+        { templateName: "", meetingType: "", fileName: "" },
+      ],
+    }));
+  };
+
+  const removeAgendaItem = (index) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      agendaItems: prevFormData.agendaItems.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -176,7 +210,7 @@ const navigate=useNavigate()
             <Form onSubmit={handleSubmit}>
               <Row>
                 <Form.Group controlId="status">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label>Title</Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.status}
@@ -189,7 +223,18 @@ const navigate=useNavigate()
               <Row>
                 <Col>
                   <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Template Name</Form.Label>
+                    <Form.Label className="f-label">Client Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.templateName}
+                      onChange={handleChange}
+                      placeholder="Enter Template Name"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="templateName">
+                    <Form.Label className="f-label">Description</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.templateName}
@@ -217,30 +262,79 @@ const navigate=useNavigate()
                   </Form.Group>
                 </Col>
               </Row>
+              <h5>Agenda Items</h5>
+              {/* {formData.agendaItems.map((agendaItem, index) => (
+      <div key={index}>
+        <Row>
+          <Col>
+            <Form.Group controlId={`templateName-${index}`}>
+              <Form.Label>Template Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={agendaItem.templateName}
+                onChange={(e) =>
+                  handleAgendaItemChange(index, "templateName", e.target.value)
+                }
+                placeholder="Enter Template Name"
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId={`meetingType-${index}`}>
+              <Form.Label>Meeting Type</Form.Label>
+              <Form.Control
+                as="select"
+                value={agendaItem.meetingType}
+                onChange={(e) =>
+                  handleAgendaItemChange(index, "meetingType", e.target.value)
+                }
+              >
+                <option value="board_meeting">Board Meeting</option>
+                <option value="committee_meeting">Committee Meeting</option>
+                <option value="annual_general_meeting">
+                  Annual General Meeting
+                </option>
+              </Form.Control>
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId={`fileName-${index}`}>
+              <Form.Label>File Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={agendaItem.fileName}
+                onChange={(e) =>
+                  handleAgendaItemChange(index, "fileName", e.target.value)
+                }
+                placeholder="Enter File Name"
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Button
+              variant="danger"
+              onClick={() => removeAgendaItem(index)}
+              className="mt-4"
+            >
+              Remove
+            </Button>
+          </Col>
+        </Row>
+      </div>
+    ))} */}
+              <Button variant="secondary" onClick={addAgendaItem}>
+                Add Agenda Item
+              </Button>
 
               <Row>
                 <Col>
-                  <Form.Group controlId="templateType">
-                    <Form.Label className="f-label">Template Type</Form.Label>
+                  <Form.Group controlId="date">
+                    <Form.Label>Date</Form.Label>
                     <Form.Control
-                      as="select"
-                      value={formData.templateType}
+                      type="date"
+                      value={formData.date}
                       onChange={handleChange}
-                    >
-                      <option value="General Template">General Template</option>
-                      <option value="Leave Of Absence">Leave Of Absence</option>
-                      <option value="SNC">SNC</option>
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="fileName">
-                    <Form.Label className="f-label">File Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.fileName}
-                      onChange={handleChange}
-                      placeholder="Enter File Name"
+                      required
                     />
                   </Form.Group>
                 </Col>
@@ -248,25 +342,63 @@ const navigate=useNavigate()
 
               <Row>
                 <Col>
-                  <Form.Group controlId="by">
-                    <Form.Label className="f-label">By</Form.Label>
+                  <Form.Group controlId="startTime">
+                    <Form.Label>Start Time</Form.Label>
+                    <Form.Control
+                      type="time"
+                      value={formData.startTime}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="endTime">
+                    <Form.Label>End Time</Form.Label>
+                    <Form.Control
+                      type="time"
+                      value={formData.endTime}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col>
+                  <Form.Group controlId="location">
+                    <Form.Label className="f-label">Location</Form.Label>
                     <Form.Control
                       type="text"
-                      value={formData.by}
+                      value={formData.location}
                       onChange={handleChange}
-                      placeholder="By"
+                      placeholder="Enter Location"
                     />
                   </Form.Group>
                 </Col>
                 <Col>
                   <Form.Group controlId="at">
-                    <Form.Label className="f-label">At</Form.Label>
+                    <Form.Label className="f-label">Status</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.at}
                       onChange={handleChange}
                       placeholder="At"
                     />
+                    <Form.Control
+                      as="select"
+                      value={formData.meetingType}
+                      onChange={handleChange}
+                    >
+                      <option value="Board Meeting">Board Meeting</option>
+                      <option value="Committee Meeting">
+                        Committee Meeting
+                      </option>
+                      <option value="Circular Resolution">
+                        Circular Resolution
+                      </option>
+                    </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
@@ -309,15 +441,21 @@ const navigate=useNavigate()
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <tr key={row.id}>
                   <td>{row.title}</td>
                   <td>{row.client_name.name}</td>
                   <td>{row.meetingType}</td>
-                  <td ><button style={{textAlign: 'center'}} className="director-btn" onClick={()=>navigate(`/meeting-template/${row.id}`)}>
-                    View Agendas</button>
-                    </td>
-                  <td style={{textAlign: 'center'}}>{row.startTime}</td>
+                  <td>
+                    <button
+                      style={{ textAlign: "center" }}
+                      className="director-btn"
+                      onClick={() => navigate(`/meeting-template/${row.id}`)}
+                    >
+                      View Agendas
+                    </button>
+                  </td>
+                  <td style={{ textAlign: "center" }}>{row.startTime}</td>
                   <td>{new Date(row.date).toLocaleDateString()}</td>
 
                   <td>

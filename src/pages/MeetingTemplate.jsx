@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
   Form,
@@ -28,6 +28,7 @@ export default function MeetingTemplate() {
     "din/pan": "",
     email: "",
   });
+
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -63,12 +64,10 @@ export default function MeetingTemplate() {
     }
   };
 
-  const handleEditClick = (row) => {
-    console.log(row._id, "m1");
-    console.log(id, "m1");
+  const handleEditClick = (row, index) => {
     setEditingRow(row);
-    navigate(`/template-edit/:${row._id}`, {
-      state: { id: `${id}` },
+    navigate(`/template-edit/${id}`, {
+      state: { index, fileUrl: `${row.fileName}` },
     });
 
     // setFormData({
@@ -87,13 +86,6 @@ export default function MeetingTemplate() {
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Meeting Templates</h4>
-          {/* <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button> */}
         </div>
 
         {loading ? (
@@ -116,13 +108,13 @@ export default function MeetingTemplate() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rows.map((row, index) => (
                   <tr key={row._id}>
                     <td>{row.templateName}</td>
                     <td>
                       <Button
                         variant="outline-secondary"
-                        onClick={() => handleEditClick(row)}
+                        onClick={() => handleEditClick(row, index)}
                         className="me-2"
                       >
                         <FaEdit />
