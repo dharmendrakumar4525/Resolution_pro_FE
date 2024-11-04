@@ -22,6 +22,8 @@ export default function Meeting() {
   const handleCloseAddModal = () => setOpenAddModal(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [clientList, setClientList] = useState([]);
+
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -58,6 +60,18 @@ export default function Meeting() {
     };
 
     fetchData();
+  }, []);
+  useEffect(() => {
+    const fetchClientList = async () => {
+      try {
+        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const data = await response.json();
+        setClientList(data.docs);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
+    fetchClientList();
   }, []);
 
   const handleDeleteClick = async (row) => {
@@ -209,37 +223,46 @@ export default function Meeting() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Row>
-                <Form.Group controlId="status">
-                  <Form.Label>Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.status}
-                    onChange={handleChange}
-                    placeholder="Enter Status"
-                  />
-                </Form.Group>
+                <Col>
+                  <Form.Group controlId="clientName">
+                    <Form.Label>Client Name</Form.Label>
+                    <Form.Control
+                      as="select"
+                      name="clientName"
+                      value={formData.client_name}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select Client</option>
+                      {clientList.map((client) => (
+                        <option key={client.id} value={client._id}>
+                          {client.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="status">
+                    <Form.Label>Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.status}
+                      onChange={handleChange}
+                      placeholder="Enter Status"
+                    />
+                  </Form.Group>
+                </Col>
               </Row>
 
               <Row>
                 <Col>
-                  <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Client Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.templateName}
-                      onChange={handleChange}
-                      placeholder="Enter Template Name"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="templateName">
+                  <Form.Group controlId="description">
                     <Form.Label className="f-label">Description</Form.Label>
                     <Form.Control
                       type="text"
-                      value={formData.templateName}
+                      value={formData.description}
                       onChange={handleChange}
-                      placeholder="Enter Template Name"
+                      placeholder="Enter Description"
                     />
                   </Form.Group>
                 </Col>
@@ -251,19 +274,20 @@ export default function Meeting() {
                       value={formData.meetingType}
                       onChange={handleChange}
                     >
-                      <option value="Board Meeting">Board Meeting</option>
-                      <option value="Committee Meeting">
+                      <option value="board_meeting">Board Meeting</option>
+                      <option value="committee_meeting">
                         Committee Meeting
                       </option>
-                      <option value="Circular Resolution">
-                        Circular Resolution
+                      <option value="annual_general_meeting">
+                        annual_general_meeting
                       </option>
                     </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
-              <h5>Agenda Items</h5>
-              {/* {formData.agendaItems.map((agendaItem, index) => (
+              <Row>
+                <h5>Agenda Items</h5>
+                {/* {formData.agendaItems.map((agendaItem, index) => (
       <div key={index}>
         <Row>
           <Col>
@@ -322,6 +346,7 @@ export default function Meeting() {
         </Row>
       </div>
     ))} */}
+              </Row>
               <Button variant="secondary" onClick={addAgendaItem}>
                 Add Agenda Item
               </Button>
@@ -380,12 +405,7 @@ export default function Meeting() {
                 <Col>
                   <Form.Group controlId="at">
                     <Form.Label className="f-label">Status</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.at}
-                      onChange={handleChange}
-                      placeholder="At"
-                    />
+
                     <Form.Control
                       as="select"
                       value={formData.meetingType}
