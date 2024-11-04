@@ -100,8 +100,8 @@ export default function MeetingTemplate() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-            <Table striped bordered hover align="center">
-              <thead>
+          <Table bordered hover className="Master-table">
+          <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
                   <th>Edit template</th>

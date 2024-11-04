@@ -98,6 +98,7 @@
   background-color: #f8f9fa !important;
   padding: 16px 24px !important;
   border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) ;
   box-shadow: 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
@@ -300,4 +301,87 @@ h2 {
   height: 500px;
   width: 100%;
   border: none;
+}
+
+
+/* User page  */
+
+/* General container styling */
+.customer-maintenance {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.select-role{
+  padding-left: 0 !important;
+}
+
+/* Button Styling */
+.add-button {
+  background-color: #17a2b8;
+  border: none;
+}
+
+.add-button:hover {
+  background-color: #138496;
+}
+
+.save-button {
+  background-color: #28a745;
+  border: none;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+}
+
+.edit-button {
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
+.delete-button {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+/* Modal Customization */
+.modal-custom .modal-header {
+  background-color: #343a40;
+  color: white;
+}
+
+.modal-custom .modal-footer .btn-secondary {
+  background-color: #6c757d;
+}
+
+/* Table Styling */
+
+/* .styled-table tr:hover {
+  background-color: #e9ecef;
+} */
+
+.custom-pagination .page-link {
+  color: #262b3f ;
+  cursor: pointer;
+}
+
+.custom-pagination .page-item.active .page-link {
+  background-color: #262b3f ;
+  border-color: #262b3f ;
+}
+
+.Master-table{
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.Master-Thead tr th{
+  padding: 10px 10px 10px 8px !important
 }

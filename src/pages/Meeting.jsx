@@ -448,8 +448,8 @@ export default function Meeting() {
             <h5>No data available</h5>
           </div>
         ) : (
-          <Table striped bordered hover responsive className="mt-5">
-            <thead>
+          <Table bordered hover responsive className="Master-table mt-5">
+          <thead className="Master-Thead">
               <tr>
                 <th>Meeting Name</th>
                 <th>Client Name</th>

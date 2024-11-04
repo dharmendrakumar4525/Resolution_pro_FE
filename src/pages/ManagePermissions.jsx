@@ -146,10 +146,10 @@ const ManagePermissions = () => {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Manage Permissions</h4>
         </div>
-      </Container>
-      <form onSubmit={handleSubmit}>
+
+      <form onSubmit={handleSubmit} className="mt-4">
         <div>
-          <ul>
+          <ul className="select-role">
             {roles.length > 0 ? (
               <Form.Control
                 as="select"
@@ -178,7 +178,7 @@ const ManagePermissions = () => {
               xs={12}
               xl={8}
               className="mb-3 mt-2"
-              style={{ marginLeft: "40px" }}
+              // style={{ marginLeft: "40px" }}
             >
               <h3>{permission.moduleName}</h3>
               <Row>
@@ -212,6 +212,7 @@ const ManagePermissions = () => {
 
         <Button type="submit">Update Role Permissions</Button>
       </form>
+      </Container>
     </div>
   );
 };

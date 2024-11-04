@@ -296,8 +296,8 @@ const Home = () => {
         <Row className="mt-4">
           <Col>
             <h3>{selectedResolutionType.charAt(0).toUpperCase() + selectedResolutionType.slice(1)} Resolutions</h3>
-            <Table striped bordered hover responsive >
-              <thead>
+            <Table bordered hover className="Master-table">
+            <thead className="Master-Thead">
                 <tr>
                   {/* <th>Resolution Number</th> */}
                   <th>Status</th>

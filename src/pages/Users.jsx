@@ -15,6 +15,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { apiURL } from "../API/api";
 import { useAuth } from "../context/AuthContext";
+// import "./CustomerMaintenance.css"; // Import your custom styles here
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
@@ -277,8 +278,8 @@ export default function CustomerMaintenance() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-            <Table striped bordered hover>
-              <thead>
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
@@ -317,7 +318,7 @@ export default function CustomerMaintenance() {
                 ))}
               </tbody>
             </Table>
-            <Pagination className="mt-4">
+            <Pagination className="mt-4 custom-pagination">
               <Pagination.Prev
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
@@ -336,6 +337,7 @@ export default function CustomerMaintenance() {
                 disabled={page === totalPages}
               />
             </Pagination>
+
           </div>
         )}
       </Container>

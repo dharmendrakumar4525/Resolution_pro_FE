@@ -284,8 +284,8 @@ export default function TemplateGroup() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-            <Table striped bordered hover>
-              <thead>
+          <Table bordered hover className="Master-table">
+          <thead className="Master-Thead">
                 <tr>
                   <th>Meeting Type</th>
                   <th>Group Name</th>

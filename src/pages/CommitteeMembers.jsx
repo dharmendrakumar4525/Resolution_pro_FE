@@ -159,8 +159,8 @@ export default function CommitteeMembers() {
           )}
         </div>
 
-        <Table responsive hover className="mt-3">
-          <thead>
+        <Table bordered hover className="Master-table">
+        <thead className="Master-Thead">
             <tr>
               {columns.map((column) => (
                 <th key={column.header}>{column.header}</th>

@@ -211,8 +211,8 @@ const DocumentTemplate = () => {
       {documents.length > 0 && (
         <div className="mt-5">
           <h3>Saved Documents</h3>
-          <Table striped bordered hover>
-            <thead>
+          <Table bordered hover className="Master-table">
+          <thead className="Master-Thead">
               <tr>
                 <th>#</th>
                 <th>Document Name</th>

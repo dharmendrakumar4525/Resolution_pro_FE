@@ -286,8 +286,8 @@ export default function MeetingAgendaTemplate() {
           </div>
         ) : (
           <>
-            <Table striped bordered hover responsive className="mt-5 ">
-              <thead>
+          <Table bordered hover responsive className="Master-table mt-5">
+          <thead className="Master-Thead">
                 <tr>
                   <th>Status</th>
                   <th>Meeting Type</th>
