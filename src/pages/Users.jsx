@@ -34,19 +34,16 @@ export default function CustomerMaintenance() {
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
 
-  useEffect(
-    (page) => {
-      axios
-        .get(`${apiURL}/role?page=${page}`)
-        .then((response) => {
-          setRoleList(response.data.results);
-        })
-        .catch((error) => {
-          console.error("Error fetching roles:", error);
-        });
-    },
-    [page]
-  );
+  useEffect(() => {
+    axios
+      .get(`${apiURL}/role?page=${page}`)
+      .then((response) => {
+        setRoleList(response.data.results);
+      })
+      .catch((error) => {
+        console.error("Error fetching roles:", error);
+      });
+  }, [page]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -337,7 +334,6 @@ export default function CustomerMaintenance() {
                 disabled={page === totalPages}
               />
             </Pagination>
-
           </div>
         )}
       </Container>
