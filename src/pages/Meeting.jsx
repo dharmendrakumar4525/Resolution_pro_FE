@@ -23,7 +23,11 @@ export default function Meeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [agendaList, setAgendaList] = useState([]);
+  const [directorList, setDirectorList] = useState([]);
 
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+  console.log(user);
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -67,12 +71,35 @@ export default function Meeting() {
         const response = await fetch(`${apiURL}/customer-maintenance`);
         const data = await response.json();
         setClientList(data.docs);
+        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
     };
+    const fetchAgendaList = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const data = await response.json();
+        setAgendaList(data.results);
+        console.log(data.results, "agendaName");
+      } catch (error) {
+        console.error("Error fetching Agenda:", error);
+      }
+    };
     fetchClientList();
+    fetchAgendaList();
   }, []);
+  const fetchDirectors = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/director-data/directors/${clientId}`
+      );
+      const data = await response.json();
+      setDirectorList(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching directors:", error);
+    }
+  };
 
   const handleDeleteClick = async (row) => {
     try {
@@ -99,42 +126,77 @@ export default function Meeting() {
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });
+    if (name === "client_name" && value) {
+      fetchDirectors(value);
+    }
+  };
+  const handleDirectorSelection = (e) => {
+    const selectedDirectorId = e.target.value;
+    const selectedDirector = directorList.find(
+      (director) => director.id === selectedDirectorId
+    );
+    if (selectedDirector) {
+      setFormData((prevData) => ({
+        ...prevData,
+        participants: [...prevData.participants, selectedDirector],
+      }));
+    }
+  };
+  const handleParticipantChange = (selectedDirectorId) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      participants: [...prevFormData.participants, selectedDirectorId],
+    }));
   };
 
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
-      status: row.status,
+      title: row.title,
+      client_name: row.client_name?._id || "",
+      description: row.description,
       meetingType: row.meetingType,
-      templateType: row.templateType,
-      templateName: row.templateName,
-      fileName: row.fileName,
-      by: row.by,
-      at: row.at,
+      date: row.date,
+      startTime: row.startTime,
+      endTime: row.endTime,
+      organizer: row.organizer,
+      participants: row.participants || [],
+      agendaItems: row.agendaItems.map((agendaItem) => ({
+        templateName: agendaItem.templateName,
+        meetingType: agendaItem.meetingType,
+        fileName: agendaItem.fileName,
+      })),
+      location: row.location,
+      status: row.status,
     });
   };
+
   const handleAgendaItemChange = (index, field, value) => {
-    const updatedAgendaItems = formData.agendaItems.map((item, i) =>
-      i === index ? { ...item, [field]: value } : item
-    );
-    setFormData({ ...formData, agendaItems: updatedAgendaItems });
+    setFormData((prevData) => {
+      const updatedAgendaItems = [...prevData.agendaItems];
+      updatedAgendaItems[index] = {
+        ...updatedAgendaItems[index],
+        [field]: value,
+      };
+      return { ...prevData, agendaItems: updatedAgendaItems };
+    });
   };
 
   const addAgendaItem = () => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
+    setFormData((prevData) => ({
+      ...prevData,
       agendaItems: [
-        ...prevFormData.agendaItems,
-        { templateName: "", meetingType: "", fileName: "" },
+        ...prevData.agendaItems,
+        { templateName: "", meetingType: "board_meeting", fileName: "" },
       ],
     }));
   };
 
   const removeAgendaItem = (index) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      agendaItems: prevFormData.agendaItems.filter((_, i) => i !== index),
+    setFormData((prevData) => ({
+      ...prevData,
+      agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
     }));
   };
 
@@ -143,7 +205,7 @@ export default function Meeting() {
     try {
       let response;
       if (editingRow) {
-        response = await fetch(`${apiURL}/meeting-template/${editingRow.id}`, {
+        response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -157,7 +219,7 @@ export default function Meeting() {
         );
         toast.success("Meeting template edited successfully");
       } else {
-        response = await fetch(`${apiURL}/meeting-template`, {
+        response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -168,20 +230,25 @@ export default function Meeting() {
         if (!response.ok) {
           throw new Error("Failed to add item");
         }
-        toast.success("Meeting template added successfully");
+        toast.success("Meeting added successfully");
         const data = await response.json();
         setRows((prevRows) => [...prevRows, data]);
       }
 
       handleCloseAddModal();
       setFormData({
-        status: "",
+        title: "",
+        client_name: "",
+        description: "",
         meetingType: "",
-        templateType: "",
-        templateName: "",
-        fileName: "",
-        by: "",
-        at: "",
+        date: "",
+        startTime: "",
+        endTime: "",
+        organizer: "",
+        participants: [],
+        agendaItems: [{ templateName: "", meetingType: "", fileName: "" }],
+        location: "",
+        status: "scheduled",
       });
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
@@ -191,13 +258,18 @@ export default function Meeting() {
   const handleOpenNewAddModal = () => {
     setEditingRow(null);
     setFormData({
-      status: "",
+      title: "",
+      client_name: "",
+      description: "",
       meetingType: "",
-      templateType: "",
-      templateName: "",
-      fileName: "",
-      by: "",
-      at: "",
+      date: "",
+      startTime: "",
+      endTime: "",
+      organizer: user.id,
+      participants: [],
+      agendaItems: [{ templateName: "", meetingType: "", fileName: "" }],
+      location: "",
+      status: "scheduled",
     });
     setOpenAddModal(true);
   };
@@ -224,17 +296,17 @@ export default function Meeting() {
             <Form onSubmit={handleSubmit}>
               <Row>
                 <Col>
-                  <Form.Group controlId="clientName">
+                  <Form.Group controlId="client_name">
                     <Form.Label>Client Name</Form.Label>
                     <Form.Control
                       as="select"
-                      name="clientName"
+                      name="client_name"
                       value={formData.client_name}
                       onChange={handleChange}
                     >
                       <option value="">Select Client</option>
                       {clientList.map((client) => (
-                        <option key={client.id} value={client._id}>
+                        <option key={client._id} value={client._id}>
                           {client.name}
                         </option>
                       ))}
@@ -242,13 +314,13 @@ export default function Meeting() {
                   </Form.Group>
                 </Col>
                 <Col>
-                  <Form.Group controlId="status">
+                  <Form.Group controlId="title">
                     <Form.Label>Title</Form.Label>
                     <Form.Control
                       type="text"
-                      value={formData.status}
+                      value={formData.title}
                       onChange={handleChange}
-                      placeholder="Enter Status"
+                      placeholder="Enter Title"
                     />
                   </Form.Group>
                 </Col>
@@ -274,6 +346,8 @@ export default function Meeting() {
                       value={formData.meetingType}
                       onChange={handleChange}
                     >
+                      <option value="">Select Meeting Type</option>
+
                       <option value="board_meeting">Board Meeting</option>
                       <option value="committee_meeting">
                         Committee Meeting
@@ -285,71 +359,96 @@ export default function Meeting() {
                   </Form.Group>
                 </Col>
               </Row>
-              <Row>
+
+              <Row className="mt-4">
                 <h5>Agenda Items</h5>
-                {/* {formData.agendaItems.map((agendaItem, index) => (
-      <div key={index}>
-        <Row>
-          <Col>
-            <Form.Group controlId={`templateName-${index}`}>
-              <Form.Label>Template Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={agendaItem.templateName}
-                onChange={(e) =>
-                  handleAgendaItemChange(index, "templateName", e.target.value)
-                }
-                placeholder="Enter Template Name"
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId={`meetingType-${index}`}>
-              <Form.Label>Meeting Type</Form.Label>
-              <Form.Control
-                as="select"
-                value={agendaItem.meetingType}
-                onChange={(e) =>
-                  handleAgendaItemChange(index, "meetingType", e.target.value)
-                }
-              >
-                <option value="board_meeting">Board Meeting</option>
-                <option value="committee_meeting">Committee Meeting</option>
-                <option value="annual_general_meeting">
-                  Annual General Meeting
-                </option>
-              </Form.Control>
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId={`fileName-${index}`}>
-              <Form.Label>File Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={agendaItem.fileName}
-                onChange={(e) =>
-                  handleAgendaItemChange(index, "fileName", e.target.value)
-                }
-                placeholder="Enter File Name"
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Button
-              variant="danger"
-              onClick={() => removeAgendaItem(index)}
-              className="mt-4"
-            >
-              Remove
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    ))} */}
+
+                {formData?.agendaItems?.map((agendaItem, index) => (
+                  <div key={index} className="agenda-item-block mb-4">
+                    <Row className="mb-3">
+                      <Col>
+                        <Form.Group controlId={`templateName-${index}`}>
+                          <Form.Label>Template Name</Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={agendaItem?.templateName || ""}
+                            onChange={(e) =>
+                              handleAgendaItemChange(
+                                index,
+                                "templateName",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Template Name"
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group controlId={`meetingType-${index}`}>
+                          <Form.Label>Meeting Type</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={agendaItem?.meetingType || ""}
+                            onChange={(e) =>
+                              handleAgendaItemChange(
+                                index,
+                                "meetingType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="board_meeting">Board Meeting</option>
+                            <option value="committee_meeting">
+                              Committee Meeting
+                            </option>
+                            <option value="annual_general_meeting">
+                              Annual General Meeting
+                            </option>
+                          </Form.Control>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Group controlId={`fileName-${index}`}>
+                          <Form.Label className="f-label">File Name</Form.Label>
+
+                          <Form.Control
+                            as="select"
+                            value={agendaItem?.fileName || ""}
+                            onChange={(e) =>
+                              handleAgendaItemChange(
+                                index,
+                                "fileName",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">Select Meeting Agenda</option>
+                            {agendaList.map((agenda) => (
+                              <option key={agenda.id} value={agenda.fileName}>
+                                {agenda.templateName}
+                              </option>
+                            ))}
+                          </Form.Control>
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Button
+                          className="d-flex align-items-center gap-2 mt-4"
+                          variant="outline-danger"
+                          onClick={() => removeAgendaItem(index)}
+                        >
+                          <FaTrash /> Location
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                ))}
+                <Button variant="primary" onClick={addAgendaItem}>
+                  Add Agenda Item
+                </Button>
               </Row>
-              <Button variant="secondary" onClick={addAgendaItem}>
-                Add Agenda Item
-              </Button>
 
               <Row>
                 <Col>
@@ -361,6 +460,27 @@ export default function Meeting() {
                       onChange={handleChange}
                       required
                     />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group className="mt-3">
+                    <Form.Label>Director</Form.Label>
+                    <Form.Control
+                      as="select"
+                      onChange={(e) => {
+                        const selectedDirectorId = e.target.value;
+                        if (selectedDirectorId) {
+                          handleParticipantChange(selectedDirectorId);
+                        }
+                      }}
+                    >
+                      <option value="">Select Director</option>
+                      {directorList.map((director) => (
+                        <option key={director.id} value={director.id}>
+                          {director.name}
+                        </option>
+                      ))}
+                    </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
@@ -403,21 +523,18 @@ export default function Meeting() {
                   </Form.Group>
                 </Col>
                 <Col>
-                  <Form.Group controlId="at">
+                  <Form.Group controlId="status">
                     <Form.Label className="f-label">Status</Form.Label>
-
                     <Form.Control
                       as="select"
-                      value={formData.meetingType}
+                      name="status"
+                      value={formData.status}
                       onChange={handleChange}
                     >
-                      <option value="Board Meeting">Board Meeting</option>
-                      <option value="Committee Meeting">
-                        Committee Meeting
-                      </option>
-                      <option value="Circular Resolution">
-                        Circular Resolution
-                      </option>
+                      <option value="">Select Status</option>
+                      <option value="scheduled">Scheduled</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
                     </Form.Control>
                   </Form.Group>
                 </Col>
@@ -449,12 +566,12 @@ export default function Meeting() {
           </div>
         ) : (
           <Table bordered hover responsive className="Master-table mt-5">
-          <thead className="Master-Thead">
+            <thead className="Master-Thead">
               <tr>
                 <th>Meeting Name</th>
                 <th>Client Name</th>
                 <th>Meeting Type</th>
-                <th>Agendas</th>
+                <th>Agendas'</th>
                 <th>Start Time</th>
                 <th>Date</th>
                 <th>Actions</th>
@@ -468,19 +585,19 @@ export default function Meeting() {
                   <td>{row.meetingType}</td>
                   <td>
                     <button
-                      
+                      style={{ textAlign: "center" }}
                       className="director-btn"
                       onClick={() => navigate(`/meeting-template/${row.id}`)}
                     >
                       View Agendas
                     </button>
                   </td>
-                  <td >{row.startTime}</td>
+                  <td style={{ textAlign: "center" }}>{row.startTime}</td>
                   <td>{new Date(row.date).toLocaleDateString()}</td>
 
                   <td>
                     <Button
-                      variant="outline-primary"
+                      variant="outline-secondary"
                       onClick={() => handleEditClick(row)}
                       className="me-2"
                     >
