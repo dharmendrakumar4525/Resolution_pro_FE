@@ -284,25 +284,24 @@ export default function TemplateGroup() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
-                  <th>Meeting Type</th>
                   <th>Group Name</th>
+                  <th>Meeting Type</th>
                   <th>No. Of Template</th>
                   <th>Created By</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-               {rows.map((row) => (
+                {rows.map((row) => (
                   <tr key={row.id}>
-                   <td>{row?.meetingType }</td>
-  <td>{row?.groupName || "No Group Name"}</td>
-  <td>{row?.numberOfTemplate }</td>
-  <td>{row?.createdBy?.name ||"Unknown" }</td>
-  <td>
-                    
+                    <td>{row?.groupName || "No Group Name"}</td>
+                    <td>{row?.meetingType}</td>
+                    <td>{row?.numberOfTemplate}</td>
+                    <td>{row?.createdBy?.name || "Unknown"}</td>
+                    <td>
                       {hasPermission("edit") && (
                         <Button
                           variant="outline-secondary"
@@ -322,7 +321,7 @@ export default function TemplateGroup() {
                       )}
                     </td>
                   </tr>
-                ))} 
+                ))}
               </tbody>
             </Table>
             <Pagination className="mt-4">

@@ -286,13 +286,13 @@ export default function MeetingAgendaTemplate() {
           </div>
         ) : (
           <>
-          <Table bordered hover responsive className="Master-table mt-5">
-          <thead className="Master-Thead">
+            <Table bordered hover responsive className="Master-table mt-5">
+              <thead className="Master-Thead">
                 <tr>
-                  <th>Status</th>
-                  <th>Meeting Type</th>
                   <th>Template Name</th>
+                  <th>Meeting Type</th>
                   <th>File</th>
+                  <th>Status</th>
                   <th>By</th>
                   <th>Actions</th>
                 </tr>
@@ -300,9 +300,8 @@ export default function MeetingAgendaTemplate() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{row.status}</td>
-                    <td>{row.meetingType}</td>
                     <td>{row.templateName}</td>
+                    <td>{row.meetingType}</td>
                     <td>
                       <button
                         className="director-btn"
@@ -311,6 +310,7 @@ export default function MeetingAgendaTemplate() {
                         View Template
                       </button>
                     </td>
+                    <td>{row.status}</td>
                     {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
                     <td>{row.by?.name}</td>
                     <td>
