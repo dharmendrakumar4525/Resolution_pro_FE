@@ -29,6 +29,8 @@ import AddCommitteeMember from "../pages/AddCommitteeMember";
 import EditCommitteeMember from "../pages/EditCommitteeMember";
 import CustomerMaintenanceForm from "../pages/CustomerMaintenanceForm";
 import MeetingTemplate from "../pages/MeetingTemplate";
+import AddMeeting from "../pages/AddMeeting";
+import EditMeeting from "../pages/EditMeeting";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -181,6 +183,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Meeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/meeting/add-form"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AddMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/meeting/edit-form/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<EditMeeting />} />
           ) : (
             <Navigate to="/login" />
           )

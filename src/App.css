@@ -98,7 +98,7 @@
   background-color: #f8f9fa !important;
   padding: 16px 24px !important;
   border-radius: 8px !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) ;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 4px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
@@ -222,8 +222,6 @@ h2 {
   margin-bottom: 20px;
 }
 
-
-
 /* Word-file editor */
 
 .word-editor-container {
@@ -303,7 +301,6 @@ h2 {
   border: none;
 }
 
-
 /* User page  */
 
 /* General container styling */
@@ -319,18 +316,18 @@ h2 {
   color: #343a40;
 }
 
-.select-role{
+.select-role {
   padding-left: 0 !important;
 }
 
 /* Button Styling */
 .add-button {
-  background-color: #17a2b8;
+  background-color: #17a2b8 !important;
   border: none;
 }
 
 .add-button:hover {
-  background-color: #138496;
+  background-color: #138496 !important;
 }
 
 .save-button {
@@ -369,23 +366,23 @@ h2 {
 } */
 
 .custom-pagination .page-link {
-  color: #262b3f ;
+  color: #262b3f;
   cursor: pointer;
 }
 
 .custom-pagination .page-item.active .page-link {
-  background-color: #262b3f ;
-  border-color: #262b3f ;
+  background-color: #262b3f;
+  border-color: #262b3f;
 }
 
-.Master-table{
+.Master-table {
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 
-.Master-Thead tr th{
-    background-color: rgba(0, 0, 0, 0.1) !important;
+.Master-Thead tr th {
+  background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-.Master-Thead tr th{
-  padding: 10px 10px 10px 8px !important
+.Master-Thead tr th {
+  padding: 10px 10px 10px 8px !important;
 }

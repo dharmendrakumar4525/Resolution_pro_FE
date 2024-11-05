@@ -143,7 +143,7 @@ const TemplateEditor = () => {
     console.log(docBlob, "docbl");
     // Prepare FormData with the document Blob
     const formData = new FormData();
-    formData.append("file", docBlob);
+    formData.append("templateName", docBlob);
     formData.append("index", index);
 
     try {
