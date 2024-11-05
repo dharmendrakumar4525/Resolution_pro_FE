@@ -481,7 +481,7 @@ const MembersResolution = () => {
                     <td>{row.issueDate}</td>
                     <td>
                       <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent row click
                           handleEditClick(row);

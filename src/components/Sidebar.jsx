@@ -6,6 +6,7 @@ import {
   faTable,
   faSignOutAlt,
   faTimes,
+  faUser
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
@@ -122,7 +123,7 @@ export default function Sidebar() {
             <CollapsableNavItem
               eventKey="users/"
               title="Users"
-              icon={faFileAlt}
+              icon={faUser}
             >
               
               <NavItem title="Roles" link="/roles" />

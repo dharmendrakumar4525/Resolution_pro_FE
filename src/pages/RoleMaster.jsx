@@ -201,7 +201,7 @@ export default function RoleMaster() {
                     <td>{row.role}</td>
                     {/* <td>
                       <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={() => handleEditClick(row)}
                         className="me-2"
                       >

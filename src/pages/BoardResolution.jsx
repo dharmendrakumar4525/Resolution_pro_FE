@@ -452,7 +452,7 @@ const BoardResolution = () => {
                     <td>{row.issueDate}</td>
                     <td>
                       <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditClick(row);

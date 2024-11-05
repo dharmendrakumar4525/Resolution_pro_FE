@@ -454,7 +454,7 @@ export default function Meeting() {
                 <th>Meeting Name</th>
                 <th>Client Name</th>
                 <th>Meeting Type</th>
-                <th>Agendas'</th>
+                <th>Agendas</th>
                 <th>Start Time</th>
                 <th>Date</th>
                 <th>Actions</th>
@@ -468,19 +468,19 @@ export default function Meeting() {
                   <td>{row.meetingType}</td>
                   <td>
                     <button
-                      style={{ textAlign: "center" }}
+                      
                       className="director-btn"
                       onClick={() => navigate(`/meeting-template/${row.id}`)}
                     >
                       View Agendas
                     </button>
                   </td>
-                  <td style={{ textAlign: "center" }}>{row.startTime}</td>
+                  <td >{row.startTime}</td>
                   <td>{new Date(row.date).toLocaleDateString()}</td>
 
                   <td>
                     <Button
-                      variant="outline-secondary"
+                      variant="outline-primary"
                       onClick={() => handleEditClick(row)}
                       className="me-2"
                     >
