@@ -42,6 +42,7 @@ export default function MeetingAgendaTemplate() {
         );
         const data = await response.json();
         setRows(data.results);
+        console.log(data.results);
         setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -301,7 +302,7 @@ export default function MeetingAgendaTemplate() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                  <td>
+                    {/* <td>
         {row.status === "draft" ? (
           <button className="director-btn d-flex align-items-center gap-2" >
                  <FaPencilAlt /> Draft
@@ -309,8 +310,7 @@ export default function MeetingAgendaTemplate() {
         ) : (
           row.status
         )}
-      </td>
-                    <td>{row.meetingType}</td>
+      </td> */}
                     <td>{row.templateName}</td>
                     <td>{row.meetingType}</td>
                     <td>
@@ -318,7 +318,7 @@ export default function MeetingAgendaTemplate() {
                         className="director-btn d-flex align-items-center gap-2"
                         onClick={(e) => handleViewTemplate(row, e)}
                       >
-                           <FaEdit /> View Template
+                        <FaEdit /> View Template
                       </button>
                     </td>
                     <td>{row.status}</td>
