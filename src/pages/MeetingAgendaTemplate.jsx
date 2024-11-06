@@ -111,6 +111,10 @@ export default function MeetingAgendaTemplate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.meetingType || !formData.templateName || !formData.fileName) {
+      toast.error("Please fill out all fields before submitting.");
+      return;
+    }
     try {
       let response;
       if (editingRow) {
