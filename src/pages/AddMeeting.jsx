@@ -227,9 +227,48 @@ export default function AddMeeting() {
       agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
     }));
   };
+  const validateForm = () => {
+    const {
+      company_id,
+      name,
+      designation,
+      begin_date,
+      email,
+      startTime,
+      endTime,
+      date,
+    } = formData;
 
+    if (
+      !company_id ||
+      !name ||
+      !designation ||
+      !begin_date ||
+      !email ||
+      !startTime ||
+      !endTime ||
+      !date
+    ) {
+      toast.error("Please fill out all required fields.");
+      return false;
+    }
+    if (new Date(date) < new Date()) {
+      toast.error("Date cannot be in the past.");
+      return false;
+    }
+
+    if (startTime && endTime && endTime <= startTime) {
+      toast.error("End time cannot be before or equal to start time.");
+      return false;
+    }
+
+    return true;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       let response;
       if (editingRow) {

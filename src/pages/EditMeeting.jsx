@@ -136,9 +136,12 @@ export default function EditMeeting() {
   };
 
   const handleEditClick = (row) => {
-    console.log(row, "rowwww");
+    console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
+    const participantIds = row.participants.map(
+      (participant) => participant.id
+    );
     setFormData({
       title: row.title,
       client_name: row.client_name?.id || "",
@@ -148,7 +151,7 @@ export default function EditMeeting() {
       startTime: row.startTime,
       endTime: row.endTime,
       organizer: row.organizer?.role,
-      participants: row.participants.id || [],
+      participants: participantIds,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         meetingType: agendaItem.meetingType,
@@ -157,6 +160,9 @@ export default function EditMeeting() {
       location: row.location,
       status: row.status,
     });
+    if (row.client_name?.id) {
+      fetchDirectors(row.client_name.id);
+    }
   };
   useEffect(() => {
     handleEditClick(row);
@@ -217,11 +223,51 @@ export default function EditMeeting() {
       agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
     }));
   };
+  const validateForm = () => {
+    const {
+      company_id,
+      name,
+      designation,
+      begin_date,
+      email,
+      startTime,
+      endTime,
+      date,
+    } = formData;
+
+    if (
+      !company_id ||
+      !name ||
+      !designation ||
+      !begin_date ||
+      !email ||
+      !startTime ||
+      !endTime ||
+      !date
+    ) {
+      toast.error("Please fill out all required fields.");
+      return false;
+    }
+    if (new Date(date) < new Date()) {
+      toast.error("Date cannot be in the past.");
+      return false;
+    }
+
+    if (startTime && endTime && endTime <= startTime) {
+      toast.error("End time cannot be before or equal to start time.");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       let response;
+      if (!validateForm()) {
+        return;
+      }
       if (editingRow) {
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
           method: "PATCH",
@@ -230,12 +276,9 @@ export default function EditMeeting() {
           },
           body: JSON.stringify(formData),
         });
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
-        );
+
         toast.success("Meeting template edited successfully");
+        navigate("/meeting");
       } else {
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
