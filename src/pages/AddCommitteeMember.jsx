@@ -87,9 +87,29 @@ export default function AddCommitteeMember({ onSave }) {
     updatedMembers.splice(index, 1);
     setFormData({ ...formData, committeeMembers: updatedMembers });
   };
+  const validateForm = () => {
+    const { clientName, committee, committeeMembers } = formData;
+
+    // Check if main fields are filled
+    if (!clientName || !committee) {
+      toast.error("Please fill out all required fields.");
+      return false;
+    }
+
+    // Check if each committee member has complete details
+    for (let member of committeeMembers) {
+      if (!member.name || !member.from || !member.to || !member.email) {
+        toast.error("Please fill out all fields for each committee member.");
+        return false;
+      }
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
     try {
       const payload = {
