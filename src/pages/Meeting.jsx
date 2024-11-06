@@ -113,7 +113,7 @@ export default function Meeting() {
   };
 
   const handleRedirectEdit = (row) => {
-    navigate(`/meeting/edit-form/${row.id}`);
+    navigate(`/meeting/edit-form/${row.id}`, { state: { row } });
   };
 
   const handleEditClick = (row) => {
