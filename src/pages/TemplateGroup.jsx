@@ -133,6 +133,14 @@ export default function TemplateGroup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+      !formData.groupName ||
+      !formData.meetingType ||
+      formData.groupItems.length === 0
+    ) {
+      toast.error("Please fill out all required fields before submitting.");
+      return;
+    }
     try {
       if (editingRow) {
         const response = await fetch(
