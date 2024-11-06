@@ -100,28 +100,6 @@ export default function AddMeeting() {
     }
   };
 
-  const handleDeleteClick = async (row) => {
-    try {
-      const response = await fetch(`${apiURL}/meeting/${row.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
-      }
-
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
-
-      alert("Item deleted successfully");
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
-    }
-  };
-
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });
@@ -129,59 +107,7 @@ export default function AddMeeting() {
       fetchDirectors(value);
     }
   };
-  const handleDirectorSelection = (e) => {
-    const selectedDirectorId = e.target.value;
-    const selectedDirector = directorList.find(
-      (director) => director.id === selectedDirectorId
-    );
-    if (selectedDirector) {
-      setFormData((prevData) => ({
-        ...prevData,
-        participants: [...prevData.participants, selectedDirector],
-      }));
-    }
-  };
-  const handleParticipantChange = (selectedDirectorId) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      participants: [...prevFormData.participants, selectedDirectorId],
-    }));
-  };
 
-  const handleEditClick = (row) => {
-    console.log(row, "rowwww");
-    setEditingRow(row);
-    setOpenAddModal(true);
-    setFormData({
-      title: row.title,
-      client_name: row.client_name?.id || "",
-      description: row.description,
-      meetingType: row.meetingType,
-      date: new Date(row.date).toLocaleDateString(),
-      startTime: row.startTime,
-      endTime: row.endTime,
-      organizer: row.organizer,
-      participants: row.participants.id || [],
-      agendaItems: row.agendaItems.map((agendaItem) => ({
-        templateName: agendaItem.templateName,
-        meetingType: agendaItem.meetingType,
-        fileName: agendaItem.fileName,
-      })),
-      location: row.location,
-      status: row.status,
-    });
-  };
-
-  //   const handleAgendaItemChange = (index, field, value) => {
-  //     setFormData((prevData) => {
-  //       const updatedAgendaItems = [...prevData.agendaItems];
-  //       updatedAgendaItems[index] = {
-  //         ...updatedAgendaItems[index],
-  //         [field]: value,
-  //       };
-  //       return { ...prevData, agendaItems: updatedAgendaItems };
-  //     });
-  //   };
   const handleAgendaItemChange = (index, field, value) => {
     setFormData((prevData) => {
       const updatedAgendaItems = [...prevData.agendaItems];
@@ -229,25 +155,27 @@ export default function AddMeeting() {
   };
   const validateForm = () => {
     const {
-      company_id,
-      name,
-      designation,
-      begin_date,
-      email,
+      title,
+      client_name,
+      description,
+      meetingType,
+      date,
       startTime,
       endTime,
-      date,
+      organizer,
+      location,
     } = formData;
 
     if (
-      !company_id ||
-      !name ||
-      !designation ||
-      !begin_date ||
-      !email ||
+      !title ||
+      !client_name ||
+      !description ||
+      !meetingType ||
+      !date ||
       !startTime ||
       !endTime ||
-      !date
+      !organizer ||
+      !location
     ) {
       toast.error("Please fill out all required fields.");
       return false;
@@ -279,11 +207,6 @@ export default function AddMeeting() {
           },
           body: JSON.stringify(formData),
         });
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
-        );
         toast.success("Meeting template edited successfully");
       } else {
         response = await fetch(`${apiURL}/meeting`, {
@@ -298,9 +221,7 @@ export default function AddMeeting() {
           throw new Error("Failed to add item");
         }
         toast.success("Meeting added successfully");
-        const updatedResponse = await fetch(`${apiURL}/meeting`);
-        const data = await updatedResponse.json();
-        setRows(data.results);
+        navigate("/meeting");
       }
 
       handleCloseAddModal();
@@ -322,25 +243,6 @@ export default function AddMeeting() {
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     }
-  };
-
-  const handleOpenNewAddModal = () => {
-    setEditingRow(null);
-    setFormData({
-      title: "",
-      client_name: "",
-      description: "",
-      meetingType: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-      organizer: user.id,
-      participants: [],
-      agendaItems: [{ templateName: "", meetingType: "", fileName: "" }],
-      location: "",
-      status: "scheduled",
-    });
-    setOpenAddModal(true);
   };
 
   return (

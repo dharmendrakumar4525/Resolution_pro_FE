@@ -225,25 +225,27 @@ export default function EditMeeting() {
   };
   const validateForm = () => {
     const {
-      company_id,
-      name,
-      designation,
-      begin_date,
-      email,
+      title,
+      client_name,
+      description,
+      meetingType,
+      date,
       startTime,
       endTime,
-      date,
+      organizer,
+      location,
     } = formData;
 
     if (
-      !company_id ||
-      !name ||
-      !designation ||
-      !begin_date ||
-      !email ||
+      !title ||
+      !client_name ||
+      !description ||
+      !meetingType ||
+      !date ||
       !startTime ||
       !endTime ||
-      !date
+      !organizer ||
+      !location
     ) {
       toast.error("Please fill out all required fields.");
       return false;
