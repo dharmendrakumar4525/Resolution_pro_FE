@@ -67,18 +67,8 @@ export default function MeetingTemplate() {
   const handleEditClick = (row, index) => {
     setEditingRow(row);
     navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row.fileName}` },
+      state: { index, fileUrl: `${row?.templateFile}` },
     });
-
-    // setFormData({
-    //   company_id: row.company_id,
-    //   name: row.name,
-    //   designation: row.designation,
-    //   begin_date: row.begin_date,
-    //   "din/pan": row["din/pan"],
-    //   email: row.email,
-    // });
-    // setOpenAddModal(true);
   };
 
   return (
@@ -100,8 +90,8 @@ export default function MeetingTemplate() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
                   <th>Edit template</th>
