@@ -24,6 +24,7 @@ const TemplateEditor = () => {
 
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  console.log(fileUrl, "mukul");
   const handleEditorChange = (content) => {
     setEditorContent(content);
 

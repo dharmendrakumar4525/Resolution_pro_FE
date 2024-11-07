@@ -15,7 +15,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { apiURL } from "../API/api";
 import { useAuth } from "../context/AuthContext";
-// import "./CustomerMaintenance.css"; // Import your custom styles here
+import Select from "react-select";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
@@ -39,6 +39,7 @@ export default function CustomerMaintenance() {
       .get(`${apiURL}/role?page=${page}`)
       .then((response) => {
         setRoleList(response.data.results);
+        setTotalPages(response.data.totalPages);
       })
       .catch((error) => {
         console.error("Error fetching roles:", error);
@@ -116,7 +117,6 @@ export default function CustomerMaintenance() {
     e.preventDefault();
     try {
       if (editingRow) {
-        // Update the user in the backend
         await fetch(`${apiURL}/users/${editingRow.id}`, {
           method: "PATCH",
           headers: {
@@ -126,6 +126,9 @@ export default function CustomerMaintenance() {
         });
 
         const response = await fetch(`${apiURL}/users`);
+        if (!response.ok) {
+          throw new Error("Failed to update user. Please try again.");
+        }
         const data = await response.json();
         setRows(data.results);
 
@@ -133,6 +136,8 @@ export default function CustomerMaintenance() {
         const localStorageUser = JSON.parse(localStorage.getItem("user"));
         if (localStorageUser && localStorageUser.id === editingRow.id) {
           const updatedUser = { ...localStorageUser, ...formData };
+          console.log(updatedUser, "dsdsds");
+
           localStorage.setItem("user", JSON.stringify(updatedUser));
         }
 
@@ -153,7 +158,6 @@ export default function CustomerMaintenance() {
         const data = await newResponse.json();
         setRows(data.results);
 
-
         toast.success("User added successfully");
       }
 
@@ -165,6 +169,10 @@ export default function CustomerMaintenance() {
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
+  const roleOptions = roleList.map((role) => ({
+    value: role.id,
+    label: role.role,
+  }));
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Users")?.childList ||
     [];
@@ -205,6 +213,7 @@ export default function CustomerMaintenance() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter Name"
+                  disabled={!!editingRow}
                 />
               </Form.Group>
 
@@ -215,6 +224,7 @@ export default function CustomerMaintenance() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter Email"
+                  disabled={!!editingRow}
                 />
               </Form.Group>
 
@@ -245,15 +255,15 @@ export default function CustomerMaintenance() {
                 />
               </Form.Group>
 
-              <Button type="submit" variant="primary" className="me-2">
-                Save
-              </Button>
               <Button
-                variant="secondary"
+                variant="primary"
                 onClick={handleCloseAddModal}
-                className="ml-2"
+                className="me-2"
               >
                 Cancel
+              </Button>
+              <Button type="submit" variant="secondary" className="ml-2">
+                Save
               </Button>
             </Form>
           </Modal.Body>

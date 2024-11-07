@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { apiURL } from "../API/api";
+import { useLocation } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [emailForOtp, setEmailForOtp] = useState("");
   const [rolePermissions, setRolePermissions] = useState([]);
+  const location = useLocation();
   const navigate = useNavigate();
 
   // Fetch user from localStorage if exists
@@ -95,17 +97,17 @@ export const AuthProvider = ({ children }) => {
 
         setIsAuthenticated(true);
         setOtpVerified(true);
-        toast.success("OTP verified successfully!");
+        // toast.success("OTP verified successfully!");
+
         navigate("/");
       } else {
         const errorData = await res.json();
-        toast.error(errorData.message || "Invalid OTP. Please try again.");
+        if (location.pathname === "/otp") {
+          toast.error("Wrong OTP. Please try again.");
+        }
       }
     } catch (err) {
       console.error("OTP verification error:", err);
-      toast.error(
-        "An error occurred during OTP verification. Please try again."
-      );
     }
   };
 
@@ -133,7 +135,7 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
-      <ToastContainer />
+      <ToastContainer autoClose={2000} />
     </AuthContext.Provider>
   );
 };

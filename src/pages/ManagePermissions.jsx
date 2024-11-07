@@ -30,9 +30,8 @@ const ManagePermissions = () => {
             id: result.id,
           }));
           setRoles(roleArray);
-
           const adminRole = roleArray.find(
-            (role) => role.id === "670cbe9a5a015431b1d2d513"
+            (role) => role.id === "672c47c238903b464c9d2920"
           );
           if (adminRole) {
             setSelectedRole(adminRole.id);
@@ -135,6 +134,7 @@ const ManagePermissions = () => {
       }
 
       toast.success("Permissions updated successfully");
+      window.location.reload();
     } catch (error) {
       toast.error(`Error updating role permissions: ${error.message}`);
     }
@@ -143,7 +143,7 @@ const ManagePermissions = () => {
   return (
     <div>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
-        <ToastContainer autoClose={3000} />
+        <ToastContainer autoClose={2000} />
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Manage Permissions</h4>
         </div>
@@ -181,7 +181,13 @@ const ManagePermissions = () => {
                 className="mb-3 mt-2"
                 // style={{ marginLeft: "40px" }}
               >
-                <h3>{permission.moduleName.replace(/_/g, " ")}</h3>
+                <h3>
+                  {permission.moduleName
+                    .toLowerCase()
+                    .split("_")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}{" "}
+                </h3>
                 <Row>
                   {permission.childList.map((module) => (
                     <Col

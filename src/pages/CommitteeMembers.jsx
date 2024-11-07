@@ -9,7 +9,7 @@ import {
   Spinner,
   Pagination,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,6 +41,7 @@ export default function CommitteeMembers() {
         );
         const data = await response.json();
         setRows(data.results);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -104,10 +105,9 @@ export default function CommitteeMembers() {
     }
   };
 
-  const removeMember = (index) => {
-    const updatedMembers = [...formData.committeeMembers];
-    updatedMembers.splice(index, 1);
-    setFormData({ ...formData, committeeMembers: updatedMembers });
+  const handleViewMembers = (row, e) => {
+    e.stopPropagation();
+    navigate(`/view-members/${row?.id}`, { state: row });
   };
 
   const handleEditClick = (row) => {
@@ -137,7 +137,7 @@ export default function CommitteeMembers() {
   const columns = [
     { header: "Client Name", field: "client_name" },
     { header: "Committee", field: "committee" },
-    { header: "No. Of Members", field: "committee_members.length" },
+    { header: "View Members", field: "committee_members.length" },
     { header: "Email Notifications", field: "is_email" },
     { header: "Actions", field: "action" },
   ];
@@ -160,7 +160,7 @@ export default function CommitteeMembers() {
         </div>
 
         <Table bordered hover className="Master-table mt-5">
-        <thead className="Master-Thead">
+          <thead className="Master-Thead">
             <tr>
               {columns.map((column) => (
                 <th key={column.header}>{column.header}</th>
@@ -189,7 +189,15 @@ export default function CommitteeMembers() {
                 <tr key={row.id}>
                   <td>{row.client_name?.name}</td>
                   <td>{row.committee.name}</td>
-                  <td>{row.committee_members.length}</td>
+                  <td>
+                    <button
+                      style={{ height: "100%" }}
+                      className="director-btn"
+                      onClick={(e) => handleViewMembers(row, e)}
+                    >
+                      <FaUser />
+                    </button>
+                  </td>
                   <td>{row.is_email ? "Yes" : "No"}</td>
                   <td>
                     {hasPermission("edit") && (
@@ -197,7 +205,6 @@ export default function CommitteeMembers() {
                         variant="outline-primary"
                         className=" me-2"
                         onClick={() => handleEditClick(row)}
-                        
                       >
                         <FaEdit />
                       </Button>

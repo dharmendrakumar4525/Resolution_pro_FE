@@ -12,7 +12,14 @@ import {
   Spinner,
   Pagination,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus, FaEye, FaPencilAlt } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaEye,
+  FaPencilAlt,
+  FaFileWord,
+} from "react-icons/fa";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +32,7 @@ export default function MeetingAgendaTemplate() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(true);
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
     meetingType: "",
@@ -34,24 +42,57 @@ export default function MeetingAgendaTemplate() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
-    const fetchData = async (pageNo) => {
+    const fetchAllData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(
-          `${apiURL}/meeting-agenda-template?page=${pageNo}`
-        );
+        const response = await fetch(`${apiURL}/meeting-agenda-template`);
         const data = await response.json();
-        setRows(data.results);
-        console.log(data.results);
-        setTotalPages(data.totalPages);
+        const pageSize = 10;
+        const filteredData = data.results.filter((row) => {
+          if (user.role === "672c47c238903b464c9d2920") {
+            return true;
+          } else if (user.role === "672c47cb38903b464c9d2923") {
+            return (
+              row.status === "usable" ||
+              (row.status === "draft" && row.by === user.id)
+            );
+          } else {
+            return row.status === "usable";
+          }
+        });
+
+        setRows(filteredData.slice((page - 1) * pageSize, page * pageSize));
+        setTotalPages(Math.ceil(filteredData.length / pageSize));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData(page);
-  }, [page]);
+
+    fetchAllData();
+  }, [page, user.role, user.id, refresh]);
+
+  // useEffect(() => {
+  //   const fetchData = async (pageNo) => {
+  //     try {
+  //       const response = await fetch(
+  //         `${apiURL}/meeting-agenda-template?page=${pageNo}`
+  //       );
+  //       const data = await response.json();
+  //       setRows(data.results);
+  //       console.log(data.results);
+  //       setTotalPages(data.totalPages);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData(page);
+  // }, [page]);
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/template-generate/${row.id}`);
@@ -100,12 +141,14 @@ export default function MeetingAgendaTemplate() {
   };
 
   const handleEditClick = (row) => {
+    console.log(row, "muk");
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
       meetingType: row.meetingType,
       templateName: row.templateName,
       fileName: row.fileName,
+      status: row.status,
     });
   };
 
@@ -142,31 +185,19 @@ export default function MeetingAgendaTemplate() {
           },
           body: JSON.stringify(formData),
         });
-
         if (!response.ok) {
-          throw new Error("Failed to add item");
+          throw new Error(response.message || "Failed to add item");
         }
+        setRefresh(!refresh);
 
-        const data = await response.json();
-        setRows((prevRows) => [...prevRows, data]);
+        handleCloseAddModal();
       }
-      toast.success("Meeting Agenda template added successfully");
-
-      handleCloseAddModal();
-      setFormData({
-        status: "",
-        meetingType: "",
-        templateName: "",
-        fileName: "",
-        by: "",
-        at: "",
-      });
     } catch (error) {
-      toast.error("Failed to add/edit item. Please try again.");
+      toast.error(error.message);
     }
   };
   const handlePageChange = (newPage) => {
-    setPage(newPage); // Update the page state
+    setPage(newPage);
   };
   const userPermissions =
     rolePermissions.find(
@@ -201,51 +232,23 @@ export default function MeetingAgendaTemplate() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Row>
-                {/* <Col md={6}>
-                  <Form.Group controlId="status">
-                    <Form.Label className="f-label">Status</Form.Label>
+                <Col md={6}>
+                  <Form.Group controlId="meetingType">
+                    <Form.Label className="f-label">Meeting Type</Form.Label>
                     <Form.Control
                       as="select"
-                      value={formData.status}
+                      value={formData.meetingType}
                       onChange={handleChange}
                     >
-                      <option value="">Select Status</option>
-                      <option value="scheduled">Scheduled</option>
-                      <option value="completed">Completed</option>
-                      <option value="canceled">Canceled</option>
+                      <option value="">Select Meeting Type</option>
+                      <option value="board_meeting">Board Meeting</option>
+                      <option value="committee_meeting">
+                        Committee Meeting
+                      </option>
+                      <option value="annual_general_meeting">
+                        Annual General Meeting
+                      </option>
                     </Form.Control>
-                  </Form.Group>
-                </Col>
-
-                <Col md={6}> */}
-                <Form.Group controlId="meetingType">
-                  <Form.Label className="f-label">Meeting Type</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={formData.meetingType}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Meeting Type</option>
-                    <option value="board_meeting">Board Meeting</option>
-                    <option value="committee_meeting">Committee Meeting</option>
-                    <option value="annual_general_meeting">
-                      Annual General Meeting
-                    </option>
-                  </Form.Control>
-                </Form.Group>
-                {/* </Col> */}
-              </Row>
-
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Template Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.templateName}
-                      onChange={handleChange}
-                      placeholder="Enter Template Name"
-                    />
                   </Form.Group>
                 </Col>
 
@@ -262,15 +265,46 @@ export default function MeetingAgendaTemplate() {
                 </Col>
               </Row>
 
-              <Button type="submit" variant="primary" className="me-2">
-                Save
-              </Button>
+              <Row className="mb-3">
+                <Col md={6}>
+                  <Form.Group controlId="templateName">
+                    <Form.Label className="f-label">Template Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.templateName}
+                      onChange={handleChange}
+                      placeholder="Enter Template Name"
+                    />
+                  </Form.Group>
+                </Col>
+                {editingRow && user?.role === "672c47c238903b464c9d2920" && (
+                  <Col md={6}>
+                    <Form.Group controlId="status">
+                      <Form.Label className="f-label">Status</Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={formData.status}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="usable">Usable</option>
+                        <option value="rejected">Rejected</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                )}
+              </Row>
+
               <Button
-                variant="secondary"
+                variant="primary"
                 onClick={handleCloseAddModal}
-                className="ml-2"
+                className="me-2"
               >
                 Cancel
+              </Button>
+              <Button type="submit" variant="secondary" className="ml-2">
+                Save
               </Button>
             </Form>
           </Modal.Body>
@@ -305,7 +339,7 @@ export default function MeetingAgendaTemplate() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row?.id}>
                     {/* <td>
         {row.status === "draft" ? (
           <button className="director-btn d-flex align-items-center gap-2" >
@@ -315,17 +349,19 @@ export default function MeetingAgendaTemplate() {
           row.status
         )}
       </td> */}
-                    <td>{row.templateName}</td>
-                    <td>{row.meetingType}</td>
+                    <td>{row?.templateName}</td>
+                    <td>{row?.meetingType}</td>
                     <td>
                       <button
-                        className="director-btn d-flex align-items-center gap-2"
+                        className="director-btn"
                         onClick={(e) => handleViewTemplate(row, e)}
                       >
-                        <FaEdit /> View Template
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
                       </button>
                     </td>
-                    <td>{row.status}</td>
+                    <td>{row?.status}</td>
                     {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
                     <td>{row.by?.name}</td>
                     <td>

@@ -18,6 +18,7 @@ import { Dropdown, DropdownButton } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
+import Select from "react-select";
 
 export default function TemplateGroup() {
   const [rows, setRows] = useState([]);
@@ -27,6 +28,7 @@ export default function TemplateGroup() {
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(true);
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
     meetingType: "",
@@ -59,13 +61,12 @@ export default function TemplateGroup() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenModal(true);
-    // const fileNames = row.groupItems?.map(item => item.templateName) || [];
     const selectedIds = row.groupItems
       .map((item) => {
         const template = templateNames.find(
           (template) => template.templateName === item.templateName
         );
-        return template ? template.id : null; // Return the id or null if not found
+        return template ? template.id : null;
       })
       .filter((id) => id !== null);
     setFormData({
@@ -75,11 +76,24 @@ export default function TemplateGroup() {
     });
   };
 
+  const options = templateNames.map((item) => ({
+    value: item.id,
+    label: item.templateName,
+  }));
+  const handleSelectChange = (selectedOptions) => {
+    // Extract only the selected values (IDs)
+    const selectedValues = selectedOptions
+      ? selectedOptions.map((option) => option.value)
+      : [];
+    setFormData({ ...formData, groupItems: selectedValues });
+  };
+
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(`${apiURL}/template-group?page=${pageNo}`);
         const data = await response.json();
+        setTotalPages(data.totalPages);
 
         const responseMeetingAgendaTemplate = await fetch(
           `${apiURL}/meeting-agenda-template`
@@ -88,7 +102,7 @@ export default function TemplateGroup() {
           await responseMeetingAgendaTemplate.json();
 
         setTemplateNames(dataMeetingAgendaTemplate.results);
-
+        console.log(dataMeetingAgendaTemplate, "ds");
         const updatedRows = data.results.map((item) => ({
           ...item,
           numberOfTemplate: item.groupItems.length,
@@ -103,7 +117,7 @@ export default function TemplateGroup() {
     };
 
     fetchData(page);
-  }, [page]);
+  }, [page, refresh]);
 
   const handleDeleteClick = async (row) => {
     try {
@@ -153,11 +167,8 @@ export default function TemplateGroup() {
             body: JSON.stringify(formData),
           }
         );
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
-        );
+        setRefresh(!refresh);
+
         toast.success("template edited successfully");
       } else {
         const response = await fetch(`${apiURL}/template-group`, {
@@ -171,10 +182,8 @@ export default function TemplateGroup() {
         if (!response.ok) {
           toast.error("Failed to add template");
         }
-
+        setRefresh(!refresh);
         toast.success("template added successfully");
-        const data = await response.json();
-        setRows((prevRows) => [...prevRows, data]);
       }
       handleCloseModal();
     } catch (error) {
@@ -191,6 +200,7 @@ export default function TemplateGroup() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  console.log(userPermissions, "mukul");
 
   return (
     <>
@@ -239,34 +249,17 @@ export default function TemplateGroup() {
 
               <Form.Group controlId="groupItems" className="mt-2">
                 <Form.Label>Group Items</Form.Label>
-                <Form.Control
-                  as="select"
-                  multiple
-                  value={formData.groupItems}
-                  onChange={(e) => {
-                    const selectedOptions = Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    );
-
-                    // Check if any of the options are already selected, toggle them
-                    const updatedGroupItems = formData.groupItems.includes(
-                      selectedOptions[0]
-                    )
-                      ? formData.groupItems.filter(
-                          (item) => item !== selectedOptions[0]
-                        )
-                      : [...formData.groupItems, selectedOptions[0]];
-
-                    setFormData({ ...formData, groupItems: updatedGroupItems });
-                  }}
-                >
-                  {templateNames.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.templateName}
-                    </option>
-                  ))}
-                </Form.Control>
+                <Select
+                  options={options}
+                  isMulti
+                  value={options.filter((option) =>
+                    formData.groupItems.includes(option.value)
+                  )}
+                  onChange={handleSelectChange}
+                  placeholder="Select templates"
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                />
               </Form.Group>
 
               <Button variant="primary" type="submit" className="mt-3 me-2">

@@ -14,6 +14,7 @@ import {
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "react-select";
 
 export default function AddMeeting() {
   const [rows, setRows] = useState([]);
@@ -68,7 +69,14 @@ export default function AddMeeting() {
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const token = localStorage.getItem("refreshToken");
+
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setClientList(data.docs);
         console.log(data.docs, "ds");
@@ -153,6 +161,20 @@ export default function AddMeeting() {
       agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
     }));
   };
+  const agendaOptions = agendaList.map((agenda) => ({
+    value: agenda.templateName,
+    label: agenda.templateName,
+  }));
+
+  const agendaFileOptions = agendaList.map((agenda) => ({
+    value: agenda.fileName,
+    label: agenda.fileName,
+  }));
+  const directorOptions = directorList.map((director) => ({
+    value: director.id,
+    label: director.name,
+  }));
+
   const validateForm = () => {
     const {
       title,
@@ -218,8 +240,11 @@ export default function AddMeeting() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add item");
+          const errorData = await response.json();
+          toast.error(errorData.message || "Error editing the meeting.");
+          return;
         }
+
         toast.success("Meeting added successfully");
         navigate("/meeting");
       }
@@ -267,7 +292,7 @@ export default function AddMeeting() {
                     onChange={handleChange}
                   >
                     <option value="">Select Client</option>
-                    {clientList.map((client) => (
+                    {clientList?.map((client) => (
                       <option key={client._id} value={client._id}>
                         {client.name}
                       </option>
@@ -330,24 +355,24 @@ export default function AddMeeting() {
                       <Form.Group controlId={`templateName-${index}`}>
                         <Form.Label>Template Name</Form.Label>
 
-                        <Form.Control
-                          as="select"
-                          value={agendaItem?.templateName || ""}
-                          onChange={(e) =>
+                        <Select
+                          options={agendaOptions}
+                          placeholder="Select Meeting Template"
+                          value={
+                            agendaOptions.find(
+                              (option) =>
+                                option.value === agendaItem?.templateName
+                            ) || null
+                          } // Set initial value
+                          onChange={(selectedOption) =>
                             handleAgendaItemChange(
                               index,
                               "templateName",
-                              e.target.value
+                              selectedOption ? selectedOption.value : ""
                             )
                           }
-                        >
-                          <option value="">Select Meeting template</option>
-                          {agendaList.map((agenda) => (
-                            <option key={agenda.id} value={agenda.templateName}>
-                              {agenda.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
+                          isClearable
+                        />
                       </Form.Group>
                     </Col>
                     <Col>
@@ -380,24 +405,17 @@ export default function AddMeeting() {
                       <Form.Group controlId={`fileName-${index}`}>
                         <Form.Label className="f-label">File Name</Form.Label>
 
-                        <Form.Control
-                          as="select"
-                          value={agendaItem?.templateFile || ""}
-                          onChange={(e) =>
-                            handleAgendaItemChange(
-                              index,
-                              "templateFile",
-                              e.target.value
-                            )
+                        <Select
+                          options={agendaFileOptions}
+                          value={
+                            agendaFileOptions.find(
+                              (option) =>
+                                option.value === agendaItem?.templateFile
+                            ) || null
                           }
-                        >
-                          <option value="">Select Meeting Agenda</option>
-                          {agendaList.map((agenda) => (
-                            <option key={agenda.id} value={agenda.fileName}>
-                              {agenda.fileName}
-                            </option>
-                          ))}
-                        </Form.Control>
+                          isDisabled
+                          isSearchable={false}
+                        />
                       </Form.Group>
                     </Col>
                     <Col>
@@ -436,30 +454,22 @@ export default function AddMeeting() {
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
-                  <Form.Control
-                    as="select"
-                    multiple
-                    value={formData.participants}
-                    onChange={(e) => {
-                      // Convert selected options to an array of selected values
-                      const selectedOptions = Array.from(
-                        e.target.selectedOptions,
-                        (option) => option.value
-                      );
-
-                      // Update formData with the new selected participants
+                  <Select
+                    isMulti
+                    options={directorOptions}
+                    value={directorOptions.filter((option) =>
+                      formData.participants.includes(option.value)
+                    )}
+                    onChange={(selectedOptions) => {
+                      // Update the formData with the selected participant IDs
                       setFormData({
                         ...formData,
-                        participants: selectedOptions,
+                        participants: selectedOptions.map(
+                          (option) => option.value
+                        ),
                       });
                     }}
-                  >
-                    {directorList.map((director) => (
-                      <option key={director.id} value={director.id}>
-                        {director.name}
-                      </option>
-                    ))}
-                  </Form.Control>
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -518,20 +528,22 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
             </Row>
-
-            <Button
-              variant="primary"
-              onClick={handleCloseAddModal}
-              className="mt-3 ml-2"
-            >
-              Cancel
-            </Button>
-            <Button variant="secondary" type="submit" className="mt-3 me-2">
-              Save
-            </Button>
+            <div className="mt-2">
+              <Button
+                variant="primary"
+                onClick={handleCloseAddModal}
+                className="me-2"
+              >
+                Cancel
+              </Button>
+              <Button variant="secondary" type="submit" className="ml-2">
+                Save
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
       </div>
+      <ToastContainer autoClose={3000} />
     </>
   );
 }

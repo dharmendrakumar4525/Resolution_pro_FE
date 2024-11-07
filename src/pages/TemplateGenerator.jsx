@@ -211,6 +211,8 @@ const TemplateGenerator = () => {
 
   return (
     <Container className="mt-5">
+      <ToastContainer autoClose={2000} />
+
       <h1 className="mb-4">Meeting Template</h1>
 
       {/* CKEditor for writing content */}

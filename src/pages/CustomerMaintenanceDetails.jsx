@@ -1,12 +1,21 @@
 import React from "react";
-import { Button } from "react-bootstrap";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  Container,
+  Col,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 
 const CustomerMaintenanceDetail = () => {
   const { id } = useParams();
   const location = useLocation();
   const row = location.state.row;
-  console.log(row,"mukul")
+  console.log(row, "mukul");
   const navigate = useNavigate();
   return (
     <div className="details-container">
@@ -70,56 +79,82 @@ const CustomerMaintenanceDetail = () => {
       <div className="mt-4"></div>
       <h3>Directors</h3>
       <div className="card-section">
-          
-          {row?.directorDataDetails && row?.directorDataDetails.length > 0 ? (
-            row?.directorDataDetails.map((director, index) => (
-              <div key={index} className="director-card">
-                <div><strong>Director Name:</strong>  {director.name || "-"}</div>
-
-                <div ><strong >Email:</strong>  {director.email || "-"}</div>
+        {row?.directorDataDetails && row?.directorDataDetails.length > 0 ? (
+          row?.directorDataDetails.map((director, index) => (
+            <div key={index} className="director-card">
+              <div>
+                <strong>Director Name:</strong> {director.name || "-"}
               </div>
-            ))
-          ) : (
-            <p>No director details available.</p>
-          )}
-        </div>
-        <div className="mt-5"></div>
-        <h3>Locations</h3>
+
+              <div>
+                <strong>Email:</strong> {director.email || "-"}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No director details available.</p>
+        )}
+      </div>
+      <div className="mt-5"></div>
+      <h3>Locations</h3>
       <div className="card-section">
-          {row?.locations && row?.locations.length > 0 ? (
-            row?.locations.map((loc, index) => (
-              <div className="director-card" key={index} >
-                <div><strong>Location Name:</strong></div>
-                <div>{loc.locationName || "-"}</div>
-
-                <div><strong>Address Line 1:</strong></div>
-                <div>{loc.addressLine1 || "-"}</div>
-
-                <div><strong>Address Line 2:</strong></div>
-                <div>{loc.addressLine2 || "-"}</div>
-                <div><strong>State:</strong></div>
-                <div>{loc.state || "-"}</div>
-
-                <div><strong>Country:</strong></div>
-                <div>{loc.country || "-"}</div>
-
-           
-
-                <div><strong>Postal Code:</strong></div>
-                <div>{loc.postalCode || "-"}</div>
-
-                <div><strong>Registered Office:</strong></div>
-                <div>{loc.registeredOffice ? "Yes" : "No"}</div>
-
-               
-              </div>
-            ))
-          ) : (
-            <p>No location details available.</p>
-          )}
-        </div>
-       
-      
+        <Table className="Master-table">
+          <tbody>
+            {row?.locations && row?.locations.length > 0 ? (
+              row?.locations.map((loc, index) => (
+                <div className="director-card" key={index}>
+                  <tr>
+                    <td>
+                      <strong>Location Name:</strong>
+                    </td>
+                    <td>{loc.locationName || "-"}</td>
+                  </tr>
+                  <tr>
+                    {" "}
+                    <td>
+                      <strong>Address Line 1:</strong>
+                    </td>
+                    <td>{loc.addressLine1 || "-"}</td>
+                  </tr>
+                  <tr>
+                    {" "}
+                    <td>
+                      <strong>Address Line 2:</strong>
+                    </td>
+                    <td>{loc.addressLine2 || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>State:</strong>
+                    </td>
+                    <td>{loc.state || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Country:</strong>
+                    </td>
+                    <td>{loc.country || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Postal Code:</strong>
+                    </td>
+                    <td>{loc.postalCode || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Registered Office:</strong>
+                    </td>
+                    <td>{loc.registeredOffice ? "Yes" : "No"}</td>
+                  </tr>
+                </div>
+              ))
+            ) : (
+              <p>No location details available.</p>
+            )}
+          </tbody>
+        </Table>
+      </div>
     </div>
   );
 };

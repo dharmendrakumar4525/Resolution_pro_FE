@@ -3,10 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
 
 export default function CustomerMaintenanceForm() {
   const navigate = useNavigate();
@@ -46,7 +45,7 @@ export default function CustomerMaintenanceForm() {
     const fetchManagers = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/users?role=6708f0e613afb8a51ad85e3e`
+          `${apiURL}/users?role=672c47cb38903b464c9d2923`
         );
         const data = await response.json();
         setManagers(data.results);
@@ -61,8 +60,16 @@ export default function CustomerMaintenanceForm() {
     if (customerId) {
       const fetchCustomerData = async () => {
         try {
+          const token = localStorage.getItem("refreshToken");
+
           const response = await fetch(
-            `${apiURL}/customer-maintenance/${customerId}`
+            `${apiURL}/customer-maintenance/${customerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
           const data = await response.json();
           const sanitizedData = removeIds(data);
@@ -158,13 +165,18 @@ export default function CustomerMaintenanceForm() {
       e.stopPropagation();
     } else {
       try {
+        const token = localStorage.getItem("refreshToken");
         const method = customerId ? "PATCH" : "POST";
         const endpoint = customerId
           ? `${apiURL}/customer-maintenance/${customerId}`
           : `${apiURL}/customer-maintenance`;
         const response = await fetch(endpoint, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(formData),
         });
 
@@ -398,7 +410,6 @@ export default function CustomerMaintenanceForm() {
               </Row>
 
               <Row className="mb-3">
-               
                 <Col>
                   <Form.Group controlId={`addressLine2-${index}`}>
                     <Form.Label>Address Line 2</Form.Label>
@@ -451,10 +462,8 @@ export default function CustomerMaintenanceForm() {
                 </Col>
               </Row>
 
-            
-
               <Row className="mb-3">
-              <Col>
+                <Col>
                   <Form.Group controlId={`state-${index}`}>
                     <Form.Label>State</Form.Label>
                     <Form.Control
@@ -500,10 +509,9 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              
               </Row>
               <Row className="mb-3">
-              <Col>
+                <Col>
                   <Form.Group>
                     <Form.Check
                       type="checkbox"
@@ -515,27 +523,32 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-               
               </Row>
-              <Button className="d-flex align-items-center gap-2"
-                          variant="outline-danger"
-                          onClick={() => removeLocation(index)}
-                        >
-                          <FaTrash /> Location
-                        </Button>
+              <Button
+                className="d-flex align-items-center gap-2"
+                variant="outline-danger"
+                onClick={() => removeLocation(index)}
+              >
+                <FaTrash /> Location
+              </Button>
             </div>
           ))}
-          <Button variant="primary" onClick={addLocation} className="d-flex align-items-center gap-2">
-          <FaPlus 
-          // style={{ marginRight: "8px" }} 
-
-          />Location
+          <Button
+            variant="primary"
+            onClick={addLocation}
+            className="d-flex align-items-center gap-2"
+          >
+            <FaPlus
+            // style={{ marginRight: "8px" }}
+            />
+            Location
           </Button>
           <Button variant="success" type="submit" className="ms-3 float-end">
             {customerId ? "Update Customer" : "Save"}
           </Button>
         </Form>
       </div>
+      <ToastContainer autoClose={3000} />
     </Container>
   );
 }

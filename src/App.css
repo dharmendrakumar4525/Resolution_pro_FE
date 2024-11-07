@@ -386,3 +386,25 @@ h2 {
 .Master-Thead tr th {
   padding: 10px 10px 10px 8px !important;
 }
+.location-card {
+  flex: 1 1 30%; /* Each card takes up approximately one-third of the row */
+  min-width: 300px; /* Optional: Set a minimum width */
+  border: 1px solid #ddd;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+.director-card {
+  width: 400px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+.card-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+.location-card {
+  display: block;
+}

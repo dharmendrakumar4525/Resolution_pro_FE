@@ -15,6 +15,7 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from "react-router-dom";
+import Select from "react-select";
 
 export default function EditMeeting() {
   const [rows, setRows] = useState([]);
@@ -41,6 +42,7 @@ export default function EditMeeting() {
     endTime: "",
     organizer: user.id,
     participants: [],
+
     agendaItems: [
       {
         templateName: "",
@@ -55,7 +57,14 @@ export default function EditMeeting() {
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const token = localStorage.getItem("refreshToken");
+
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setClientList(data.docs);
         console.log(data.docs, "ds");
@@ -154,6 +163,7 @@ export default function EditMeeting() {
       participants: participantIds,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
+        templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
         fileName: agendaItem.fileName,
       })),
@@ -223,30 +233,23 @@ export default function EditMeeting() {
       agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
     }));
   };
-  const validateForm = () => {
-    const {
-      title,
-      client_name,
-      description,
-      meetingType,
-      date,
-      startTime,
-      endTime,
-      organizer,
-      location,
-    } = formData;
+  const agendaOptions = agendaList.map((agenda) => ({
+    value: agenda.templateName,
+    label: agenda.templateName,
+  }));
 
-    if (
-      !title ||
-      !client_name ||
-      !description ||
-      !meetingType ||
-      !date ||
-      !startTime ||
-      !endTime ||
-      !organizer ||
-      !location
-    ) {
+  const agendaFileOptions = agendaList.map((agenda) => ({
+    value: agenda.fileName,
+    label: agenda.fileName,
+  }));
+  const directorOptions = directorList.map((director) => ({
+    value: director.id,
+    label: director.name,
+  }));
+  const validateForm = () => {
+    const { meetingType, date, startTime, endTime, location } = formData;
+
+    if (!meetingType || !date || !startTime || !endTime || !location) {
       toast.error("Please fill out all required fields.");
       return false;
     }
@@ -271,6 +274,7 @@ export default function EditMeeting() {
         return;
       }
       if (editingRow) {
+        console.log(formData, "cg-1");
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
           method: "PATCH",
           headers: {
@@ -278,6 +282,11 @@ export default function EditMeeting() {
           },
           body: JSON.stringify(formData),
         });
+        if (!response.ok) {
+          const errorData = await response.json();
+          toast.error(errorData.message || "Error editing the meeting.");
+          return;
+        }
 
         toast.success("Meeting template edited successfully");
         navigate("/meeting");
@@ -318,6 +327,11 @@ export default function EditMeeting() {
       toast.error("Failed to add/edit item. Please try again.");
     }
   };
+
+  const options = directorList.map((director) => ({
+    value: director.id,
+    label: director.name,
+  }));
 
   return (
     <>
@@ -403,25 +417,24 @@ export default function EditMeeting() {
                     <Col>
                       <Form.Group controlId={`templateName-${index}`}>
                         <Form.Label>Template Name</Form.Label>
-
-                        <Form.Control
-                          as="select"
-                          value={agendaItem?.templateName || ""}
-                          onChange={(e) =>
+                        <Select
+                          options={agendaOptions}
+                          placeholder="Select Meeting Template"
+                          value={
+                            agendaOptions.find(
+                              (option) =>
+                                option.value === agendaItem?.templateName
+                            ) || null
+                          }
+                          onChange={(selectedOption) =>
                             handleAgendaItemChange(
                               index,
                               "templateName",
-                              e.target.value
+                              selectedOption ? selectedOption.value : ""
                             )
                           }
-                        >
-                          <option value="">Select Meeting template</option>
-                          {agendaList.map((agenda) => (
-                            <option key={agenda.id} value={agenda.templateName}>
-                              {agenda.templateName}
-                            </option>
-                          ))}
-                        </Form.Control>
+                          isClearable
+                        />
                       </Form.Group>
                     </Col>
                     <Col>
@@ -454,24 +467,16 @@ export default function EditMeeting() {
                       <Form.Group controlId={`fileName-${index}`}>
                         <Form.Label className="f-label">File Name</Form.Label>
 
-                        <Form.Control
-                          as="select"
-                          value={agendaItem?.fileName || ""}
-                          onChange={(e) =>
-                            handleAgendaItemChange(
-                              index,
-                              "fileName",
-                              e.target.value
-                            )
+                        <Select
+                          options={agendaFileOptions}
+                          value={
+                            agendaFileOptions.find(
+                              (option) => option.value === agendaItem?.fileName
+                            ) || null
                           }
-                        >
-                          <option value="">Select Meeting Agenda</option>
-                          {agendaList.map((agenda) => (
-                            <option key={agenda.id} value={agenda.fileName}>
-                              {agenda.fileName}
-                            </option>
-                          ))}
-                        </Form.Control>
+                          isDisabled
+                          isSearchable={false}
+                        />
                       </Form.Group>
                     </Col>
                     <Col>
@@ -510,30 +515,27 @@ export default function EditMeeting() {
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
-                  <Form.Control
-                    as="select"
-                    multiple
-                    value={formData.participants}
-                    onChange={(e) => {
-                      // Convert selected options to an array of selected values
-                      const selectedOptions = Array.from(
-                        e.target.selectedOptions,
+                  <Select
+                    isMulti
+                    value={options.filter((option) =>
+                      formData.participants.includes(option.value)
+                    )}
+                    options={options}
+                    onChange={(selectedOptions) => {
+                      const selectedValues = selectedOptions.map(
                         (option) => option.value
                       );
 
                       // Update formData with the new selected participants
                       setFormData({
                         ...formData,
-                        participants: selectedOptions,
+                        participants: selectedValues,
                       });
                     }}
-                  >
-                    {directorList.map((director) => (
-                      <option key={director.id} value={director.id}>
-                        {director.name}
-                      </option>
-                    ))}
-                  </Form.Control>
+                    placeholder="Select participants"
+                    className="basic-multi-select"
+                    classNamePrefix="select"
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -592,20 +594,22 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
             </Row>
-
-            <Button
-              variant="primary"
-              onClick={handleCloseAddModal}
-              className="mt-3 ml-2"
-            >
-              Cancel
-            </Button>
-            <Button variant="secondary" type="submit" className="mt-3 me-2">
-              Save
-            </Button>
+            <div className="mt-2">
+              <Button
+                variant="primary"
+                onClick={handleCloseAddModal}
+                className="me-2"
+              >
+                Cancel
+              </Button>
+              <Button variant="secondary" type="submit" className="ml-2">
+                Save
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
       </div>
+      <ToastContainer autoClose={3000} />
     </>
   );
 }

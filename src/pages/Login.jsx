@@ -1,5 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+
 import {
   Form,
   Button,
@@ -26,21 +28,28 @@ const LoginPage = () => {
       await login(email, password);
       navigate("/otp");
     } catch (e) {
-      setError(e.message || "Invalid email or password");
+      toast.error(e.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Container fluid className="login-container d-flex justify-content-center align-items-center">
+    <Container
+      fluid
+      className="login-container d-flex justify-content-center align-items-center"
+    >
       <Row className="justify-content-center ">
         <Col xs={12} md={12} lg={12}>
           <Card className="p-2 shadow-lg" style={{ borderRadius: "15px" }}>
             <Card.Body>
               <h2 className="text-center mb-4 text-primary fw-bold">Login</h2>
-              {error && <Alert variant="danger" className="text-center">{error}</Alert>}
-              
+              {error && (
+                <Alert variant="danger" className="text-center">
+                  {error}
+                </Alert>
+              )}
+
               <Form>
                 <Form.Group controlId="email" className="mb-3">
                   <Form.Label>Email address</Form.Label>
@@ -51,7 +60,7 @@ const LoginPage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
                     className="form-control-custom"
-                    style={{ width: '300px' }} 
+                    style={{ width: "300px" }}
                     required
                   />
                 </Form.Group>
@@ -88,6 +97,7 @@ const LoginPage = () => {
           </Card>
         </Col>
       </Row>
+      <ToastContainer />
     </Container>
   );
 };

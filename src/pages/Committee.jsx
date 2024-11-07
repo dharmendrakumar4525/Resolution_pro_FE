@@ -33,6 +33,7 @@ export default function Committee() {
         );
         const data = await response.json();
         setRows(data.results);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -177,8 +178,8 @@ export default function Committee() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   {columns.map((col, idx) => (
                     <th key={idx}>{col.header}</th>

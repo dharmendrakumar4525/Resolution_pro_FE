@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Form, Modal, Table} from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Form,
+  Modal,
+  Table,
+} from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
 
 const themeColors = {
   primary: "#2e3650",
@@ -38,50 +46,50 @@ const Home = () => {
   // New state to track selected resolution type
   const [selectedResolutionType, setSelectedResolutionType] = useState("");
 
-
   // Fetch resolutions for admin if no manager or company is selected
-// useEffect(() => {
+  // useEffect(() => {
 
-//   if (!selectedManager && !selectedCompany && user.role === "admin") {
-//     const fetchAdminResolutions = async () => {
-//       try {
-//         const response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
-//         const data = await response.json();
-//         const companyResolutions = data.data.resolutiondata[selectedCompany] || [];
+  //   if (!selectedManager && !selectedCompany && user.role === "admin") {
+  //     const fetchAdminResolutions = async () => {
+  //       try {
+  //         const response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
+  //         const data = await response.json();
+  //         const companyResolutions = data.data.resolutiondata[selectedCompany] || [];
 
-//         console.log(data.data.resolutiondata,"hello");
-        
-//         // Assuming data comes in similar structure as before
-//         const adminResolutions = data.data.resolutiondata || [];
+  //         console.log(data.data.resolutiondata,"hello");
 
-//         setResolutions(adminResolutions);
+  //         // Assuming data comes in similar structure as before
+  //         const adminResolutions = data.data.resolutiondata || [];
 
-//         // Count resolutions by status
-//         const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
-//         const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
-//         const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
-//         const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
+  //         setResolutions(adminResolutions);
 
-//         setDraftCount(draftResolutions);
-//         setCompletedCount(completedResolutions);
-//         setInProcessCount(inProcessResolutions);
-//         setTotalResolutions(totalCount);
-//       } catch (error) {
-//         toast.error("Error fetching resolutions for admin");
-//       }
-//     };
+  //         // Count resolutions by status
+  //         const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
+  //         const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
+  //         const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
+  //         const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
 
-//     fetchAdminResolutions();
-//   }
-// }, [selectedManager, selectedCompany, user.role, user.id]);
+  //         setDraftCount(draftResolutions);
+  //         setCompletedCount(completedResolutions);
+  //         setInProcessCount(inProcessResolutions);
+  //         setTotalResolutions(totalCount);
+  //       } catch (error) {
+  //         toast.error("Error fetching resolutions for admin");
+  //       }
+  //     };
 
+  //     fetchAdminResolutions();
+  //   }
+  // }, [selectedManager, selectedCompany, user.role, user.id]);
 
   useEffect(() => {
     const fetchManagers = async () => {
       try {
         const response = await fetch(`${apiURL}/users`);
         const data = await response.json();
-        const managerList = data.results.filter(user => user.role.role === "manager");
+        const managerList = data.results.filter(
+          (user) => user.role.role === "manager"
+        );
         setManagers(managerList);
       } catch (error) {
         toast.error("Error fetching data");
@@ -94,10 +102,17 @@ const Home = () => {
     if (selectedManager) {
       const fetchCompanies = async () => {
         try {
-          const response = await fetch(`${apiURL}/customer-maintenance`);
+          const token = localStorage.getItem("refreshToken");
+
+          const response = await fetch(`${apiURL}/customer-maintenance`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
           const data = await response.json();
           const filteredCompanies = data.results.filter(
-            company => company.alloted_manager?.id === selectedManager
+            (company) => company.alloted_manager?.id === selectedManager
           );
           setCompanies(filteredCompanies);
         } catch (error) {
@@ -112,16 +127,26 @@ const Home = () => {
     if (selectedManager && selectedCompany) {
       const fetchResolutions = async () => {
         try {
-          const response = await fetch(`${apiURL}/resolutions/dashboard/${selectedManager}`);
+          const response = await fetch(
+            `${apiURL}/resolutions/dashboard/${selectedManager}`
+          );
           const data = await response.json();
-          const companyResolutions = data.data.resolutiondata[selectedCompany] || [];
+          const companyResolutions =
+            data.data.resolutiondata[selectedCompany] || [];
 
           setResolutions(companyResolutions);
 
-          const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
-          const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
-          const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
-          const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
+          const draftResolutions = companyResolutions.filter(
+            (res) => res.status.toLowerCase() === "created"
+          ).length;
+          const completedResolutions = companyResolutions.filter(
+            (res) => res.status.toLowerCase() === "completed"
+          ).length;
+          const inProcessResolutions = companyResolutions.filter(
+            (res) => res.status.toLowerCase() === "review"
+          ).length;
+          const totalCount =
+            draftResolutions + completedResolutions + inProcessResolutions;
 
           setDraftCount(draftResolutions);
           setCompletedCount(completedResolutions);
@@ -141,11 +166,13 @@ const Home = () => {
         let response;
         let data;
         let companyResolutions = [];
-  
+
         // Check if manager and company are selected
         if (selectedManager && selectedCompany) {
           // Fetch resolutions for selected manager and company
-          response = await fetch(`${apiURL}/resolutions/dashboard/${selectedManager}`);
+          response = await fetch(
+            `${apiURL}/resolutions/dashboard/${selectedManager}`
+          );
           data = await response.json();
           companyResolutions = data.data.resolutiondata[selectedCompany] || [];
         } else if (user.role === "admin") {
@@ -156,16 +183,23 @@ const Home = () => {
           // For admin, use the resolutions of all companies
           companyResolutions = data.data.resolutiondata || [];
         }
-  
+
         // Set the resolutions
         setResolutions(companyResolutions);
-  
+
         // Count resolutions by status
-        const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
-        const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
-        const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
-        const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
-  
+        const draftResolutions = companyResolutions.filter(
+          (res) => res.status.toLowerCase() === "created"
+        ).length;
+        const completedResolutions = companyResolutions.filter(
+          (res) => res.status.toLowerCase() === "completed"
+        ).length;
+        const inProcessResolutions = companyResolutions.filter(
+          (res) => res.status.toLowerCase() === "review"
+        ).length;
+        const totalCount =
+          draftResolutions + completedResolutions + inProcessResolutions;
+
         setDraftCount(draftResolutions);
         setCompletedCount(completedResolutions);
         setInProcessCount(inProcessResolutions);
@@ -174,23 +208,31 @@ const Home = () => {
         toast.error("Error fetching resolutions");
       }
     };
-  
+
     // Call fetchResolutions when page loads, or when selectedManager, selectedCompany, or user.role changes
     fetchResolutions();
   }, [selectedManager, selectedCompany, user.role, user.id]);
 
-   // Filter resolutions based on selected type
-   const filteredResolutions = resolutions.filter(res => {
-    if (selectedResolutionType === "created") return res.status.toLowerCase() === "created";
-    if (selectedResolutionType === "completed") return res.status.toLowerCase() === "completed";
-    if (selectedResolutionType === "review") return res.status.toLowerCase() === "review";
+  // Filter resolutions based on selected type
+  const filteredResolutions = resolutions.filter((res) => {
+    if (selectedResolutionType === "created")
+      return res.status.toLowerCase() === "created";
+    if (selectedResolutionType === "completed")
+      return res.status.toLowerCase() === "completed";
+    if (selectedResolutionType === "review")
+      return res.status.toLowerCase() === "review";
     if (selectedResolutionType === "total") return true; // Return all resolutions for "Total Resolutions"
     return false;
   });
 
   return (
     <Container fluid className="mt-5">
-      <h2 className="text-center mb-4" style={{ fontWeight: 700, color: themeColors.textPrimary }}>
+      <ToastContainer autoClose={1000} />
+
+      <h2
+        className="text-center mb-4"
+        style={{ fontWeight: 700, color: themeColors.textPrimary }}
+      >
         Dashboard
       </h2>
 
@@ -204,7 +246,7 @@ const Home = () => {
                 onChange={(e) => setSelectedManager(e.target.value)}
               >
                 <option value="">Select Manager</option>
-                {managers.map(manager => (
+                {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
                     {manager.name}
                   </option>
@@ -223,7 +265,7 @@ const Home = () => {
               disabled={!selectedManager}
             >
               <option value="">Select Company</option>
-              {companies.map(company => (
+              {companies.map((company) => (
                 <option key={company.id} value={company.name}>
                   {company.name}
                 </option>
@@ -236,10 +278,16 @@ const Home = () => {
       <Row className="g-4">
         <Col xs={12} md={6} lg={3}>
           <Card
-            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            style={{
+              backgroundColor: themeColors.background,
+              cursor: "pointer",
+            }}
             onClick={() => setSelectedResolutionType("created")}
           >
-            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
+            <Card.Header
+              className="text-white"
+              style={{ backgroundColor: themeColors.primary }}
+            >
               <h5 className="mb-0">Draft</h5>
             </Card.Header>
             <Card.Body>
@@ -250,10 +298,16 @@ const Home = () => {
 
         <Col xs={12} md={6} lg={3}>
           <Card
-            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            style={{
+              backgroundColor: themeColors.background,
+              cursor: "pointer",
+            }}
             onClick={() => setSelectedResolutionType("review")}
           >
-            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
+            <Card.Header
+              className="text-white"
+              style={{ backgroundColor: themeColors.primary }}
+            >
               <h5 className="mb-0">In Review</h5>
             </Card.Header>
             <Card.Body>
@@ -264,10 +318,16 @@ const Home = () => {
 
         <Col xs={12} md={6} lg={3}>
           <Card
-            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            style={{
+              backgroundColor: themeColors.background,
+              cursor: "pointer",
+            }}
             onClick={() => setSelectedResolutionType("completed")}
           >
-            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
+            <Card.Header
+              className="text-white"
+              style={{ backgroundColor: themeColors.primary }}
+            >
               <h5 className="mb-0">Pending for Signature</h5>
             </Card.Header>
             <Card.Body>
@@ -278,10 +338,16 @@ const Home = () => {
 
         <Col xs={12} md={6} lg={3}>
           <Card
-            style={{ backgroundColor: themeColors.background, cursor: 'pointer' }}
+            style={{
+              backgroundColor: themeColors.background,
+              cursor: "pointer",
+            }}
             onClick={() => setSelectedResolutionType("total")}
           >
-            <Card.Header className="text-white" style={{ backgroundColor: themeColors.primary }}>
+            <Card.Header
+              className="text-white"
+              style={{ backgroundColor: themeColors.primary }}
+            >
               <h5 className="mb-0">Completed</h5>
             </Card.Header>
             <Card.Body>
@@ -295,9 +361,13 @@ const Home = () => {
       {selectedResolutionType && (
         <Row className="mt-4">
           <Col>
-            <h3>{selectedResolutionType.charAt(0).toUpperCase() + selectedResolutionType.slice(1)} Resolutions</h3>
+            <h3>
+              {selectedResolutionType.charAt(0).toUpperCase() +
+                selectedResolutionType.slice(1)}{" "}
+              Resolutions
+            </h3>
             <Table bordered hover className="Master-table">
-            <thead className="Master-Thead">
+              <thead className="Master-Thead">
                 <tr>
                   {/* <th>Resolution Number</th> */}
                   <th>Status</th>
@@ -315,7 +385,7 @@ const Home = () => {
                 {filteredResolutions.map((res, index) => (
                   <tr key={index}>
                     {/* <td>{res.number}</td> */}
-                    
+
                     <td>{res.status}</td>
                     <td>{res.type}</td>
                     <td>{res.clientName}</td>
@@ -323,20 +393,20 @@ const Home = () => {
                     <td>{res.issueDate}</td>
                     <td>{res.issueFrom}</td>
                     <td>
-                    <Button
-                      variant="outline-primary"
-                      // onClick={() => handleEditClick(row)}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      // onClick={() => handleDeleteClick(row)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
+                      <Button
+                        variant="outline-primary"
+                        // onClick={() => handleEditClick(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        // onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
                     <td>{res.by}</td>
                     <td>{res.at}</td>
                   </tr>
@@ -351,4 +421,3 @@ const Home = () => {
 };
 
 export default Home;
-

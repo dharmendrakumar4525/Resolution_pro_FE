@@ -9,6 +9,7 @@ import {
   Row,
   Spinner,
   Pagination,
+  Tooltip,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
@@ -16,7 +17,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Tooltip from "react-bootstrap/Tooltip";
 import { useAuth } from "../context/AuthContext";
 import { Refresh } from "@mui/icons-material";
 
@@ -87,6 +87,7 @@ export default function CustomerMaintenance() {
         );
         const data = await response.json();
         setRows(data.docs);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -95,13 +96,13 @@ export default function CustomerMaintenance() {
     };
 
     fetchData(page);
-  }, [page,refresh]);
+  }, [page, refresh]);
 
   useEffect(() => {
     const fetchManagers = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/users?role=6708f0e613afb8a51ad85e3e`
+          `${apiURL}/users?role=672c47cb38903b464c9d2923`
         );
         const data = await response.json();
         setManagers(data.results);
@@ -128,8 +129,14 @@ export default function CustomerMaintenance() {
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
+      const token = localStorage.getItem("refreshToken");
 
-      const newResponse = await fetch(`${apiURL}/customer-maintenance`);
+      const newResponse = await fetch(`${apiURL}/customer-maintenance`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       const data = await newResponse.json();
       setRows(data.docs);
 
@@ -175,9 +182,8 @@ export default function CustomerMaintenance() {
       );
       const data = await response.json();
       setRows(data.docs);
-    }
-    else{
-      setRefresh(!refresh)
+    } else {
+      setRefresh(!refresh);
     }
   };
   const userPermissions =
@@ -191,23 +197,24 @@ export default function CustomerMaintenance() {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
           <div>
-          <Form.Control style={{width:"300px",marginLeft:"60px"}}
-            as="select"
-            value={formData.alloted_manager.name}
-            onChange={(e) =>
-              handleChange({
-                target: { id: "alloted_manager", value: e.target.value },
-              })
-            }
-          >
-            <option value="">Select Manager</option>
-            {/* Replace with actual managers data */}
-            {managers.map((manager) => (
-              <option key={manager.id} value={manager.id}>
-                {manager.name}
-              </option>
-            ))}
-          </Form.Control>
+            <Form.Control
+              style={{ width: "300px", marginLeft: "60px" }}
+              as="select"
+              value={formData.alloted_manager.name}
+              onChange={(e) =>
+                handleChange({
+                  target: { id: "alloted_manager", value: e.target.value },
+                })
+              }
+            >
+              <option value="">Select Manager</option>
+              {/* Replace with actual managers data */}
+              {managers.map((manager) => (
+                <option key={manager.id} value={manager.id}>
+                  {manager.name}
+                </option>
+              ))}
+            </Form.Control>
           </div>
           {hasPermission("add") && (
             <Button variant="primary" className="btn-box" onClick={handleAdd}>
@@ -287,48 +294,57 @@ export default function CustomerMaintenance() {
               </thead>
               <tbody>
                 {rows?.map((row) => (
-                  <tr key={row?.id} onClick={() => handleRowClick(row)}>
-                    <td>{row?.name}</td>
-                    <td>{row?.state}</td>
-                    <td>{row?.country}</td>
-                    <td>{row?.cin}</td>
-                    {/* <td>{row?.pan}</td> */}
-                    <td>{row?.gstin}</td>
-                    {/* <td>{row?.o ? "Yes" : "No"}</td>
+                  <OverlayTrigger
+                    key={row?.id}
+                    placement="top"
+                    overlay={<Tooltip>Click to view</Tooltip>}
+                  >
+                    <tr key={row?.id} onClick={() => handleRowClick(row)}>
+                      <td>{row?.name}</td>
+                      <td>{row?.state}</td>
+                      <td>{row?.country}</td>
+                      <td>{row?.cin}</td>
+                      {/* <td>{row?.pan}</td> */}
+                      <td>{row?.gstin}</td>
+                      {/* <td>{row?.o ? "Yes" : "No"}</td>
                     <td>{row?.c ? "Yes" : "No"}</td>
                     <td>{row?.v ? "Yes" : "No"}</td>
                     <td>{row?.ro ? "Yes" : "No"}</td>
                     <td className="text-center">{row?.revision}</td> */}
-                    <td className="">{row?.alloted_manager[0]?.name || "-"}</td>
-                    <td>
-                      <button
-                        className="director-btn"
-                        onClick={(e) => handleViewDirectors(row, e)}
-                      >
-                        <FaUser /> View Directors
-                      </button>
-                    </td>
+                      <td className="">
+                        {row?.alloted_manager[0]?.name || "-"}
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewDirectors(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
 
-                    <td>
-                      {hasPermission("edit") && (
-                        <Button
-                          variant="outline-primary"
-                          onClick={(e) => handleEdit(row?._id, e)}
-                          className="me-2"
-                        >
-                          <FaEdit />
-                        </Button>
-                      )}
-                      {hasPermission("delete") && (
-                        <Button
-                          variant="outline-danger"
-                          onClick={(e) => handleDeleteClick(row, e)}
-                        >
-                          <FaTrash />
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
+                      <td>
+                        {hasPermission("edit") && (
+                          <Button
+                            variant="outline-primary"
+                            onClick={(e) => handleEdit(row?._id, e)}
+                            className="me-2"
+                          >
+                            <FaEdit />
+                          </Button>
+                        )}
+                        {hasPermission("delete") && (
+                          <Button
+                            variant="outline-danger"
+                            onClick={(e) => handleDeleteClick(row, e)}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  </OverlayTrigger>
                 ))}
               </tbody>
             </Table>

@@ -21,7 +21,14 @@ export default function EditCommitteeMember() {
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const token = localStorage.getItem("refreshToken");
+
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setClientList(data.docs);
       } catch (error) {

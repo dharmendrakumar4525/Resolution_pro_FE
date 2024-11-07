@@ -33,6 +33,7 @@ export default function RoleMaster() {
         const response = await fetch(`${apiURL}/role?page=${pageNo}`);
         const data = await response.json();
         setRows(data.results);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

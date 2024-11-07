@@ -10,13 +10,18 @@ import {
   Col,
   Container,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaEye, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Meeting() {
   const [rows, setRows] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => setOpenAddModal(false);
@@ -48,14 +53,15 @@ export default function Meeting() {
     location: "",
     status: "scheduled",
   });
+  const { rolePermissions } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`);
+        const response = await fetch(`${apiURL}/meeting?page=${pageNo}`);
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results, "sadass");
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -63,12 +69,19 @@ export default function Meeting() {
       }
     };
 
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
   useEffect(() => {
     const fetchClientList = async () => {
+      const token = localStorage.getItem("refreshToken");
+
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setClientList(data.docs);
         console.log(data.docs, "ds");
@@ -115,6 +128,9 @@ export default function Meeting() {
   const handleRedirectEdit = (row) => {
     navigate(`/meeting/edit-form/${row.id}`, { state: { row } });
   };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   const handleEditClick = (row) => {
     console.log(row, "rowwww");
@@ -143,19 +159,26 @@ export default function Meeting() {
   const handleRedirectAddModal = () => {
     navigate("/meeting/add-form");
   };
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Meeting_template")
+      ?.childList || [];
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Meeting</h4>
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleRedirectAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleRedirectAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
 
         {loading ? (
@@ -182,44 +205,83 @@ export default function Meeting() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => (
-                <tr key={row.id}>
-                  <td>{row.title}</td>
-                  <td>{row.client_name.name}</td>
-                  <td>{row.meetingType}</td>
-                  <td>
-                    <button
-                      style={{ textAlign: "center" }}
-                      className="director-btn"
-                      onClick={() => navigate(`/meeting-template/${row.id}`)}
-                    >
-                      View Agendas
-                    </button>
-                  </td>
-                  <td style={{ textAlign: "center" }}>{row.startTime}</td>
-                  <td>{new Date(row.date).toLocaleDateString()}</td>
-
-                  <td>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => handleRedirectEdit(row)}
-                      className="me-2"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => handleDeleteClick(row)}
-                    >
-                      <FaTrash />
-                    </Button>
+              {rows.length === 0 && loading ? (
+                <tr>
+                  <td colSpan={5} className="text-center">
+                    <Spinner animation="border" />
                   </td>
                 </tr>
-              ))}
+              ) : !hasPermission("view") ? (
+                <div className="text-center mt-5">
+                  <h5>You do not have permission to view the data</h5>
+                </div>
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center">
+                    No data available
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row, index) => (
+                  <tr key={row?.id}>
+                    <td>{row?.title}</td>
+                    <td>{row?.client_name?.name}</td>
+                    <td>{row?.meetingType}</td>
+                    <td>
+                      <button
+                        style={{ textAlign: "center" }}
+                        className="director-btn"
+                        onClick={() => navigate(`/meeting-template/${row.id}`)}
+                      >
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
+                      </button>
+                    </td>
+                    <td style={{ textAlign: "center" }}>{row.startTime}</td>
+                    <td>{new Date(row.date).toLocaleDateString()}</td>
+
+                    <td>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleRedirectEdit(row)}
+                        className="me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         )}
       </Container>
+      <Pagination className="mt-4">
+        <Pagination.Prev
+          onClick={() => handlePageChange(page - 1)}
+          disabled={page === 1}
+        />
+        {Array.from({ length: totalPages }, (_, index) => (
+          <Pagination.Item
+            key={index + 1}
+            active={index + 1 === page}
+            onClick={() => handlePageChange(index + 1)}
+          >
+            {index + 1}
+          </Pagination.Item>
+        ))}
+        <Pagination.Next
+          onClick={() => handlePageChange(page + 1)}
+          disabled={page === totalPages}
+        />
+      </Pagination>
       <ToastContainer />
     </>
   );
