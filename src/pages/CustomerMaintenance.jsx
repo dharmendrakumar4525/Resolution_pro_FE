@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import { useAuth } from "../context/AuthContext";
+import { Refresh } from "@mui/icons-material";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
@@ -27,6 +28,7 @@ export default function CustomerMaintenance() {
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -93,7 +95,7 @@ export default function CustomerMaintenance() {
     };
 
     fetchData(page);
-  }, [page]);
+  }, [page,refresh]);
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -109,47 +111,6 @@ export default function CustomerMaintenance() {
     };
     fetchManagers();
   }, []);
-  const handleLocationChange = (e, index) => {
-    const { name, value } = e.target;
-    const updatedLocations = [...formData.locations];
-    updatedLocations[index] = { ...updatedLocations[index], [name]: value };
-    setFormData({ ...formData, locations: updatedLocations });
-  };
-  const addLocation = () => {
-    setFormData({
-      ...formData,
-      locations: [
-        ...formData.locations,
-        {
-          locationId: "",
-          locationName: "",
-          addressLine1: "",
-          addressLine2: "",
-          postalCode: "",
-          country: "",
-          state: "",
-          salesTaxType: "",
-          gst: "",
-          registeredOffice: false,
-        },
-      ],
-    });
-  };
-  const handleLocationCheckboxChange = (index, field) => (event) => {
-    const newLocations = [...formData.locations];
-    newLocations[index][field] = event.target.checked;
-    setFormData({
-      ...formData,
-      locations: newLocations,
-    });
-  };
-
-  const removeLocation = (index) => {
-    const updatedLocations = formData.locations.filter(
-      (location, i) => i !== index
-    );
-    setFormData({ ...formData, locations: updatedLocations });
-  };
 
   const handleDeleteClick = async (row, e) => {
     e.stopPropagation();
@@ -179,184 +140,11 @@ export default function CustomerMaintenance() {
     }
   };
 
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setFormData({ ...formData, [id]: value });
-  };
-
-  const handleCheckboxChange = (e) => {
-    const { id, checked } = e.target;
-    setFormData({ ...formData, [id]: checked });
-  };
-
   const handleAdd = () => navigate("/client-records-form");
-  const handleOpenAddModal = () => {
-    setFormData({
-      name: "",
-      state: "",
-      country: "",
-      cin: "",
-      pan: "",
-      gstin: "",
-      o: false,
-      c: false,
-      v: false,
-      ro: false,
-      revision: "",
-      alloted_manager: userRole === "manager" ? userManagerId : "",
-      locations: [
-        {
-          locationId: "",
-          locationName: "",
-          addressLine1: "",
-          addressLine2: "",
-          postalCode: "",
-          country: "",
-          state: "",
-          salesTaxType: "",
-          gst: "",
-          registeredOffice: false,
-        },
-      ],
-    });
-    setEditingRow(null);
-    setOpenAddModal(true);
-  };
+
   const handleEdit = (customerId, e) => {
     e.stopPropagation();
     navigate(`/client-records-form/${customerId}`);
-  };
-  const handleEditClick = (row, e) => {
-    e.stopPropagation();
-    setEditingRow(row);
-    setOpenAddModal(true);
-    setFormData({
-      name: row?.name,
-      state: row?.state,
-      country: row?.country,
-      cin: row?.cin,
-      pan: row?.pan,
-      gstin: row?.gstin,
-      o: row?.o,
-      c: row?.c,
-      v: row?.v,
-      ro: row?.ro,
-      revision: row?.revision,
-      alloted_manager: row?.alloted_manager.id || "",
-      locations:
-        row?.locations && row?.locations?.length > 0
-          ? row?.locations
-          : [
-              {
-                locationId: "",
-                locationName: "",
-                addressLine1: "",
-                addressLine2: "",
-                postalCode: "",
-                country: "",
-                state: "",
-                salesTaxType: "",
-                gst: "",
-                registeredOffice: false,
-              },
-            ],
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const sanitizedFormData = {
-        ...formData,
-        locations: formData?.locations.map((location) => {
-          const { _id, ...rest } = location;
-          return rest;
-        }),
-      };
-
-      if (editingRow) {
-        // PATCH request for editing an existing row
-        const response = await fetch(
-          `${apiURL}/customer-maintenance/${editingrow?._id}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(sanitizedFormData),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to edit item");
-        }
-
-        // Update local rows with edited data
-        const newResponse = await fetch(`${apiURL}/customer-maintenance`);
-        const data = await newResponse.json();
-        setRows(data.docs);
-        toast.success("Maintenance edited successfully");
-        setOpenAddModal(false);
-      } else {
-        // POST request for adding a new row
-        const response = await fetch(`${apiURL}/customer-maintenance`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-
-        toast.success("Maintenance added successfully");
-        setOpenAddModal(false);
-        // Fetch updated maintenance list
-        const fetchUpdatedMaintenance = async () => {
-          const refreshedResponse = await fetch(
-            `${apiURL}/customer-maintenance`
-          );
-          const refreshedData = await refreshedResponse.json();
-          setRows(refreshedData.data.results);
-        };
-        await fetchUpdatedMaintenance();
-      }
-
-      setFormData({
-        name: "",
-        state: "",
-        country: "",
-        cin: "",
-        pan: "",
-        gstin: "",
-        o: false,
-        c: false,
-        v: false,
-        ro: false,
-        revision: "",
-        alloted_manager: {
-          // Reset `alloted_manager` to its proper structure
-          role: "manager",
-          isEmailVerified: false,
-          name: "",
-          email: "",
-          id: "",
-        },
-        locations: [
-          {
-            locationName: "",
-            addressLine1: "",
-            addressLine2: "",
-            postalCode: "",
-            country: "",
-            state: "",
-            salesTaxType: "",
-            gst: "",
-            registeredOffice: false,
-          },
-        ],
-      });
-    } catch (error) {
-      console.error("Failed to add/edit item. Please try again.");
-    }
   };
 
   const handleViewDirectors = (row, e) => {
@@ -370,6 +158,28 @@ export default function CustomerMaintenance() {
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
+  const handleChange = async (e) => {
+    const { id, value } = e.target;
+    console.log(e.target, "dsd");
+    setFormData((prevData) => ({ ...prevData, [id]: value }));
+    if (!value == "") {
+      const token = localStorage.getItem("refreshToken");
+      const response = await fetch(
+        `${apiURL}/customer-maintenance?alloted_manager=${value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setRows(data.docs);
+    }
+    else{
+      setRefresh(!refresh)
+    }
+  };
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Customer_Maintenance")
       ?.childList || [];
@@ -380,6 +190,25 @@ export default function CustomerMaintenance() {
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
+          <div>
+          <Form.Control style={{width:"300px",marginLeft:"60px"}}
+            as="select"
+            value={formData.alloted_manager.name}
+            onChange={(e) =>
+              handleChange({
+                target: { id: "alloted_manager", value: e.target.value },
+              })
+            }
+          >
+            <option value="">Select Manager</option>
+            {/* Replace with actual managers data */}
+            {managers.map((manager) => (
+              <option key={manager.id} value={manager.id}>
+                {manager.name}
+              </option>
+            ))}
+          </Form.Control>
+          </div>
           {hasPermission("add") && (
             <Button variant="primary" className="btn-box" onClick={handleAdd}>
               <FaPlus style={{ marginRight: "8px" }} /> Add
