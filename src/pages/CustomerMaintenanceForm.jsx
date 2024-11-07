@@ -175,7 +175,7 @@ export default function CustomerMaintenanceForm() {
         toast.success(
           `Customer ${customerId ? "updated" : "added"} successfully`
         );
-        navigate("/customer-maintenance");
+        navigate("/client-records");
       } catch (error) {
         console.error("Error saving customer data:", error);
         toast.error("Failed to save customer data");

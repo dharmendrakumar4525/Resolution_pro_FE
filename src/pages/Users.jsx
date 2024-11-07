@@ -125,11 +125,9 @@ export default function CustomerMaintenance() {
           body: JSON.stringify(formData),
         });
 
-        // Update rows in the state
-        const updatedRows = rows.map((row) =>
-          row?.id === editingRow.id ? { ...row, ...formData } : row
-        );
-        setRows(updatedRows);
+        const response = await fetch(`${apiURL}/users`);
+        const data = await response.json();
+        setRows(data.results);
 
         // Update localStorage user data if the edited user is the logged-in user
         const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -151,10 +149,12 @@ export default function CustomerMaintenance() {
         if (!response.ok) {
           throw new Error("Failed to add item");
         }
+        const newResponse = await fetch(`${apiURL}/users`);
+        const data = await newResponse.json();
+        setRows(data.results);
+
 
         toast.success("User added successfully");
-        const data = await response.json();
-        setRows((prevRows) => [...prevRows, data]);
       }
 
       handleCloseAddModal();

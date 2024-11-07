@@ -56,7 +56,7 @@ export default function RoleMaster() {
   };
 
   const handleEditClick = (row) => {
-    if (["admin", "user", "manager"].includes(row.role.toLowerCase())) {
+    if (["admin", "user", "manager"].includes(row?.role.toLowerCase())) {
       toast.warn("This role cannot be edited.");
       return;
     }
@@ -67,7 +67,7 @@ export default function RoleMaster() {
   };
 
   const handleDeleteClick = async (row) => {
-    if (["admin", "user", "manager"].includes(row.role.toLowerCase())) {
+    if (["admin", "user", "manager"].includes(row?.role.toLowerCase())) {
       toast.warn("This role cannot be deleted.");
       return;
     }

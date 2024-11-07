@@ -11,7 +11,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
-import { FaEdit, FaTrash, FaPlus ,FaUser} from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -71,9 +71,17 @@ export default function CustomerMaintenance() {
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
+      setLoading(true);
       try {
+        const token = localStorage.getItem("refreshToken");
         const response = await fetch(
-          `${apiURL}/customer-maintenance?page=${pageNo}`
+          `${apiURL}/customer-maintenance?page=${pageNo}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setRows(data.docs);
@@ -83,8 +91,10 @@ export default function CustomerMaintenance() {
         setLoading(false);
       }
     };
+
     fetchData(page);
   }, [page]);
+
   useEffect(() => {
     const fetchManagers = async () => {
       try {
@@ -145,7 +155,7 @@ export default function CustomerMaintenance() {
     e.stopPropagation();
     try {
       const response = await fetch(
-        `${apiURL}/customer-maintenance/${row._id}`,
+        `${apiURL}/customer-maintenance/${row?._id}`,
         {
           method: "DELETE",
           headers: {
@@ -179,7 +189,7 @@ export default function CustomerMaintenance() {
     setFormData({ ...formData, [id]: checked });
   };
 
-  const handleAdd = () => navigate("/customer-maintenance-form");
+  const handleAdd = () => navigate("/client-records-form");
   const handleOpenAddModal = () => {
     setFormData({
       name: "",
@@ -214,28 +224,28 @@ export default function CustomerMaintenance() {
   };
   const handleEdit = (customerId, e) => {
     e.stopPropagation();
-    navigate(`/customer-maintenance-form/${customerId}`);
+    navigate(`/client-records-form/${customerId}`);
   };
   const handleEditClick = (row, e) => {
     e.stopPropagation();
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
-      name: row.name,
-      state: row.state,
-      country: row.country,
-      cin: row.cin,
-      pan: row.pan,
-      gstin: row.gstin,
-      o: row.o,
-      c: row.c,
-      v: row.v,
-      ro: row.ro,
-      revision: row.revision,
-      alloted_manager: row.alloted_manager.id || "",
+      name: row?.name,
+      state: row?.state,
+      country: row?.country,
+      cin: row?.cin,
+      pan: row?.pan,
+      gstin: row?.gstin,
+      o: row?.o,
+      c: row?.c,
+      v: row?.v,
+      ro: row?.ro,
+      revision: row?.revision,
+      alloted_manager: row?.alloted_manager.id || "",
       locations:
-        row.locations && row.locations.length > 0
-          ? row.locations
+        row?.locations && row?.locations?.length > 0
+          ? row?.locations
           : [
               {
                 locationId: "",
@@ -258,7 +268,7 @@ export default function CustomerMaintenance() {
     try {
       const sanitizedFormData = {
         ...formData,
-        locations: formData.locations.map((location) => {
+        locations: formData?.locations.map((location) => {
           const { _id, ...rest } = location;
           return rest;
         }),
@@ -267,7 +277,7 @@ export default function CustomerMaintenance() {
       if (editingRow) {
         // PATCH request for editing an existing row
         const response = await fetch(
-          `${apiURL}/customer-maintenance/${editingRow._id}`,
+          `${apiURL}/customer-maintenance/${editingrow?._id}`,
           {
             method: "PATCH",
             headers: {
@@ -351,11 +361,11 @@ export default function CustomerMaintenance() {
 
   const handleViewDirectors = (row, e) => {
     e.stopPropagation();
-    navigate(`/directors/${row._id}`);
+    navigate(`/directors/${row?._id}`);
   };
 
   const handleRowClick = (row) => {
-    navigate(`/customer-maintenance-detail/${row.id}`, { state: { row } });
+    navigate(`/client-records-detail/${row?._id}`, { state: { row } });
   };
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -387,14 +397,14 @@ export default function CustomerMaintenance() {
           <div className="text-center mt-5">
             <h5>You do not have permission to view the data</h5>
           </div>
-        ) : rows.length === 0 ? (
+        ) : rows?.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
                   <th>State</th>
@@ -447,28 +457,26 @@ export default function CustomerMaintenance() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id} onClick={() => handleRowClick(row)}>
-                    <td>{row.name}</td>
-                    <td>{row.state}</td>
-                    <td>{row.country}</td>
-                    <td>{row.cin}</td>
-                    {/* <td>{row.pan}</td> */}
-                    <td>{row.gstin}</td>
-                    {/* <td>{row.o ? "Yes" : "No"}</td>
-                    <td>{row.c ? "Yes" : "No"}</td>
-                    <td>{row.v ? "Yes" : "No"}</td>
-                    <td>{row.ro ? "Yes" : "No"}</td>
-                    <td className="text-center">{row.revision}</td> */}
-                    <td className="">
-                      {row.alloted_manager[0]?.name || "-"}
-                    </td>
+                {rows?.map((row) => (
+                  <tr key={row?.id} onClick={() => handleRowClick(row)}>
+                    <td>{row?.name}</td>
+                    <td>{row?.state}</td>
+                    <td>{row?.country}</td>
+                    <td>{row?.cin}</td>
+                    {/* <td>{row?.pan}</td> */}
+                    <td>{row?.gstin}</td>
+                    {/* <td>{row?.o ? "Yes" : "No"}</td>
+                    <td>{row?.c ? "Yes" : "No"}</td>
+                    <td>{row?.v ? "Yes" : "No"}</td>
+                    <td>{row?.ro ? "Yes" : "No"}</td>
+                    <td className="text-center">{row?.revision}</td> */}
+                    <td className="">{row?.alloted_manager[0]?.name || "-"}</td>
                     <td>
                       <button
                         className="director-btn"
                         onClick={(e) => handleViewDirectors(row, e)}
                       >
-                      <FaUser/>  View Directors
+                        <FaUser /> View Directors
                       </button>
                     </td>
 
@@ -476,7 +484,7 @@ export default function CustomerMaintenance() {
                       {hasPermission("edit") && (
                         <Button
                           variant="outline-primary"
-                          onClick={(e) => handleEdit(row._id, e)}
+                          onClick={(e) => handleEdit(row?._id, e)}
                           className="me-2"
                         >
                           <FaEdit />

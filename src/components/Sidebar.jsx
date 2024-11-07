@@ -116,8 +116,8 @@ export default function Sidebar() {
               <NavItem title="Committee" link="/committee" />
               <NavItem title="Committee Members" link="/committee-members" />
               <NavItem
-                title="Customer Maintenance"
-                link="/customer-maintenance"
+                title="Client Records"
+                link="/client-records"
               />
             </CollapsableNavItem>
             <CollapsableNavItem

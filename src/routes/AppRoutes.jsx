@@ -269,7 +269,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/customer-maintenance"
+        path="/client-records"
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenance />} />
@@ -279,7 +279,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/customer-maintenance-form"
+        path="/client-records-form"
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenanceForm />} />
@@ -289,7 +289,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/customer-maintenance-form/:customerId"
+        path="/client-records-form/:customerId"
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenanceForm />} />
@@ -299,7 +299,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/customer-maintenance-detail/:id"
+        path="/client-records-detail/:id"
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CustomerMaintenanceDetail />} />
