@@ -56,12 +56,21 @@ export default function RoleMaster() {
   };
 
   const handleEditClick = (row) => {
+    if (["admin", "user", "manager"].includes(row.role.toLowerCase())) {
+      toast.warn("This role cannot be edited.");
+      return;
+    }
+
     setEditingRow(row);
     setOpenModal(true);
     setFormData({ roleName: row.role });
   };
 
   const handleDeleteClick = async (row) => {
+    if (["admin", "user", "manager"].includes(row.role.toLowerCase())) {
+      toast.warn("This role cannot be deleted.");
+      return;
+    }
     try {
       const response = await fetch(`${apiURL}/role/${row.id}`, {
         method: "DELETE",
@@ -121,7 +130,7 @@ export default function RoleMaster() {
   };
   const columns = [
     { header: "Role Master Name", field: "name" },
-    // { header: "Actions", field: "action" },
+    { header: "Actions", field: "action" },
   ];
 
   const userPermissions =
@@ -187,8 +196,8 @@ export default function RoleMaster() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   {columns.map((col, idx) => (
                     <th key={idx}>{col.header}</th>
@@ -197,23 +206,27 @@ export default function RoleMaster() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.role}</td>
-                    {/* <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleEditClick(row)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    </td> */}
+                  <tr key={row?.id}>
+                    <td>{row?.role}</td>
+                    <td>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

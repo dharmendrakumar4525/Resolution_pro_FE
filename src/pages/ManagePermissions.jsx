@@ -143,75 +143,78 @@ const ManagePermissions = () => {
   return (
     <div>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
+        <ToastContainer autoClose={3000} />
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Manage Permissions</h4>
         </div>
 
-      <form onSubmit={handleSubmit} className="mt-5">
-        <div>
-          <ul className="select-role">
-            {roles.length > 0 ? (
-              <Form.Control
-                as="select"
-                value={selectedRole}
-                onChange={handleRoleChange}
-                style={{ width: "400px" }}
-              >
-                <option value="" disabled>
-                  Select a role
-                </option>
-                {roles.map((role, index) => (
-                  <option key={index} value={role.id}>
-                    {role.role}
+        <form onSubmit={handleSubmit} className="mt-5">
+          <div>
+            <ul className="select-role">
+              {roles.length > 0 ? (
+                <Form.Control
+                  as="select"
+                  value={selectedRole}
+                  onChange={handleRoleChange}
+                  style={{ width: "400px" }}
+                >
+                  <option value="" disabled>
+                    Select a role
                   </option>
-                ))}
-              </Form.Control>
-            ) : (
-              <p>No roles found.</p>
-            )}
-          </ul>
-        </div>
-        <Row>
-          {dashboardPermissions.map((permission, index) => (
-            <Col
-              key={index}
-              xs={12}
-              xl={8}
-              className="mb-3 mt-2"
-              // style={{ marginLeft: "40px" }}
-            >
-              <h3>{permission.moduleName}</h3>
-              <Row>
-                {permission.childList.map((module) => (
-                  <Col
-                    xs={12}
-                    sm={6}
-                    md={4}
-                    lg={3}
-                    key={module.id}
-                    className="mb-2"
-                  >
-                    <div className="d-flex align-items-center">
-                      <InputGroup.Checkbox
-                        checked={
-                          selectedPermissions[permission.id]?.[module.id] ??
-                          module.isSelected
-                        }
-                        onChange={() =>
-                          handleCheckboxChange(permission.id, module.id)
-                        }
-                      />
-                      <span style={{ marginLeft: "10px" }}>{module.value}</span>
-                    </div>
-                  </Col>
-                ))}
-              </Row>
-            </Col>
-          ))}
-        </Row>
+                  {roles.map((role, index) => (
+                    <option key={index} value={role.id}>
+                      {role.role}
+                    </option>
+                  ))}
+                </Form.Control>
+              ) : (
+                <p>No roles found.</p>
+              )}
+            </ul>
+          </div>
+          <Row>
+            {dashboardPermissions.map((permission, index) => (
+              <Col
+                key={index}
+                xs={12}
+                xl={8}
+                className="mb-3 mt-2"
+                // style={{ marginLeft: "40px" }}
+              >
+                <h3>{permission.moduleName.replace(/_/g, " ")}</h3>
+                <Row>
+                  {permission.childList.map((module) => (
+                    <Col
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      lg={3}
+                      key={module.id}
+                      className="mb-2"
+                    >
+                      <div className="d-flex align-items-center">
+                        <InputGroup.Checkbox
+                          checked={
+                            selectedPermissions[permission.id]?.[module.id] ??
+                            module.isSelected
+                          }
+                          onChange={() =>
+                            handleCheckboxChange(permission.id, module.id)
+                          }
+                        />
+                        <span style={{ marginLeft: "10px" }}>
+                          {module.value}
+                        </span>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </Col>
+            ))}
+          </Row>
 
-        <Button type="submit">Update Role Permissions</Button>
-      </form>
+          <Button type="submit">Update Role Permissions</Button>
+        </form>
       </Container>
     </div>
   );

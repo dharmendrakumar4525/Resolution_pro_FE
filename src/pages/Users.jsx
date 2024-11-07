@@ -81,17 +81,17 @@ export default function CustomerMaintenance() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      name: row.name,
-      email: row.email,
-      password: row.password,
-      role: row.role.role,
+      name: row?.name,
+      email: row?.email,
+      password: row?.password,
+      role: row?.role?.role,
     });
     setOpenAddModal(true);
   };
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/users/${row.id}`, {
+      const response = await fetch(`${apiURL}/users/${row?.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export default function CustomerMaintenance() {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       // alert("Item deleted successfully");
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -127,7 +127,7 @@ export default function CustomerMaintenance() {
 
         // Update rows in the state
         const updatedRows = rows.map((row) =>
-          row.id === editingRow.id ? { ...row, ...formData } : row
+          row?.id === editingRow.id ? { ...row, ...formData } : row
         );
         setRows(updatedRows);
 
@@ -287,11 +287,11 @@ export default function CustomerMaintenance() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.name}</td>
-                    <td>{row.email}</td>
-                    <td>{row.isEmailVerified ? "Yes" : "No"}</td>
-                    <td>{row.role.role}</td>
+                  <tr key={row?.id}>
+                    <td>{row?.name}</td>
+                    <td>{row?.email}</td>
+                    <td>{row?.isEmailVerified ? "Yes" : "No"}</td>
+                    <td>{row?.role?.role}</td>
                     <td>
                       {hasPermission("edit") && (
                         <Button
