@@ -130,7 +130,8 @@ const ManagePermissions = () => {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error updating role permissions");
+        toast.error(errorData.message || "Error updating role permissions");
+        return;
       }
 
       toast.success("Permissions updated successfully");

@@ -136,7 +136,13 @@ export default function AddCommitteeMember({ onSave }) {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Failed to add committee member");
+      if (!response.ok) {
+        const errorMessage = await response
+          .json()
+          .then((data) => data.message || "Failed to add committee member");
+        toast.error(errorMessage);
+        return;
+      }
 
       toast.success("Committee member added successfully");
       setTimeout(() => {

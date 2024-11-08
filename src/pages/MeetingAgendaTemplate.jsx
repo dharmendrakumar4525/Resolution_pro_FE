@@ -129,14 +129,14 @@ export default function MeetingAgendaTemplate() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
 
-    if (rows.length === 1 && page > 1) {
-      setPage(page - 1); 
-    } else {
-      setRefresh(!refresh); // Refresh data to reflect changes
-    }
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        setRefresh(!refresh); // Refresh data to reflect changes
+      }
       toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -191,7 +191,15 @@ export default function MeetingAgendaTemplate() {
           body: JSON.stringify(formData),
         });
         if (!response.ok) {
-          throw new Error(response.message || "Failed to add item");
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) =>
+                data.message ||
+                "Failed to add agenda template. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
         }
         setRefresh(!refresh);
 

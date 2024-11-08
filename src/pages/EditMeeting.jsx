@@ -302,9 +302,12 @@ export default function EditMeeting() {
           },
           body: JSON.stringify(formData),
         });
-
         if (!response.ok) {
-          throw new Error("Failed to add item");
+          const errorMessage = await response
+            .json()
+            .then((data) => data.message || "Failed to add item");
+          toast.error(errorMessage);
+          return;
         }
         toast.success("Meeting added successfully");
         const updatedResponse = await fetch(`${apiURL}/meeting`);

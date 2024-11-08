@@ -185,7 +185,11 @@ export default function CustomerMaintenanceForm() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to save customer data");
+          const errorMessage = await response
+            .json()
+            .then((data) => data.message || "Failed to save customer data");
+          toast.error(errorMessage);
+          return;
         }
 
         toast.success(

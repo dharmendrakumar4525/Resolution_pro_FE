@@ -105,7 +105,7 @@ export default function CustomerMaintenance() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -129,7 +129,14 @@ export default function CustomerMaintenance() {
 
         const response = await fetch(`${apiURL}/users`);
         if (!response.ok) {
-          throw new Error("Failed to update user. Please try again.");
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) =>
+                data.message || "Failed to update user. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
         }
         const data = await response.json();
         setRows(data.results);
@@ -154,7 +161,13 @@ export default function CustomerMaintenance() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add item");
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) => data.message || "Failed to add user. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
         }
         const newResponse = await fetch(`${apiURL}/users`);
         const data = await newResponse.json();

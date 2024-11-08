@@ -156,7 +156,11 @@ export default function EditCommitteeMember() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update committee member.");
+        const errorMessage = await response
+          .json()
+          .then((data) => data.message || "Failed to update committee member.");
+        toast.error(errorMessage);
+        return;
       }
 
       toast.success("Committee member updated successfully");

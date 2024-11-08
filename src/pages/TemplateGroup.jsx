@@ -186,7 +186,15 @@ export default function TemplateGroup() {
         });
 
         if (!response.ok) {
-          toast.error("Failed to add template");
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) =>
+                data.message ||
+                "Failed to add template-group. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
         }
         setRefresh(!refresh);
         toast.success("template added successfully");
