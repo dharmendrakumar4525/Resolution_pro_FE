@@ -6,19 +6,21 @@ import {
   faTable,
   faSignOutAlt,
   faTimes,
-  faUser
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
+import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar() {
   const location = useLocation();
   const { pathname } = location;
 
   const [show, setShow] = useState(false);
-  const [activeKey, setActiveKey] = useState(""); // New state for active key
+  const [activeKey, setActiveKey] = useState("");
   const showClass = show ? "show" : "";
-
+  const { rolePermissions } = useAuth();
+  console.log(rolePermissions, "rolePermi");
   const handleToggleSidebar = () => setShow(!show);
 
   const handleAccordionChange = (eventKey) => {
@@ -62,6 +64,20 @@ export default function Sidebar() {
     );
   };
 
+  const getUserPermissions = (moduleName) => {
+    return (
+      rolePermissions.find((perm) => perm.moduleName === moduleName)
+        ?.childList || []
+    );
+  };
+
+  const hasPermission = (moduleName, action) => {
+    const userPermissions = getUserPermissions(moduleName);
+    return userPermissions.some(
+      (perm) => perm.value === action && perm.isSelected
+    );
+  };
+
   return (
     <>
       <Navbar
@@ -97,8 +113,15 @@ export default function Sidebar() {
               title="Resolution"
               icon={faTable}
             >
-              <NavItem title="Members Resolution" link="/members-resolution" />
-              <NavItem title="Board Resolution" link="/board-resolution" />
+              {hasPermission("Members_resolution", "view") && (
+                <NavItem
+                  title="Members Resolution"
+                  link="/members-resolution"
+                />
+              )}
+              {hasPermission("Board_resolution", "view") && (
+                <NavItem title="Board Resolution" link="/board-resolution" />
+              )}
             </CollapsableNavItem>
 
             <CollapsableNavItem
@@ -106,29 +129,39 @@ export default function Sidebar() {
               title="Master"
               icon={faFileAlt}
             >
-              <NavItem title="Template Group" link="/template-group" />
+              {hasPermission("Template_group", "view") && (
+                <NavItem title="Template Group" link="/template-group" />
+              )}
               {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
-              <NavItem title="Meeting" link="/meeting" />
-              <NavItem
-                title="Meeting Agenda Template"
-                link="/meeting-agenda-template"
-              />
-              <NavItem title="Committee" link="/committee" />
-              <NavItem title="Committee Members" link="/committee-members" />
-              <NavItem
-                title="Client Records"
-                link="/client-records"
-              />
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="Meeting" link="/meeting" />
+              )}
+              {hasPermission("Meeting_agenda_template", "view") && (
+                <NavItem
+                  title="Meeting Agenda Template"
+                  link="/meeting-agenda-template"
+                />
+              )}
+              {hasPermission("Committee", "view") && (
+                <NavItem title="Committee" link="/committee" />
+              )}
+              {hasPermission("Committee_Members", "view") && (
+                <NavItem title="Committee Members" link="/committee-members" />
+              )}
+              {hasPermission("Customer_Maintenance", "view") && (
+                <NavItem title="Client Records" link="/client-records" />
+              )}
             </CollapsableNavItem>
-            <CollapsableNavItem
-              eventKey="users/"
-              title="Users"
-              icon={faUser}
-            >
-              
-              <NavItem title="Roles" link="/roles" />
-              <NavItem title="Users" link="/users" />
-            <NavItem title="Manage Permission" link="/role" />
+            <CollapsableNavItem eventKey="users/" title="Users" icon={faUser}>
+              {hasPermission("Roles", "view") && (
+                <NavItem title="Roles" link="/roles" />
+              )}
+              {hasPermission("Users", "view") && (
+                <NavItem title="Users" link="/users" />
+              )}
+              {hasPermission("Permissions", "view") && (
+                <NavItem title="Manage Permission" link="/role" />
+              )}
             </CollapsableNavItem>
           </Nav>
         </div>
