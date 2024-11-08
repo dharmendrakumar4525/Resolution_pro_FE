@@ -140,7 +140,7 @@ export default function CustomerMaintenance() {
       const data = await newResponse.json();
       setRows(data.docs);
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
 
       toast.success("Item deleted successfully");
@@ -200,24 +200,26 @@ export default function CustomerMaintenance() {
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
           <div>
-            <Form.Control
-              style={{ width: "300px", marginLeft: "60px" }}
-              as="select"
-              value={formData.alloted_manager.name}
-              onChange={(e) =>
-                handleChange({
-                  target: { id: "alloted_manager", value: e.target.value },
-                })
-              }
-            >
-              <option value="">Select Manager</option>
-              {/* Replace with actual managers data */}
-              {managers.map((manager) => (
-                <option key={manager.id} value={manager.id}>
-                  {manager.name}
-                </option>
-              ))}
-            </Form.Control>
+            {userRole === "672c47c238903b464c9d2920" && (
+              <Form.Control
+                style={{ width: "300px", marginLeft: "60px" }}
+                as="select"
+                value={formData.alloted_manager.name}
+                onChange={(e) =>
+                  handleChange({
+                    target: { id: "alloted_manager", value: e.target.value },
+                  })
+                }
+              >
+                <option value="">Select Manager</option>
+                {/* Replace with actual managers data */}
+                {managers.map((manager) => (
+                  <option key={manager.id} value={manager.id}>
+                    {manager.name}
+                  </option>
+                ))}
+              </Form.Control>
+            )}
           </div>
           {hasPermission("add") && (
             <Button variant="primary" className="btn-box" onClick={handleAdd}>
