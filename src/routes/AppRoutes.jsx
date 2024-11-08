@@ -32,6 +32,8 @@ import MeetingTemplate from "../pages/MeetingTemplate";
 import AddMeeting from "../pages/AddMeeting";
 import EditMeeting from "../pages/EditMeeting";
 import ViewCommitteeMember from "../pages/CommitteeMemberView";
+import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
+import TemplateViewer from "../pages/TemplateView";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -174,6 +176,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<TemplateGroup />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/template-group-meetings/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<TemplateGroupMeetings />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/template-group-meeting-view/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<TemplateViewer />} />
           ) : (
             <Navigate to="/login" />
           )

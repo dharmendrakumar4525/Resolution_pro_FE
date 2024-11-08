@@ -105,7 +105,7 @@ export default function Meeting() {
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/meeting/${row.id}`, {
+      const response = await fetch(`${apiURL}/meeting/${row?.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -116,17 +116,19 @@ export default function Meeting() {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
-
-      alert("Item deleted successfully");
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
+      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
+      toast.error("Failed to delete item. Please try again.");
     }
   };
 
   const handleRedirectEdit = (row) => {
-    navigate(`/meeting/edit-form/${row.id}`, { state: { row } });
+    navigate(`/meeting/edit-form/${row?.id}`, { state: { row } });
   };
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -137,22 +139,22 @@ export default function Meeting() {
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
-      title: row.title,
-      client_name: row.client_name?.id || "",
-      description: row.description,
-      meetingType: row.meetingType,
-      date: new Date(row.date).toLocaleDateString(),
-      startTime: row.startTime,
-      endTime: row.endTime,
-      organizer: row.organizer,
-      participants: row.participants.id || [],
-      agendaItems: row.agendaItems.map((agendaItem) => ({
+      title: row?.title,
+      client_name: row?.client_name?.id || "",
+      description: row?.description,
+      meetingType: row?.meetingType,
+      date: new Date(row?.date).toLocaleDateString(),
+      startTime: row?.startTime,
+      endTime: row?.endTime,
+      organizer: row?.organizer,
+      participants: row?.participants.id || [],
+      agendaItems: row?.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         meetingType: agendaItem.meetingType,
         fileName: agendaItem.fileName,
       })),
-      location: row.location,
-      status: row.status,
+      location: row?.location,
+      status: row?.status,
     });
   };
 
@@ -231,15 +233,15 @@ export default function Meeting() {
                       <button
                         style={{ textAlign: "center" }}
                         className="director-btn"
-                        onClick={() => navigate(`/meeting-template/${row.id}`)}
+                        onClick={() => navigate(`/meeting-template/${row?.id}`)}
                       >
                         <FaFileWord
                           style={{ height: "40px", alignContent: "center" }}
                         />
                       </button>
                     </td>
-                    <td style={{ textAlign: "center" }}>{row.startTime}</td>
-                    <td>{new Date(row.date).toLocaleDateString()}</td>
+                    <td style={{ textAlign: "center" }}>{row?.startTime}</td>
+                    <td>{new Date(row?.date).toLocaleDateString()}</td>
 
                     <td>
                       <Button

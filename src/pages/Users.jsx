@@ -104,7 +104,9 @@ export default function CustomerMaintenance() {
       }
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
-      // alert("Item deleted successfully");
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
       toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

@@ -408,3 +408,6 @@ h2 {
 .location-card {
   display: block;
 }
+.rightContainerHidden{
+  display: none;
+}

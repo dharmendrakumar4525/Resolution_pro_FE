@@ -55,11 +55,11 @@ export default function MeetingAgendaTemplate() {
             return true;
           } else if (user.role === "672c47cb38903b464c9d2923") {
             return (
-              row.status === "usable" ||
-              (row.status === "draft" && row.by === user.id)
+              row?.status === "usable" ||
+              (row?.status === "draft" && row?.by === user.id)
             );
           } else {
-            return row.status === "usable";
+            return row?.status === "usable";
           }
         });
 
@@ -95,7 +95,7 @@ export default function MeetingAgendaTemplate() {
   // }, [page]);
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
-    navigate(`/template-generate/${row.id}`);
+    navigate(`/template-generate/${row?.id}`);
   };
 
   const handleOpenAddModal = () => {
@@ -114,7 +114,7 @@ export default function MeetingAgendaTemplate() {
   const handleDeleteClick = async (row) => {
     try {
       const response = await fetch(
-        `${apiURL}/meeting-agenda-template/${row.id}`,
+        `${apiURL}/meeting-agenda-template/${row?.id}`,
         {
           method: "DELETE",
           headers: {
@@ -127,11 +127,20 @@ export default function MeetingAgendaTemplate() {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
-      alert("Item deleted successfully");
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
+
+    if (rows.length === 1 && page > 1) {
+      setPage(page - 1); 
+    } else {
+      setRefresh(!refresh); // Refresh data to reflect changes
+    }
+      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
+      toast.success("Failed to delete item. Please try again.");
     }
   };
 
@@ -145,10 +154,10 @@ export default function MeetingAgendaTemplate() {
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
-      meetingType: row.meetingType,
-      templateName: row.templateName,
-      fileName: row.fileName,
-      status: row.status,
+      meetingType: row?.meetingType,
+      templateName: row?.templateName,
+      fileName: row?.fileName,
+      status: row?.status,
     });
   };
 
@@ -162,7 +171,7 @@ export default function MeetingAgendaTemplate() {
       let response;
       if (editingRow) {
         response = await fetch(
-          `${apiURL}/meeting-agenda-template/${editingRow.id}`,
+          `${apiURL}/meeting-agenda-template/${editingRow?.id}`,
           {
             method: "PATCH",
             headers: {
@@ -171,11 +180,7 @@ export default function MeetingAgendaTemplate() {
             body: JSON.stringify(formData),
           }
         );
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
-          )
-        );
+        setRefresh(!refresh);
         toast.success("Meeting Agenda template edited successfully");
       } else {
         response = await fetch(`${apiURL}/meeting-agenda-template`, {
@@ -341,12 +346,12 @@ export default function MeetingAgendaTemplate() {
                 {rows.map((row) => (
                   <tr key={row?.id}>
                     {/* <td>
-        {row.status === "draft" ? (
+        {row?.status === "draft" ? (
           <button className="director-btn d-flex align-items-center gap-2" >
                  <FaPencilAlt /> Draft
           </button>
         ) : (
-          row.status
+          row?.status
         )}
       </td> */}
                     <td>{row?.templateName}</td>
@@ -362,8 +367,8 @@ export default function MeetingAgendaTemplate() {
                       </button>
                     </td>
                     <td>{row?.status}</td>
-                    {/* <td><a href={row.fileName}>{row.fileName}</a></td> */}
-                    <td>{row.by?.name}</td>
+                    {/* <td><a href={row?.fileName}>{row?.fileName}</a></td> */}
+                    <td>{row?.by?.name}</td>
                     <td>
                       {hasPermission("edit") && (
                         <Button

@@ -111,19 +111,22 @@ export default function CommitteeMembers() {
   };
 
   const handleEditClick = (row) => {
-    navigate(`/committee-members/edit-form/${row.id}`);
+    navigate(`/committee-members/edit-form/${row?.id}`);
   };
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/committee-member/${row.id}`, {
+      const response = await fetch(`${apiURL}/committee-member/${row?.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) throw new Error("Failed to delete item");
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
       toast.success("Committee member deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -186,9 +189,9 @@ export default function CommitteeMembers() {
               </tr>
             ) : (
               rows.map((row, index) => (
-                <tr key={row.id}>
-                  <td>{row.client_name?.name}</td>
-                  <td>{row.committee.name}</td>
+                <tr key={row?.id}>
+                  <td>{row?.client_name?.name}</td>
+                  <td>{row?.committee.name}</td>
                   <td>
                     <button
                       style={{ height: "100%" }}
@@ -198,7 +201,7 @@ export default function CommitteeMembers() {
                       <FaUser />
                     </button>
                   </td>
-                  <td>{row.is_email ? "Yes" : "No"}</td>
+                  <td>{row?.is_email ? "Yes" : "No"}</td>
                   <td>
                     {hasPermission("edit") && (
                       <Button

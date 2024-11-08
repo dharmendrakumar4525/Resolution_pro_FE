@@ -59,12 +59,12 @@ export default function Committee() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenModal(true);
-    setFormData({ committeeName: row.name });
+    setFormData({ committeeName: row?.name });
   };
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/committee-master/${row.id}`, {
+      const response = await fetch(`${apiURL}/committee-master/${row?.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +75,10 @@ export default function Committee() {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
       toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -96,7 +99,7 @@ export default function Committee() {
         });
         setRows((prevRows) =>
           prevRows.map((row) =>
-            row.id === editingRow.id
+            row?.id === editingRow.id
               ? { ...row, name: formData.committeeName }
               : row
           )
@@ -188,8 +191,8 @@ export default function Committee() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.name}</td>
+                  <tr key={row?.id}>
+                    <td>{row?.name}</td>
                     <td>
                       <Button
                         variant="outline-primary"

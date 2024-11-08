@@ -139,11 +139,14 @@ export default function CustomerMaintenance() {
       });
       const data = await newResponse.json();
       setRows(data.docs);
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
 
-      alert("Item deleted successfully");
+      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
+      toast.error("Failed to delete item. Please try again.");
     }
   };
 

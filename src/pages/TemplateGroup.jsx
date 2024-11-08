@@ -12,8 +12,10 @@ import {
   Spinner,
   Pagination,
 } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+
 import { apiURL } from "../API/api";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus,FaFileWord } from "react-icons/fa";
 import { Dropdown, DropdownButton } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,6 +39,7 @@ export default function TemplateGroup() {
     groupItems: [],
   });
   const { rolePermissions } = useAuth();
+  const navigate = useNavigate();
 
   const resetFormData = () => {
     setFormData({
@@ -61,7 +64,7 @@ export default function TemplateGroup() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenModal(true);
-    const selectedIds = row.groupItems
+    const selectedIds = row?.groupItems
       .map((item) => {
         const template = templateNames.find(
           (template) => template.templateName === item.templateName
@@ -70,8 +73,8 @@ export default function TemplateGroup() {
       })
       .filter((id) => id !== null);
     setFormData({
-      meetingType: row.meetingType,
-      groupName: row.groupName,
+      meetingType: row?.meetingType,
+      groupName: row?.groupName,
       groupItems: selectedIds,
     });
   };
@@ -121,7 +124,7 @@ export default function TemplateGroup() {
 
   const handleDeleteClick = async (row) => {
     try {
-      const response = await fetch(`${apiURL}/template-group/${row.id}`, {
+      const response = await fetch(`${apiURL}/template-group/${row?.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -132,7 +135,10 @@ export default function TemplateGroup() {
         throw new Error("Failed to delete item");
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+      if (rows.length === 1 && page > 1) {
+        setPage(page - 1); 
+      }
       toast.success("Template deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -158,7 +164,7 @@ export default function TemplateGroup() {
     try {
       if (editingRow) {
         const response = await fetch(
-          `${apiURL}/template-group/${editingRow.id}`,
+          `${apiURL}/template-group/${editingRow?.id}`,
           {
             method: "PATCH",
             headers: {
@@ -190,6 +196,10 @@ export default function TemplateGroup() {
       console.error("Error adding/editing item:", error);
       toast.error("Failed to add/edit item. Please try again.");
     }
+  };
+  const handleViewTemplateName = (row, e) => {
+    e.stopPropagation();
+    navigate(`/template-group-meetings/${row?.id}`,{state:row})
   };
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -297,10 +307,17 @@ export default function TemplateGroup() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row?.id}>
                     <td>{row?.groupName || "No Group Name"}</td>
                     <td>{row?.meetingType}</td>
-                    <td>{row?.numberOfTemplate}</td>
+                    <td>{row?.numberOfTemplate} <button
+                        className="director-btn"
+                        onClick={(e) => handleViewTemplateName(row, e)}
+                      >
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
+                      </button></td>
                     <td>{row?.createdBy?.name || "Unknown"}</td>
                     <td>
                       {hasPermission("edit") && (

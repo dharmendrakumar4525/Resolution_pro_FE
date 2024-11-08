@@ -68,7 +68,7 @@ export default function Directors() {
     e.preventDefault();
     try {
       if (editingRow) {
-        await fetch(`${apiURL}/director-data/${editingRow.id}`, {
+        await fetch(`${apiURL}/director-data/${editingRow?.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export default function Directors() {
         });
         setRows((prevRows) =>
           prevRows.map((row) =>
-            row.id === editingRow.id ? { ...row, ...formData } : row
+            row?.id === editingRow?.id ? { ...row, ...formData } : row
           )
         );
         toast.success("Director updated successfully");
@@ -113,13 +113,14 @@ export default function Directors() {
 
   const handleDeleteClick = async (row) => {
     try {
-      await fetch(`${apiURL}/director-data/${row.id}`, {
+      await fetch(`${apiURL}/director-data/${row?.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
+    
       toast.success("Director deleted successfully");
     } catch (error) {
       toast.error("Failed to delete director");
@@ -129,12 +130,12 @@ export default function Directors() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      company_id: row.company_id,
-      name: row.name,
-      designation: row.designation,
-      begin_date: row.begin_date,
+      company_id: row?.company_id,
+      name: row?.name,
+      designation: row?.designation,
+      begin_date: row?.begin_date,
       "din/pan": row["din/pan"],
-      email: row.email,
+      email: row?.email,
     });
     setOpenAddModal(true);
   };
@@ -259,13 +260,13 @@ export default function Directors() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.name}</td>
-                    <td>{row.email}</td>
-                    <td>{row.designation}</td>
-                    <td>{row.begin_date}</td>
+                  <tr key={row?.id}>
+                    <td>{row?.name}</td>
+                    <td>{row?.email}</td>
+                    <td>{row?.designation}</td>
+                    <td>{row?.begin_date}</td>
                     <td>{row["din/pan"]}</td>
-                    <td>{row.end_date || "-"}</td>
+                    <td>{row?.end_date || "-"}</td>
                     <td>
                       <Button
                         variant="outline-primary"

@@ -102,8 +102,8 @@ export const AuthProvider = ({ children }) => {
         navigate("/");
       } else {
         const errorData = await res.json();
-        if (location.pathname === "/otp") {
-          toast.error("Wrong OTP. Please try again.");
+        if (location.pathname === `/otp`) {
+          toast.error(errorData.message ||"Wrong OTP. Please try again.");
         }
       }
     } catch (err) {
