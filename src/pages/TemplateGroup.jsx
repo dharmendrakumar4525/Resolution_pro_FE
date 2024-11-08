@@ -15,7 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { apiURL } from "../API/api";
-import { FaEdit, FaTrash, FaPlus,FaFileWord } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { Dropdown, DropdownButton } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -137,7 +137,7 @@ export default function TemplateGroup() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Template deleted successfully");
     } catch (error) {
@@ -199,7 +199,7 @@ export default function TemplateGroup() {
   };
   const handleViewTemplateName = (row, e) => {
     e.stopPropagation();
-    navigate(`/template-group-meetings/${row?.id}`,{state:row})
+    navigate(`/template-group-meetings/${row?.id}`, { state: row });
   };
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -210,20 +210,21 @@ export default function TemplateGroup() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
-  console.log(userPermissions, "mukul");
 
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Template Group</h4>
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
 
         <Modal show={openModal} onHide={handleCloseModal}>
@@ -310,14 +311,17 @@ export default function TemplateGroup() {
                   <tr key={row?.id}>
                     <td>{row?.groupName || "No Group Name"}</td>
                     <td>{row?.meetingType}</td>
-                    <td>{row?.numberOfTemplate} <button
+                    <td>
+                      {row?.numberOfTemplate}{" "}
+                      <button
                         className="director-btn"
                         onClick={(e) => handleViewTemplateName(row, e)}
                       >
                         <FaFileWord
                           style={{ height: "40px", alignContent: "center" }}
                         />
-                      </button></td>
+                      </button>
+                    </td>
                     <td>{row?.createdBy?.name || "Unknown"}</td>
                     <td>
                       {hasPermission("edit") && (

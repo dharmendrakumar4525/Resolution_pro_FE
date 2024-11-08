@@ -125,7 +125,7 @@ export default function CommitteeMembers() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Committee member deleted successfully");
     } catch (error) {
@@ -161,90 +161,92 @@ export default function CommitteeMembers() {
             </Button>
           )}
         </div>
-
-        <Table bordered hover className="Master-table mt-5">
-          <thead className="Master-Thead">
-            <tr>
-              {columns.map((column) => (
-                <th key={column.header}>{column.header}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && loading ? (
-              <tr>
-                <td colSpan={5} className="text-center">
-                  <Spinner animation="border" />
-                </td>
-              </tr>
-            ) : !hasPermission("view") ? (
-              <div className="text-center mt-5">
-                <h5>You do not have permission to view the data</h5>
-              </div>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center">
-                  No data available
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, index) => (
-                <tr key={row?.id}>
-                  <td>{row?.client_name?.name}</td>
-                  <td>{row?.committee.name}</td>
-                  <td>
-                    <button
-                      style={{ height: "100%" }}
-                      className="director-btn"
-                      onClick={(e) => handleViewMembers(row, e)}
-                    >
-                      <FaUser />
-                    </button>
-                  </td>
-                  <td>{row?.is_email ? "Yes" : "No"}</td>
-                  <td>
-                    {hasPermission("edit") && (
-                      <Button
-                        variant="outline-primary"
-                        className=" me-2"
-                        onClick={() => handleEditClick(row)}
-                      >
-                        <FaEdit />
-                      </Button>
-                    )}
-                    {hasPermission("delete") && (
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    )}
-                  </td>
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
+          <tr>
+            <td colSpan={5} className="text-center">
+              No data available
+            </td>
+          </tr>
+        ) : (
+          <>
+            <Table bordered hover className="Master-table mt-5">
+              <thead className="Master-Thead">
+                <tr>
+                  {columns.map((column) => (
+                    <th key={column.header}>{column.header}</th>
+                  ))}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-        <Pagination className="mt-4">
-          <Pagination.Prev
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          />
-          {Array.from({ length: totalPages }, (_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === page}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          />
-        </Pagination>
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr key={row?.id}>
+                    <td>{row?.client_name?.name}</td>
+                    <td>{row?.committee.name}</td>
+                    <td>
+                      <button
+                        style={{ height: "100%" }}
+                        className="director-btn"
+                        onClick={(e) => handleViewMembers(row, e)}
+                      >
+                        <FaUser />
+                      </button>
+                    </td>
+                    <td>{row?.is_email ? "Yes" : "No"}</td>
+                    <td>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-primary"
+                          className=" me-2"
+                          onClick={() => handleEditClick(row)}
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
+          </>
+        )}
       </Container>
       <ToastContainer />
     </>

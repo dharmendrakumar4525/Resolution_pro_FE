@@ -13,6 +13,8 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext";
+
 
 export default function Committee() {
   const [rows, setRows] = useState([]);
@@ -24,6 +26,8 @@ export default function Committee() {
   const [formData, setFormData] = useState({
     committeeName: "",
   });
+  const { rolePermissions } = useAuth();
+
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
@@ -77,7 +81,7 @@ export default function Committee() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -130,12 +134,18 @@ export default function Committee() {
     { header: "Committee Master Name", field: "name" },
     { header: "Actions", field: "action" },
   ];
+  const userPermissions =
+  rolePermissions.find((perm) => perm.moduleName === "Committee")
+    ?.childList || [];
 
+const hasPermission = (action) =>
+  userPermissions.some((perm) => perm.value === action && perm.isSelected);
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Master</h4>
+          {hasPermission("add") && (
           <Button
             variant="primary"
             className="btn-box"
@@ -143,6 +153,7 @@ export default function Committee() {
           >
             <FaPlus style={{ marginRight: "8px" }} /> Add
           </Button>
+          )}
         </div>
 
         <Modal show={openModal} onHide={handleCloseModal}>
@@ -175,6 +186,10 @@ export default function Committee() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
         ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
@@ -194,6 +209,7 @@ export default function Committee() {
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
                     <td>
+                    {hasPermission("edit") && (
                       <Button
                         variant="outline-primary"
                         onClick={() => handleEditClick(row)}
@@ -201,12 +217,15 @@ export default function Committee() {
                       >
                         <FaEdit />
                       </Button>
+                    )}
+                    {hasPermission("delete") && (
                       <Button
                         variant="outline-danger"
                         onClick={() => handleDeleteClick(row)}
                       >
                         <FaTrash />
                       </Button>
+                    )}
                     </td>
                   </tr>
                 ))}

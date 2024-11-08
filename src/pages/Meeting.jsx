@@ -118,7 +118,7 @@ export default function Meeting() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -162,8 +162,8 @@ export default function Meeting() {
     navigate("/meeting/add-form");
   };
   const userPermissions =
-    rolePermissions.find((perm) => perm.moduleName === "Meeting_template")
-      ?.childList || [];
+    rolePermissions.find((perm) => perm.moduleName === "Meeting")?.childList ||
+    [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
@@ -189,42 +189,32 @@ export default function Meeting() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : rows.length === 0 ? (
+        ) : !hasPermission("view") ? (
           <div className="text-center mt-5">
-            <h5>No data available</h5>
+            <h5>You do not have permission to view the data</h5>
           </div>
+        ) : rows.length === 0 ? (
+          <tr>
+            <td colSpan={5} className="text-center">
+              No data available
+            </td>
+          </tr>
         ) : (
-          <Table bordered hover responsive className="Master-table mt-5">
-            <thead className="Master-Thead">
-              <tr>
-                <th>Meeting Name</th>
-                <th>Client Name</th>
-                <th>Meeting Type</th>
-                <th>Agendas'</th>
-                <th>Start Time</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 && loading ? (
+          <>
+            <Table bordered hover responsive className="Master-table mt-5">
+              <thead className="Master-Thead">
                 <tr>
-                  <td colSpan={5} className="text-center">
-                    <Spinner animation="border" />
-                  </td>
+                  <th>Meeting Name</th>
+                  <th>Client Name</th>
+                  <th>Meeting Type</th>
+                  <th>Agendas'</th>
+                  <th>Start Time</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              ) : !hasPermission("view") ? (
-                <div className="text-center mt-5">
-                  <h5>You do not have permission to view the data</h5>
-                </div>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center">
-                    No data available
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row, index) => (
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
                   <tr key={row?.id}>
                     <td>{row?.title}</td>
                     <td>{row?.client_name?.name}</td>
@@ -259,31 +249,32 @@ export default function Meeting() {
                       </Button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ))}
+              </tbody>
+            </Table>
+            <Pagination className="mt-4">
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === page}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
+          </>
         )}
       </Container>
-      <Pagination className="mt-4">
-        <Pagination.Prev
-          onClick={() => handlePageChange(page - 1)}
-          disabled={page === 1}
-        />
-        {Array.from({ length: totalPages }, (_, index) => (
-          <Pagination.Item
-            key={index + 1}
-            active={index + 1 === page}
-            onClick={() => handlePageChange(index + 1)}
-          >
-            {index + 1}
-          </Pagination.Item>
-        ))}
-        <Pagination.Next
-          onClick={() => handlePageChange(page + 1)}
-          disabled={page === totalPages}
-        />
-      </Pagination>
+
       <ToastContainer />
     </>
   );

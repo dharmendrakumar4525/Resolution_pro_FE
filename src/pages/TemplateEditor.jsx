@@ -144,7 +144,7 @@ const TemplateEditor = () => {
     console.log(docBlob, "docbl");
     // Prepare FormData with the document Blob
     const formData = new FormData();
-    formData.append("templateName", docBlob);
+    formData.append("fileName", docBlob);
     formData.append("index", index);
 
     try {
@@ -167,7 +167,7 @@ const TemplateEditor = () => {
         setCurrentDocName("");
         setIsEditing(false);
       } else {
-        alert("Failed to save the document.");
+        toast.error("Failed to save the document.");
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
