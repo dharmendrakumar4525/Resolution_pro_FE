@@ -228,10 +228,14 @@ export default function EditMeeting() {
   };
 
   const removeAgendaItem = (index) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
-    }));
+    if (formData.agendaItems.length > 1) {
+      setFormData((prevData) => ({
+        ...prevData,
+        agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
+      }));
+    } else {
+      toast.error("Please fill atleast 1 Agenda Item");
+    }
   };
   const agendaOptions = agendaList.map((agenda) => ({
     value: agenda.templateName,
@@ -485,7 +489,7 @@ export default function EditMeeting() {
                         variant="outline-danger"
                         onClick={() => removeAgendaItem(index)}
                       >
-                        <FaTrash /> Agenda Template
+                        <FaTrash /> Agenda Item
                       </Button>
                     </Col>
                   </Row>

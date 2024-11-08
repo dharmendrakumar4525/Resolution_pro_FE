@@ -144,7 +144,7 @@ const TemplateEditor = () => {
     console.log(docBlob, "docbl");
     // Prepare FormData with the document Blob
     const formData = new FormData();
-    formData.append("fileName", docBlob);
+    formData.append("file", docBlob);
     formData.append("index", index);
 
     try {
@@ -336,7 +336,9 @@ const TemplateEditor = () => {
           )} */}
         </div>
       </div>
+      <ToastContainer/>
     </Container>
+
   );
 };
 

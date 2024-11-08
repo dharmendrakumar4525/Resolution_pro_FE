@@ -152,10 +152,14 @@ export default function CustomerMaintenanceForm() {
   };
 
   const removeLocation = (index) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      locations: prevData.locations.filter((_, i) => i !== index),
-    }));
+    if (formData.locations.length > 1) {
+      setFormData((prevData) => ({
+        ...prevData,
+        locations: prevData.locations.filter((_, i) => i !== index),
+      }));
+    } else {
+      toast.error("Please fill atleast 1 location");
+    }
   };
 
   const handleSubmit = async (e) => {

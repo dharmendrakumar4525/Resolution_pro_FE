@@ -114,9 +114,13 @@ export default function EditCommitteeMember() {
   };
 
   const removeMember = (index) => {
-    const updatedMembers = [...formData.committeeMembers];
-    updatedMembers.splice(index, 1);
-    setFormData({ ...formData, committeeMembers: updatedMembers });
+    if (formData.committeeMembers.length > 1) {
+      const updatedMembers = [...formData.committeeMembers];
+      updatedMembers.splice(index, 1);
+      setFormData({ ...formData, committeeMembers: updatedMembers });
+    } else {
+      toast.error("Please fill atleast 1 Member Details");
+    }
   };
 
   const validateForm = () => {
