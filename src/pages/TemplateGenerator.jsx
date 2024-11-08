@@ -187,7 +187,7 @@ const TemplateGenerator = () => {
         setCurrentDocName("");
         setIsEditing(false);
       } else {
-        alert("Failed to save the document.");
+        toast.error("Failed to save the document.");
       }
     } catch (error) {
       console.error("Error saving document:", error);

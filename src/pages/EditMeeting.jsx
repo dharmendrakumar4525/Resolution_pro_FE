@@ -111,10 +111,10 @@ export default function EditMeeting() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
 
-      alert("Item deleted successfully");
+      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Failed to delete item. Please try again.");
+      toast.error("Failed to delete item. Please try again.");
     }
   };
 
