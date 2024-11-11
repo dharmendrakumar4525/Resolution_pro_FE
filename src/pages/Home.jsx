@@ -30,7 +30,7 @@ const Home = () => {
     issueDate: "",
     status: "",
   });
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
   const [managers, setManagers] = useState([]);
@@ -107,7 +107,6 @@ const Home = () => {
     if (selectedManager) {
       const fetchCompanies = async () => {
         try {
-          const token = localStorage.getItem("refreshToken");
 
           const response = await fetch(`${apiURL}/customer-maintenance`, {
             headers: {

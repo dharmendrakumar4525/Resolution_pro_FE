@@ -4,7 +4,7 @@ import mammoth from "mammoth";
 const TestFile = ({ fileUrl }) => {
   const [docxText, setDocxText] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const token = localStorage.getItem("refreshToken");
   useEffect(() => {
     const fetchAndReadDocx = async () => {
       try {

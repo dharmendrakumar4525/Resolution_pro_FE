@@ -21,7 +21,7 @@ const TemplateEditor = () => {
   const [docFile, setDocFile] = useState(null); // For storing the original DOCX file
   const location = useLocation();
   const { id } = useParams();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   console.log(fileUrl, "mukul");

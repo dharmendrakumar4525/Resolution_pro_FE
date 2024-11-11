@@ -29,7 +29,7 @@ export default function AddMeeting() {
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",

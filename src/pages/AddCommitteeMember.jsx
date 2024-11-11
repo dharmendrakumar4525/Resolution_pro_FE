@@ -20,7 +20,7 @@ export default function AddCommitteeMember({ onSave }) {
   const [buttonLoading, setButtonLoading] = useState(false);
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   useEffect(() => {
     const fetchClientList = async () => {
       try {

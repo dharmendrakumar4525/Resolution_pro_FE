@@ -41,7 +41,7 @@ export default function TemplateGroup() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const resetFormData = () => {
     setFormData({
       meetingType: "",

@@ -29,7 +29,7 @@ export default function Directors() {
     "din/pan": "",
     email: "",
   });
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
 
   useEffect(() => {

@@ -28,7 +28,7 @@ export default function RoleMaster() {
     roleName: "",
   });
   const { rolePermissions } = useAuth();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     const fetchData = async (pageNo) => {

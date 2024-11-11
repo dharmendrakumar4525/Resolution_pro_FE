@@ -29,7 +29,7 @@ export default function EditMeeting() {
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
   console.log(user);

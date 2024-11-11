@@ -26,7 +26,7 @@ const MembersResolution = () => {
   const [companies, setCompanies] = useState([]);
   const [templateList, setTemplateList] = useState([]);
   const [editingRow, setEditingRow] = useState(null);
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
 
   const [formData, setFormData] = useState({
     status: "created",

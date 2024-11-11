@@ -56,6 +56,7 @@ export default function MeetingAgendaTemplate() {
           },
         });
         const data = await response.json();
+        console.log(data,"with headers")
         const pageSize = 10;
         const filteredData = data.results.filter((row) => {
           if (user.role === "672c47c238903b464c9d2920") {
@@ -193,6 +194,7 @@ export default function MeetingAgendaTemplate() {
             body: JSON.stringify(formData),
           }
         );
+
         if (!response.ok) {
           const errorMessage = await response
             .json()

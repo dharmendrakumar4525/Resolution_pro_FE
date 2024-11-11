@@ -32,7 +32,7 @@ export default function CommitteeMembers() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     const fetchData = async (pageNo) => {

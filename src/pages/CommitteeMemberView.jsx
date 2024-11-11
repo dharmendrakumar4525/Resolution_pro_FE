@@ -29,7 +29,7 @@ export default function ViewCommitteeMember() {
     email: "",
   });
   const { id } = useParams();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   useEffect(() => {
     const fetchData = async () => {
       try {

@@ -34,7 +34,7 @@ export default function CustomerMaintenance() {
   });
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     axios

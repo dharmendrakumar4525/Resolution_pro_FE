@@ -25,7 +25,7 @@ const TemplateGenerator = () => {
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
   const [docFile, setDocFile] = useState(null);
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
 
   const handleEditorChange = (content) => {

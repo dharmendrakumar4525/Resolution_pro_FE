@@ -19,7 +19,7 @@ const ManagePermissions = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
-  const token = 'localStorage.getItem("refreshToken")';
+  const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     const fetchRoleData = async () => {
