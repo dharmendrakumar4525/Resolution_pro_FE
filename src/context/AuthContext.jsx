@@ -36,7 +36,13 @@ export const AuthProvider = ({ children }) => {
     const fetchUserPermissions = async () => {
       if (user.role) {
         try {
-          const response = await fetch(`${apiURL}/role`);
+          const token = 'localStorage.getItem("refreshToken")';
+          const response = await fetch(`${apiURL}/role`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
           const rolePermissionData = await response.json();
           const permittedRole = rolePermissionData.results.find(
             (result) => result.id === user.role
@@ -56,10 +62,15 @@ export const AuthProvider = ({ children }) => {
   }, [user.role]);
 
   const login = async (email, password) => {
+    const token = 'localStorage.getItem("refreshToken")';
+
     try {
       const res = await fetch(`${apiURL}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -80,10 +91,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyOtp = async (otp) => {
+    const token = 'localStorage.getItem("refreshToken")';
     try {
       const res = await fetch(`${apiURL}/auth/login/verify-otp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email: emailForOtp, otp }),
       });
 
@@ -103,7 +118,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         const errorData = await res.json();
         if (location.pathname === `/otp`) {
-          toast.error(errorData.message ||"Wrong OTP. Please try again.");
+          toast.error(errorData.message || "Wrong OTP. Please try again.");
         }
       }
     } catch (err) {

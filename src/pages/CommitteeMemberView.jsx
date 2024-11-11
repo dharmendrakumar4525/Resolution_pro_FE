@@ -29,10 +29,16 @@ export default function ViewCommitteeMember() {
     email: "",
   });
   const { id } = useParams();
+  const token = 'localStorage.getItem("refreshToken")';
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/committee-member/${id}`);
+        const response = await fetch(`${apiURL}/committee-member/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.committee_members);
         console.log(data.committee_members, "badddi");

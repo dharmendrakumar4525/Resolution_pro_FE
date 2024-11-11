@@ -12,17 +12,17 @@ export default function EditCommitteeMember() {
   const [committeeList, setCommitteeList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
     clientName: "",
     committee: "",
     isEmail: false,
     committeeMembers: [],
   });
+  const token = localStorage.getItem("refreshToken");
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const token = localStorage.getItem("refreshToken");
-
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -38,7 +38,12 @@ export default function EditCommitteeMember() {
 
     const fetchCommitteeList = async () => {
       try {
-        const response = await fetch(`${apiURL}/committee-master`);
+        const response = await fetch(`${apiURL}/committee-master`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setCommitteeList(data.results);
       } catch (error) {
@@ -48,7 +53,12 @@ export default function EditCommitteeMember() {
 
     const fetchCommitteeMember = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/committee-member/${id}`);
+        const response = await fetch(`${apiURL}/committee-member/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
 
         if (data) {
@@ -147,11 +157,15 @@ export default function EditCommitteeMember() {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
+    setButtonLoading(true);
     try {
       // PATCH request to update the committee member
       const response = await fetch(`${apiURL}/committee-member/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
 
@@ -169,6 +183,7 @@ export default function EditCommitteeMember() {
       toast.error("Failed to update committee member. Please try again.");
     } finally {
       setLoading(false);
+      setButtonLoading(false);
     }
   };
 

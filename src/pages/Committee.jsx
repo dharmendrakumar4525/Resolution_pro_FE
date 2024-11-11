@@ -15,7 +15,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
 
-
 export default function Committee() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
@@ -23,17 +22,24 @@ export default function Committee() {
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
     committeeName: "",
   });
   const { rolePermissions } = useAuth();
-
+  const token = 'localStorage.getItem("refreshToken")';
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(
-          `${apiURL}/committee-master?page=${pageNo}`
+          `${apiURL}/committee-master?page=${pageNo}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setRows(data.results);
@@ -71,7 +77,10 @@ export default function Committee() {
       const response = await fetch(`${apiURL}/committee-master/${row?.id}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
       });
 
@@ -92,11 +101,13 @@ export default function Committee() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       if (editingRow) {
         await fetch(`${apiURL}/committee-master/${editingRow.id}`, {
           method: "PATCH",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ name: formData.committeeName }),
@@ -113,6 +124,7 @@ export default function Committee() {
         const response = await fetch(`${apiURL}/committee-master`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ name: formData.committeeName }),
@@ -124,6 +136,8 @@ export default function Committee() {
       handleCloseModal();
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
   const handlePageChange = (newPage) => {
@@ -135,24 +149,24 @@ export default function Committee() {
     { header: "Actions", field: "action" },
   ];
   const userPermissions =
-  rolePermissions.find((perm) => perm.moduleName === "Committee")
-    ?.childList || [];
+    rolePermissions.find((perm) => perm.moduleName === "Committee")
+      ?.childList || [];
 
-const hasPermission = (action) =>
-  userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Master</h4>
           {hasPermission("add") && (
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
           )}
         </div>
 
@@ -174,7 +188,17 @@ const hasPermission = (action) =>
                 />
               </Form.Group>
               <Button variant="primary" type="submit" className="mt-3 me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Form>
           </Modal.Body>
@@ -209,23 +233,23 @@ const hasPermission = (action) =>
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
                     <td>
-                    {hasPermission("edit") && (
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleEditClick(row)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                    )}
-                    {hasPermission("delete") && (
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    )}
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

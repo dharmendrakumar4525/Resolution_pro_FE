@@ -32,6 +32,7 @@ export default function MeetingAgendaTemplate() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [refresh, setRefresh] = useState(true);
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
@@ -42,12 +43,18 @@ export default function MeetingAgendaTemplate() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
+  const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         const pageSize = 10;
         const filteredData = data.results.filter((row) => {
@@ -117,7 +124,9 @@ export default function MeetingAgendaTemplate() {
         `${apiURL}/meeting-agenda-template/${row?.id}`,
         {
           method: "DELETE",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -167,6 +176,7 @@ export default function MeetingAgendaTemplate() {
       toast.error("Please fill out all fields before submitting.");
       return;
     }
+    setButtonLoading(true);
     try {
       let response;
       if (editingRow) {
@@ -174,20 +184,37 @@ export default function MeetingAgendaTemplate() {
           `${apiURL}/meeting-agenda-template/${editingRow?.id}`,
           {
             method: "PATCH",
+
             headers: {
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
+
             body: JSON.stringify(formData),
           }
         );
+        if (!response.ok) {
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) =>
+                data.message ||
+                "Failed to edit agenda template. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
+        }
         setRefresh(!refresh);
         toast.success("Meeting Agenda template edited successfully");
+        setOpenAddModal(false);
       } else {
         response = await fetch(`${apiURL}/meeting-agenda-template`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
         if (!response.ok) {
@@ -207,6 +234,8 @@ export default function MeetingAgendaTemplate() {
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
   const handlePageChange = (newPage) => {
@@ -317,7 +346,17 @@ export default function MeetingAgendaTemplate() {
                 Cancel
               </Button>
               <Button type="submit" variant="secondary" className="ml-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Form>
           </Modal.Body>

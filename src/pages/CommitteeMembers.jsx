@@ -32,12 +32,19 @@ export default function CommitteeMembers() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
+  const token = 'localStorage.getItem("refreshToken")';
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(
-          `${apiURL}/committee-member?page=${pageNo}`
+          `${apiURL}/committee-member?page=${pageNo}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setRows(data.results);
@@ -53,7 +60,12 @@ export default function CommitteeMembers() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/customer-maintenance`);
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         const data = await response.json();
         setClientList(data.docs);
@@ -69,7 +81,12 @@ export default function CommitteeMembers() {
   useEffect(() => {
     const fetchCommitteeData = async () => {
       try {
-        const response = await fetch(`${apiURL}/committee-master`);
+        const response = await fetch(`${apiURL}/committee-master`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setCommitteeList(data.results);
       } catch (error) {
@@ -84,7 +101,13 @@ export default function CommitteeMembers() {
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
-        `${apiURL}/director-data/directors/${clientId}`
+        `${apiURL}/director-data/directors/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data = await response.json();
       setDirectorList(Array.isArray(data) ? data : []);
@@ -118,7 +141,10 @@ export default function CommitteeMembers() {
     try {
       const response = await fetch(`${apiURL}/committee-member/${row?.id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) throw new Error("Failed to delete item");

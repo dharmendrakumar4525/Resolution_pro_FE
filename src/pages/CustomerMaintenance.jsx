@@ -70,12 +70,12 @@ export default function CustomerMaintenance() {
   const userManagerName = JSON.parse(localStorage.getItem("user"))?.name;
   const userManagerId = JSON.parse(localStorage.getItem("user"))?.id;
   const navigate = useNavigate();
+  const token = 'localStorage.getItem("refreshToken")';
 
   useEffect(() => {
     const fetchData = async (pageNo) => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("refreshToken");
         const response = await fetch(
           `${apiURL}/customer-maintenance?page=${pageNo}`,
           {
@@ -102,7 +102,13 @@ export default function CustomerMaintenance() {
     const fetchManagers = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/users?role=672c47cb38903b464c9d2923`
+          `${apiURL}/users?role=672c47cb38903b464c9d2923`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setManagers(data.results);
@@ -120,7 +126,9 @@ export default function CustomerMaintenance() {
         `${apiURL}/customer-maintenance/${row?._id}`,
         {
           method: "DELETE",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }

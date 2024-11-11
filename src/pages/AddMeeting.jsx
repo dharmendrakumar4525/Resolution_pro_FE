@@ -26,9 +26,10 @@ export default function AddMeeting() {
   const [clientList, setClientList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  console.log(user);
+  const token = 'localStorage.getItem("refreshToken")';
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -53,7 +54,12 @@ export default function AddMeeting() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting`);
+        const response = await fetch(`${apiURL}/meeting`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.results);
         console.log(data.results, "sadass");
@@ -69,8 +75,6 @@ export default function AddMeeting() {
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const token = localStorage.getItem("refreshToken");
-
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -86,9 +90,19 @@ export default function AddMeeting() {
     };
     const fetchAgendaList = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
-        setAgendaList(data.results);
+        const usableAgendas = data.results.filter(
+          (item) => item.status === "usable"
+        );
+
+        setAgendaList(usableAgendas);
+        console.log(data.results, "mll");
       } catch (error) {
         console.error("Error fetching Agenda:", error);
       }
@@ -99,7 +113,13 @@ export default function AddMeeting() {
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
-        `${apiURL}/director-data/directors/${clientId}`
+        `${apiURL}/director-data/directors/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data = await response.json();
       setDirectorList(Array.isArray(data) ? data : []);
@@ -220,6 +240,7 @@ export default function AddMeeting() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     if (!validateForm()) {
       return;
     }
@@ -227,10 +248,12 @@ export default function AddMeeting() {
       let response;
       if (editingRow) {
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
-          method: "PATCH",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
+          method: "PATCH",
           body: JSON.stringify(formData),
         });
         toast.success("Meeting template edited successfully");
@@ -238,6 +261,7 @@ export default function AddMeeting() {
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
@@ -271,6 +295,8 @@ export default function AddMeeting() {
       });
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -541,7 +567,17 @@ export default function AddMeeting() {
                 Cancel
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </div>
           </Form>

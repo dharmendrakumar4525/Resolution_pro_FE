@@ -23,14 +23,22 @@ export default function RoleMaster() {
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
     roleName: "",
   });
   const { rolePermissions } = useAuth();
+  const token = 'localStorage.getItem("refreshToken")';
+
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/role?page=${pageNo}`);
+        const response = await fetch(`${apiURL}/role?page=${pageNo}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.results);
         setTotalPages(data.totalPages);
@@ -75,7 +83,9 @@ export default function RoleMaster() {
     try {
       const response = await fetch(`${apiURL}/role/${row.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -86,7 +96,7 @@ export default function RoleMaster() {
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
       if (rows.length === 1 && page > 1) {
-        setPage(page - 1); 
+        setPage(page - 1);
       }
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -97,13 +107,17 @@ export default function RoleMaster() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       if (editingRow) {
         await fetch(`${apiURL}/role/${editingRow.id}`, {
           method: "PATCH",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({ role: formData.roleName }),
         });
         setRows((prevRows) =>
@@ -115,9 +129,12 @@ export default function RoleMaster() {
       } else {
         const response = await fetch(`${apiURL}/role`, {
           method: "POST",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({ role: formData.roleName }),
         });
         const data = await response.json();
@@ -127,6 +144,8 @@ export default function RoleMaster() {
       handleCloseModal();
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handlePageChange = (newPage) => {
@@ -178,7 +197,17 @@ export default function RoleMaster() {
                 />
               </Form.Group>
               <Button variant="primary" type="submit" className="mt-3 me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Form>
           </Modal.Body>

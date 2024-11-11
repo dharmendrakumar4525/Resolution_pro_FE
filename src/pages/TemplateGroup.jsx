@@ -31,6 +31,7 @@ export default function TemplateGroup() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
     meetingType: "",
@@ -40,7 +41,7 @@ export default function TemplateGroup() {
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
-
+  const token = 'localStorage.getItem("refreshToken")';
   const resetFormData = () => {
     setFormData({
       meetingType: "",
@@ -94,12 +95,26 @@ export default function TemplateGroup() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/template-group?page=${pageNo}`);
+        const response = await fetch(
+          `${apiURL}/template-group?page=${pageNo}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setTotalPages(data.totalPages);
 
         const responseMeetingAgendaTemplate = await fetch(
-          `${apiURL}/meeting-agenda-template`
+          `${apiURL}/meeting-agenda-template`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const dataMeetingAgendaTemplate =
           await responseMeetingAgendaTemplate.json();
@@ -127,6 +142,7 @@ export default function TemplateGroup() {
       const response = await fetch(`${apiURL}/template-group/${row?.id}`, {
         method: "DELETE",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -153,6 +169,7 @@ export default function TemplateGroup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     if (
       !formData.groupName ||
       !formData.meetingType ||
@@ -167,9 +184,12 @@ export default function TemplateGroup() {
           `${apiURL}/template-group/${editingRow?.id}`,
           {
             method: "PATCH",
+
             headers: {
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
+
             body: JSON.stringify(formData),
           }
         );
@@ -179,9 +199,12 @@ export default function TemplateGroup() {
       } else {
         const response = await fetch(`${apiURL}/template-group`, {
           method: "POST",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
 
@@ -203,6 +226,8 @@ export default function TemplateGroup() {
     } catch (error) {
       console.error("Error adding/editing item:", error);
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handleViewTemplateName = (row, e) => {
@@ -282,7 +307,17 @@ export default function TemplateGroup() {
               </Form.Group>
 
               <Button variant="primary" type="submit" className="mt-3 me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Form>
           </Modal.Body>
@@ -309,7 +344,7 @@ export default function TemplateGroup() {
                 <tr>
                   <th>Group Name</th>
                   <th>Meeting Type</th>
-                  <th>No. Of Template</th>
+                  <th>View Templates</th>
                   <th>Created By</th>
                   <th>Actions</th>
                 </tr>
@@ -320,7 +355,6 @@ export default function TemplateGroup() {
                     <td>{row?.groupName || "No Group Name"}</td>
                     <td>{row?.meetingType}</td>
                     <td>
-                      {row?.numberOfTemplate}{" "}
                       <button
                         className="director-btn"
                         onClick={(e) => handleViewTemplateName(row, e)}

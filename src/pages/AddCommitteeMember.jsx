@@ -17,14 +17,13 @@ export default function AddCommitteeMember({ onSave }) {
     committeeMembers: [{ name: "", from: "", to: "", email: "" }], // Initial placeholder member
   });
   const [loading, setLoading] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
-
+  const token = 'localStorage.getItem("refreshToken")';
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const token = localStorage.getItem("refreshToken");
-
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,7 +39,12 @@ export default function AddCommitteeMember({ onSave }) {
 
     const fetchCommitteeList = async () => {
       try {
-        const response = await fetch(`${apiURL}/committee-master`);
+        const response = await fetch(`${apiURL}/committee-master`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setCommitteeList(data.results);
       } catch (error) {
@@ -55,7 +59,13 @@ export default function AddCommitteeMember({ onSave }) {
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
-        `${apiURL}/director-data/directors/${clientId}`
+        `${apiURL}/director-data/directors/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data = await response.json();
       setDirectorList(Array.isArray(data) ? data : []);
@@ -122,6 +132,7 @@ export default function AddCommitteeMember({ onSave }) {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
+    setButtonLoading(true);
     try {
       const payload = {
         client_name: formData.clientName,
@@ -131,8 +142,12 @@ export default function AddCommitteeMember({ onSave }) {
       };
 
       const response = await fetch(`${apiURL}/committee-member`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -152,6 +167,7 @@ export default function AddCommitteeMember({ onSave }) {
       toast.error("Failed to add member. Please try again.");
     } finally {
       setLoading(false);
+      setButtonLoading(false);
     }
   };
 
@@ -269,7 +285,17 @@ export default function AddCommitteeMember({ onSave }) {
             Add Committee Member
           </Button>
           <Button variant="primary" type="submit" disabled={loading}>
-            {loading ? <Spinner animation="border" size="sm" /> : "Save"}
+            {buttonLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Save"
+            )}
           </Button>
         </div>
       </Form>

@@ -98,13 +98,13 @@ const CustomerMaintenanceDetail = () => {
       <div className="mt-5"></div>
       <h3>Locations</h3>
       <div className="card-section">
-        <Table className="Master-table">
-          <tbody>
+        <Table borderless responsive>
+          <tbody className="card-section">
             {row?.locations && row?.locations.length > 0 ? (
               row?.locations.map((loc, index) => (
                 <div className="director-card" key={index}>
                   <tr>
-                    <td>
+                    <td style={{ width: "200px", fontWeight: "bold" }}>
                       <strong>Location Name:</strong>
                     </td>
                     <td>{loc.locationName || "-"}</td>

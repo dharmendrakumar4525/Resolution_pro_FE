@@ -18,11 +18,18 @@ const ManagePermissions = () => {
   const [dashboardPermissions, setDashboardPermission] = useState([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const token = 'localStorage.getItem("refreshToken")';
 
   useEffect(() => {
     const fetchRoleData = async () => {
       try {
-        const response = await fetch(`${apiURL}/role`);
+        const response = await fetch(`${apiURL}/role`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const rolePermissionData = await response.json();
         if (rolePermissionData && rolePermissionData.results) {
           const roleArray = rolePermissionData.results.map((result) => ({
@@ -62,7 +69,12 @@ const ManagePermissions = () => {
   useEffect(() => {
     const fetchRolePermissionData = async () => {
       try {
-        const response = await fetch(`${apiURL}/role/${selectedRole}`);
+        const response = await fetch(`${apiURL}/role/${selectedRole}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const rolePermissionData = await response.json();
 
         const initialSelectedPermissions =
@@ -119,13 +131,16 @@ const ManagePermissions = () => {
         },
       ],
     };
-
+    setButtonLoading(true);
     try {
       const response = await fetch(`${apiURL}/role/${selectedRole}`, {
         method: "PATCH",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(data),
       });
       if (!response.ok) {
@@ -138,6 +153,8 @@ const ManagePermissions = () => {
       window.location.reload();
     } catch (error) {
       toast.error(`Error updating role permissions: ${error.message}`);
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
 
@@ -220,7 +237,19 @@ const ManagePermissions = () => {
             ))}
           </Row>
 
-          <Button type="submit">Update Role Permissions</Button>
+          <Button type="submit">
+            {buttonLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Update Role Permissions"
+            )}
+          </Button>
         </form>
       </Container>
     </div>

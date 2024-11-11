@@ -21,7 +21,7 @@ const TemplateEditor = () => {
   const [docFile, setDocFile] = useState(null); // For storing the original DOCX file
   const location = useLocation();
   const { id } = useParams();
-
+  const token = 'localStorage.getItem("refreshToken")';
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   console.log(fileUrl, "mukul");
@@ -110,7 +110,12 @@ const TemplateEditor = () => {
   };
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
@@ -151,6 +156,12 @@ const TemplateEditor = () => {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+
         body: formData,
       });
 
@@ -336,9 +347,8 @@ const TemplateEditor = () => {
           )} */}
         </div>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </Container>
-
   );
 };
 

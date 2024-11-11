@@ -30,9 +30,9 @@ export default function Meeting() {
   const [clientList, setClientList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
+  const token = localStorage.getItem("refreshToken");
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  console.log(user);
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -58,7 +58,12 @@ export default function Meeting() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting?page=${pageNo}`);
+        const response = await fetch(`${apiURL}/meeting?page=${pageNo}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.results);
         setTotalPages(data.totalPages);
@@ -73,8 +78,6 @@ export default function Meeting() {
   }, [page]);
   useEffect(() => {
     const fetchClientList = async () => {
-      const token = localStorage.getItem("refreshToken");
-
       try {
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
@@ -91,7 +94,12 @@ export default function Meeting() {
     };
     const fetchAgendaList = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setAgendaList(data.results);
         console.log(data.results, "agendaName");
@@ -107,7 +115,9 @@ export default function Meeting() {
     try {
       const response = await fetch(`${apiURL}/meeting/${row?.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

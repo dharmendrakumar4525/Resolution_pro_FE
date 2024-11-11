@@ -30,7 +30,7 @@ const Home = () => {
     issueDate: "",
     status: "",
   });
-
+  const token = 'localStorage.getItem("refreshToken")';
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
   const [managers, setManagers] = useState([]);
@@ -85,7 +85,12 @@ const Home = () => {
   useEffect(() => {
     const fetchManagers = async () => {
       try {
-        const response = await fetch(`${apiURL}/users`);
+        const response = await fetch(`${apiURL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         const managerList = data.results.filter(
           (user) => user.role.role === "manager"
@@ -128,7 +133,13 @@ const Home = () => {
       const fetchResolutions = async () => {
         try {
           const response = await fetch(
-            `${apiURL}/resolutions/dashboard/${selectedManager}`
+            `${apiURL}/resolutions/dashboard/${selectedManager}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
           const data = await response.json();
           const companyResolutions =
@@ -171,13 +182,24 @@ const Home = () => {
         if (selectedManager && selectedCompany) {
           // Fetch resolutions for selected manager and company
           response = await fetch(
-            `${apiURL}/resolutions/dashboard/${selectedManager}`
+            `${apiURL}/resolutions/dashboard/${selectedManager}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
           data = await response.json();
           companyResolutions = data.data.resolutiondata[selectedCompany] || [];
         } else if (user.role === "admin") {
           // Fetch all resolutions for admin if no manager and company are selected
-          response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
+          response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
           data = await response.json();
           companyResolutions = data.data.resolutiondata[selectedCompany] || [];
           // For admin, use the resolutions of all companies

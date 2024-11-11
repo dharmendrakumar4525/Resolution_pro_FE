@@ -25,6 +25,7 @@ export default function CustomerMaintenance() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,6 +34,7 @@ export default function CustomerMaintenance() {
   });
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
+  const token = 'localStorage.getItem("refreshToken")';
 
   useEffect(() => {
     axios
@@ -49,7 +51,12 @@ export default function CustomerMaintenance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/users`);
+        const response = await fetch(`${apiURL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.results);
       } catch (error) {
@@ -94,7 +101,9 @@ export default function CustomerMaintenance() {
     try {
       const response = await fetch(`${apiURL}/users/${row?.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -117,17 +126,26 @@ export default function CustomerMaintenance() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       if (editingRow) {
         await fetch(`${apiURL}/users/${editingRow.id}`, {
           method: "PATCH",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
 
-        const response = await fetch(`${apiURL}/users`);
+        const response = await fetch(`${apiURL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         if (!response.ok) {
           const errorMessage = await response
             .json()
@@ -154,9 +172,12 @@ export default function CustomerMaintenance() {
       } else {
         const response = await fetch(`${apiURL}/users`, {
           method: "POST",
+
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
 
@@ -169,7 +190,12 @@ export default function CustomerMaintenance() {
           toast.error(errorMessage);
           return;
         }
-        const newResponse = await fetch(`${apiURL}/users`);
+        const newResponse = await fetch(`${apiURL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await newResponse.json();
         setRows(data.results);
 
@@ -179,6 +205,8 @@ export default function CustomerMaintenance() {
       handleCloseAddModal();
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handlePageChange = (newPage) => {
@@ -278,7 +306,17 @@ export default function CustomerMaintenance() {
                 Cancel
               </Button>
               <Button type="submit" variant="secondary" className="ml-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Form>
           </Modal.Body>
@@ -305,7 +343,7 @@ export default function CustomerMaintenance() {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Email Verified</th>
+                  {/* <th>Email Verified</th> */}
                   <th>Role</th>
                   <th>Actions</th>
                 </tr>
@@ -315,7 +353,7 @@ export default function CustomerMaintenance() {
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
                     <td>{row?.email}</td>
-                    <td>{row?.isEmailVerified ? "Yes" : "No"}</td>
+                    {/* <td>{row?.isEmailVerified ? "Yes" : "No"}</td> */}
                     <td>{row?.role?.role}</td>
                     <td>
                       {hasPermission("edit") && (

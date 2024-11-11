@@ -6,13 +6,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
+const [buttonLoading, setButtonLoading] = useState(false);
 export default function CustomerMaintenanceForm() {
   const navigate = useNavigate();
   const { customerId } = useParams();
   const [managers, setManagers] = useState([]);
   const [validated, setValidated] = useState(false);
-
+  const token = 'localStorage.getItem("refreshToken")';
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -45,7 +45,13 @@ export default function CustomerMaintenanceForm() {
     const fetchManagers = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/users?role=672c47cb38903b464c9d2923`
+          `${apiURL}/users?role=672c47cb38903b464c9d2923`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setManagers(data.results);
@@ -60,8 +66,6 @@ export default function CustomerMaintenanceForm() {
     if (customerId) {
       const fetchCustomerData = async () => {
         try {
-          const token = localStorage.getItem("refreshToken");
-
           const response = await fetch(
             `${apiURL}/customer-maintenance/${customerId}`,
             {
@@ -78,10 +82,12 @@ export default function CustomerMaintenanceForm() {
             ...sanitizedData,
             alloted_manager: {
               ...prevData.alloted_manager,
-              id: sanitizedData.alloted_manager?.id || "",
+              id: sanitizedData.alloted_manager?.role || "",
               name: sanitizedData.alloted_manager?.name || "",
             },
           }));
+          console.log(sanitizedData, "logg");
+          console.log(formData, "loggy");
         } catch (error) {
           console.error("Error fetching customer data:", error);
           toast.error("Failed to load customer data");
@@ -164,6 +170,7 @@ export default function CustomerMaintenanceForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     const form = e.currentTarget;
     if (form.checkValidity() === false) {
       e.stopPropagation();
@@ -199,6 +206,8 @@ export default function CustomerMaintenanceForm() {
       } catch (error) {
         console.error("Error saving customer data:", error);
         toast.error("Failed to save customer data");
+      } finally {
+        setButtonLoading(false); // Hide button spinner
       }
     }
     setValidated(true);
@@ -289,7 +298,7 @@ export default function CustomerMaintenanceForm() {
               <Form.Group controlId="revision">
                 <Form.Label>Revision</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="number"
                   value={formData.revision}
                   onChange={handleChange}
                   placeholder="Enter Revision"
@@ -301,7 +310,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Manager</Form.Label>
                 <Form.Control
                   as="select"
-                  value={formData.alloted_manager.name}
+                  value={formData.alloted_manager.id}
                   onChange={(e) =>
                     handleChange({
                       target: { id: "alloted_manager", value: e.target.value },
@@ -309,7 +318,6 @@ export default function CustomerMaintenanceForm() {
                   }
                 >
                   <option value="">Select Manager</option>
-                  {/* Replace with actual managers data */}
                   {managers.map((manager) => (
                     <option key={manager.id} value={manager.id}>
                       {manager.name}
@@ -440,7 +448,7 @@ export default function CustomerMaintenanceForm() {
                   <Form.Group controlId={`postalCode-${index}`}>
                     <Form.Label>Postal Code</Form.Label>
                     <Form.Control
-                      type="text"
+                      type="number"
                       name="postalCode"
                       value={location.postalCode}
                       onChange={(e) =>
@@ -507,7 +515,7 @@ export default function CustomerMaintenanceForm() {
                   <Form.Group controlId={`gst-${index}`}>
                     <Form.Label>GST</Form.Label>
                     <Form.Control
-                      type="text"
+                      type="number"
                       name="gst"
                       value={location.gst}
                       onChange={(e) =>
@@ -552,7 +560,17 @@ export default function CustomerMaintenanceForm() {
             Location
           </Button>
           <Button variant="success" type="submit" className="ms-3 float-end">
-            {customerId ? "Update Customer" : "Save"}
+            {buttonLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              <>{customerId ? "Update Customer" : "Save"}</>
+            )}
           </Button>
         </Form>
       </div>

@@ -20,6 +20,7 @@ export default function Directors() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
     company_id: "",
     name: "",
@@ -28,13 +29,21 @@ export default function Directors() {
     "din/pan": "",
     email: "",
   });
-
+  const token = 'localStorage.getItem("refreshToken")';
   const { id } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/director-data/directors/${id}`);
+        const response = await fetch(
+          `${apiURL}/director-data/directors/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setRows(data);
       } catch (error) {
@@ -66,13 +75,16 @@ export default function Directors() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       if (editingRow) {
         await fetch(`${apiURL}/director-data/${editingRow?.id}`, {
           method: "PATCH",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
         setRows((prevRows) =>
@@ -85,8 +97,10 @@ export default function Directors() {
         const response = await fetch(`${apiURL}/director-data`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
 
@@ -108,6 +122,8 @@ export default function Directors() {
       });
     } catch (error) {
       toast.error("Failed to add/update director. Please try again.");
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
 
@@ -115,12 +131,14 @@ export default function Directors() {
     try {
       await fetch(`${apiURL}/director-data/${row?.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
-    
+
       toast.success("Director deleted successfully");
     } catch (error) {
       toast.error("Failed to delete director");
@@ -221,7 +239,17 @@ export default function Directors() {
               </Form.Group>
 
               <Button type="submit" variant="primary" className="me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
               <Button
                 variant="secondary"
@@ -246,8 +274,8 @@ export default function Directors() {
           </div>
         ) : (
           <div className="table-responsive mt-5">
-          <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
                   <th>Email</th>

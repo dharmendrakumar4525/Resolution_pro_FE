@@ -27,8 +27,9 @@ export default function EditMeeting() {
   const [clientList, setClientList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
-
+  const [buttonLoading, setButtonLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user")) || {};
+  const token = 'localStorage.getItem("refreshToken")';
   const location = useLocation();
   const row = location.state?.row;
   console.log(user);
@@ -57,8 +58,6 @@ export default function EditMeeting() {
   useEffect(() => {
     const fetchClientList = async () => {
       try {
-        const token = localStorage.getItem("refreshToken");
-
         const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -74,9 +73,18 @@ export default function EditMeeting() {
     };
     const fetchAgendaList = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`);
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
-        setAgendaList(data.results);
+        const usableAgendas = data.results.filter(
+          (item) => item.status === "usable"
+        );
+
+        setAgendaList(usableAgendas);
       } catch (error) {
         console.error("Error fetching Agenda:", error);
       }
@@ -87,7 +95,13 @@ export default function EditMeeting() {
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
-        `${apiURL}/director-data/directors/${clientId}`
+        `${apiURL}/director-data/directors/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data = await response.json();
       setDirectorList(Array.isArray(data) ? data : []);
@@ -272,6 +286,7 @@ export default function EditMeeting() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       let response;
       if (!validateForm()) {
@@ -282,8 +297,10 @@ export default function EditMeeting() {
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
           method: "PATCH",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
         if (!response.ok) {
@@ -298,8 +315,10 @@ export default function EditMeeting() {
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(formData),
         });
         if (!response.ok) {
@@ -332,6 +351,8 @@ export default function EditMeeting() {
       });
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
 
@@ -610,7 +631,17 @@ export default function EditMeeting() {
                 Cancel
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </div>
           </Form>

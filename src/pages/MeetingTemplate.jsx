@@ -28,6 +28,7 @@ export default function MeetingTemplate() {
     "din/pan": "",
     email: "",
   });
+  const token = localStorage.getItem("refreshToken");
 
   const navigate = useNavigate();
 
@@ -36,7 +37,12 @@ export default function MeetingTemplate() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`);
+        const response = await fetch(`${apiURL}/meeting/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data?.agendaItems);
         console.log(data, "pert");

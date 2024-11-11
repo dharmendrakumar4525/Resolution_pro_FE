@@ -25,6 +25,8 @@ const BoardResolution = () => {
   const [companies, setCompanies] = useState([]);
   const [templateList, setTemplateList] = useState([]);
   const [editingRow, setEditingRow] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const token = 'localStorage.getItem("refreshToken")';
 
   const [formData, setFormData] = useState({
     status: "created",
@@ -47,7 +49,12 @@ const BoardResolution = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/resolutions`);
+        const response = await fetch(`${apiURL}/resolutions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.data.results);
         const responseMeetingAgendaTemplate = await fetch(
@@ -101,11 +108,16 @@ const BoardResolution = () => {
     e.preventDefault();
 
     const resolutionData = { ...formData };
-
+    setButtonLoading(true);
     try {
       const response = await fetch(`${apiURL}/resolutions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+
         body: JSON.stringify(resolutionData), // Send modified data
       });
 
@@ -118,7 +130,12 @@ const BoardResolution = () => {
       toast.success("Resolution added successfully");
 
       const fetchUpdatedResolutions = async () => {
-        const refreshedResponse = await fetch(`${apiURL}/resolutions`);
+        const refreshedResponse = await fetch(`${apiURL}/resolutions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const refreshedData = await refreshedResponse.json();
 
         setRows(refreshedData.data.results);
@@ -129,6 +146,8 @@ const BoardResolution = () => {
       resetForm();
     } catch (error) {
       toast.error("Failed to add resolution. Please try again.");
+    } finally {
+      setButtonLoading(false); // Hide button spinner
     }
   };
 
@@ -196,7 +215,9 @@ const BoardResolution = () => {
     try {
       const response = await fetch(`${apiURL}/resolutions/${row.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -380,7 +401,17 @@ const BoardResolution = () => {
               </div>
 
               <Button type="submit" variant="primary" className="me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
               <Button variant="secondary" onClick={handleClose}>
                 Cancel

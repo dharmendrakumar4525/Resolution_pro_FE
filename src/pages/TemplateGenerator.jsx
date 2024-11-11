@@ -25,7 +25,7 @@ const TemplateGenerator = () => {
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
   const [docFile, setDocFile] = useState(null);
-
+  const token = 'localStorage.getItem("refreshToken")';
   const { id } = useParams();
 
   const handleEditorChange = (content) => {
@@ -66,7 +66,15 @@ const TemplateGenerator = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`);
+        const response = await fetch(
+          `${apiURL}/meeting-agenda-template/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setRows(data);
         setFileUrl(data.fileName);
@@ -81,7 +89,12 @@ const TemplateGenerator = () => {
 
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
@@ -171,6 +184,12 @@ const TemplateGenerator = () => {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`, {
         method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+
         body: formData,
       });
 

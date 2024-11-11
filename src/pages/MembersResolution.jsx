@@ -21,10 +21,12 @@ const MembersResolution = () => {
   const [resolutionType, setResolutionType] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [selectedResolution, setSelectedResolution] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [templateList, setTemplateList] = useState([]);
   const [editingRow, setEditingRow] = useState(null);
+  const token = 'localStorage.getItem("refreshToken")';
 
   const [formData, setFormData] = useState({
     status: "created",
@@ -48,11 +50,22 @@ const MembersResolution = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/resolutions`);
+        const response = await fetch(`${apiURL}/resolutions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.data.results);
         const responseMeetingAgendaTemplate = await fetch(
-          `${apiURL}/meeting-agenda-template`
+          `${apiURL}/meeting-agenda-template`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const dataMeetingAgendaTemplate =
           await responseMeetingAgendaTemplate.json();
@@ -100,7 +113,7 @@ const MembersResolution = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setButtonLoading(true);
     // Create a copy of formData to modify conditionally
     const resolutionData = { ...formData };
 
@@ -109,7 +122,10 @@ const MembersResolution = () => {
     try {
       const response = await fetch(`${apiURL}/resolutions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(resolutionData), // Send modified data
       });
 
@@ -134,6 +150,8 @@ const MembersResolution = () => {
       resetForm();
     } catch (error) {
       toast.error("Failed to add resolution. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -202,7 +220,9 @@ const MembersResolution = () => {
     try {
       const response = await fetch(`${apiURL}/resolutions/${row.id}`, {
         method: "DELETE",
+
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -409,7 +429,17 @@ const MembersResolution = () => {
               </>
 
               <Button type="submit" variant="primary" className="me-2">
-                Save
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save"
+                )}
               </Button>
               <Button variant="secondary" onClick={handleClose}>
                 Cancel
