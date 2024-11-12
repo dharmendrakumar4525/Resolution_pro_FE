@@ -8,15 +8,13 @@ import { DetailedViewProvider } from "./context/DetailedViewContext";
 import UserMenu from "./components/UserMenu";
 import { ThemeProvider, createTheme } from "@mui/material";
 import LoginPage from "./pages/Login";
-import Typography from '@mui/material/Typography';
+import Typography from "@mui/material/Typography";
+import { toast, ToastContainer } from "react-toastify";
 
 import OtpPage from "./pages/OtpPage";
 import "./index.css";
 import "./App.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-
-
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const theme = createTheme({
   palette: {
@@ -56,38 +54,36 @@ const AppContent = () => {
   const { isVerified } = useContext(AuthContext);
 
   return (
-   
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-  {isVerified ? (
-    <>
-            <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            height: "70px",
-            padding: "0 20px",
-            backgroundColor: "#262B3F", 
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            zIndex: 10, // Ensure it is on top
-          }}
-        >
-          <Box sx={{ flexGrow: 1 }}>
-            <h4 style={{ color: "#ffffff", fontWeight: "bold", margin: 0 }}>
-              Resolution Pro
-            </h4>
+      {isVerified ? (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "70px",
+              padding: "0 20px",
+              backgroundColor: "#262B3F",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              zIndex: 10, // Ensure it is on top
+            }}
+          >
+            <Box sx={{ flexGrow: 1 }}>
+              <h4 style={{ color: "#ffffff", fontWeight: "bold", margin: 0 }}>
+                Resolution Pro
+              </h4>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <UserMenu />
+            </Box>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <UserMenu />
-          </Box>
-        </Box>
-
 
           <Box sx={{ flexGrow: 1 }}>
             <AppRoutes />
           </Box>
 
           <Box
-          className="mt-3 "
+            className="mt-3 "
             component="footer"
             sx={{
               backgroundColor: "#fff",
@@ -108,11 +104,12 @@ const AppContent = () => {
               </a>
             </Box> */}
           </Box>
-
+          <ToastContainer />
         </>
       ) : (
         <Box sx={{ flexGrow: 1 }}>
-          <LoginPage/>
+          <LoginPage />
+          <ToastContainer />
         </Box>
       )}
     </Box>

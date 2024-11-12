@@ -34,6 +34,7 @@ import EditMeeting from "../pages/EditMeeting";
 import ViewCommitteeMember from "../pages/CommitteeMemberView";
 import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
+import ClientRecord from "../pages/ClientRecord";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -51,10 +52,10 @@ const RouteWithSidebar = ({ element }) => {
     localStorageIsSettingsVisible
   );
 
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-    localStorage.setItem("settingsVisible", !showSettings);
-  };
+  // const toggleSettings = () => {
+  //   setShowSettings(!showSettings);
+  //   localStorage.setItem("settingsVisible", !showSettings);
+  // };
 
   return (
     <>
@@ -296,6 +297,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Users />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/client-cin"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ClientRecord />} />
           ) : (
             <Navigate to="/login" />
           )

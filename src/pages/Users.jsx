@@ -38,20 +38,24 @@ export default function CustomerMaintenance() {
 
   useEffect(() => {
     axios
-      .get(`${apiURL}/role?page=${page}`)
+      .get(`${apiURL}/role`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => {
         setRoleList(response.data.results);
-        setTotalPages(response.data.totalPages);
       })
       .catch((error) => {
         console.error("Error fetching roles:", error);
       });
-  }, [page]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/users`, {
+        const response = await fetch(`${apiURL}/users?page=${page}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -59,6 +63,7 @@ export default function CustomerMaintenance() {
         });
         const data = await response.json();
         setRows(data.results);
+        setTotalPages(data.totalPages);
       } catch (error) {
         toast.error("Error fetching data");
       } finally {
@@ -66,7 +71,7 @@ export default function CustomerMaintenance() {
       }
     };
     fetchData();
-  }, []);
+  }, [page]);
 
   const handleOpenAddModal = () => {
     setFormData({

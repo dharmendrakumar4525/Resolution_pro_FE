@@ -118,8 +118,11 @@ export default function TemplateGroup() {
         );
         const dataMeetingAgendaTemplate =
           await responseMeetingAgendaTemplate.json();
+        const usableAgendas = dataMeetingAgendaTemplate.results.filter(
+          (item) => item.status === "usable"
+        );
 
-        setTemplateNames(dataMeetingAgendaTemplate.results);
+        setTemplateNames(usableAgendas);
         console.log(dataMeetingAgendaTemplate, "ds");
         const updatedRows = data.results.map((item) => ({
           ...item,
