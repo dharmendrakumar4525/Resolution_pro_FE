@@ -34,6 +34,8 @@ export default function MeetingAgendaTemplate() {
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [refresh, setRefresh] = useState(true);
+  const [filterName, setFilterName] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
     meetingType: "",
@@ -56,11 +58,16 @@ export default function MeetingAgendaTemplate() {
           },
         });
         const data = await response.json();
-        console.log(data,"with headers")
         const pageSize = 10;
         const filteredData = data.results.filter((row) => {
           if (user.role === "672c47c238903b464c9d2920") {
-            return true;
+            return (
+              (filterName === "" ||
+                row?.templateName
+                  ?.toLowerCase()
+                  .includes(filterName.toLowerCase())) &&
+              (filterStatus === "" || row?.status === filterStatus)
+            );
           } else if (user.role === "672c47cb38903b464c9d2923") {
             return (
               row?.status === "usable" ||
@@ -81,26 +88,17 @@ export default function MeetingAgendaTemplate() {
     };
 
     fetchAllData();
-  }, [page, user.role, user.id, refresh]);
+  }, [page, user.role, user.id, refresh, filterName, filterStatus]);
 
-  // useEffect(() => {
-  //   const fetchData = async (pageNo) => {
-  //     try {
-  //       const response = await fetch(
-  //         `${apiURL}/meeting-agenda-template?page=${pageNo}`
-  //       );
-  //       const data = await response.json();
-  //       setRows(data.results);
-  //       console.log(data.results);
-  //       setTotalPages(data.totalPages);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchData(page);
-  // }, [page]);
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    if (name == "filterName") {
+      setFilterName(value);
+    } else if (name === "filterStatus") {
+      setFilterStatus(value);
+    }
+    setPage(1);
+  };
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/template-generate/${row?.id}`);
@@ -256,6 +254,29 @@ export default function MeetingAgendaTemplate() {
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Meeting Agenda Template</h4>
+          {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin
+            <Form className="d-flex">
+              <Form.Control
+                type="text"
+                name="filterName"
+                placeholder="Search Template"
+                value={filterName}
+                onChange={handleFilterChange}
+                className="me-2"
+              />
+              <Form.Select
+                name="filterStatus"
+                value={filterStatus}
+                onChange={handleFilterChange}
+                className="me-2"
+              >
+                <option value="">All Statuses</option>
+                <option value="usable">Usable</option>
+                <option value="draft">Draft</option>
+                <option value="rejected">Rejected</option>
+              </Form.Select>
+            </Form>
+          )}
           {hasPermission("add") && (
             <Button
               variant="primary"
@@ -388,6 +409,8 @@ export default function MeetingAgendaTemplate() {
                   <th>File</th>
                   <th>Status</th>
                   <th>By</th>
+                  <th>Creation date</th>
+
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -416,8 +439,8 @@ export default function MeetingAgendaTemplate() {
                       </button>
                     </td>
                     <td>{row?.status}</td>
-                    {/* <td><a href={row?.fileName}>{row?.fileName}</a></td> */}
                     <td>{row?.by?.name}</td>
+                    <td>{new Date(row?.at).toLocaleDateString()}</td>
                     <td>
                       {hasPermission("edit") && (
                         <Button

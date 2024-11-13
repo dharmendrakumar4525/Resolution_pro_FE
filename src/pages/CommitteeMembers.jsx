@@ -38,7 +38,7 @@ export default function CommitteeMembers() {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(
-          `${apiURL}/committee-member?page=${pageNo}`,
+          `${apiURL}/committee-member?page=${pageNo}&limit=10`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

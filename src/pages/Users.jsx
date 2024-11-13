@@ -55,7 +55,7 @@ export default function CustomerMaintenance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/users?page=${page}`, {
+        const response = await fetch(`${apiURL}/users?page=${page}&limit=10`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function CustomerMaintenance() {
       name: row?.name,
       email: row?.email,
       password: row?.password,
-      role: row?.role?.role,
+      role: row?.role?.role || "",
     });
     setOpenAddModal(true);
   };
@@ -281,7 +281,7 @@ export default function CustomerMaintenance() {
                 <Form.Control
                   as="select"
                   name="role"
-                  value={formData.role.id}
+                  value={formData?.role?.id}
                   onChange={handleChange}
                 >
                   <option value="">Select Role</option>

@@ -96,7 +96,7 @@ export default function TemplateGroup() {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(
-          `${apiURL}/template-group?page=${pageNo}`,
+          `${apiURL}/template-group?page=${pageNo}&limit=10`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

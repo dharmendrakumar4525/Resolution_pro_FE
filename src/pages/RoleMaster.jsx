@@ -33,7 +33,7 @@ export default function RoleMaster() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/role?page=${pageNo}`, {
+        const response = await fetch(`${apiURL}/role?page=${pageNo}&limit=10`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

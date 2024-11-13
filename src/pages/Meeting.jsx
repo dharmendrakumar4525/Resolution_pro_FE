@@ -58,7 +58,7 @@ export default function Meeting() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting?page=${pageNo}`, {
+        const response = await fetch(`${apiURL}/meeting?page=${pageNo}&limit=10`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
