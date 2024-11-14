@@ -4,12 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFileAlt,
   faTable,
-  faSignOutAlt,
   faTimes,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
-import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar() {
@@ -28,8 +26,6 @@ export default function Sidebar() {
   };
 
   const CollapsableNavItem = ({ eventKey, title, icon, children }) => {
-    const defaultKey = pathname.includes(eventKey) ? eventKey : "";
-
     return (
       <Accordion activeKey={activeKey} onSelect={handleAccordionChange}>
         <Accordion.Item eventKey={eventKey}>
@@ -129,18 +125,8 @@ export default function Sidebar() {
               title="Master"
               icon={faFileAlt}
             >
-              {hasPermission("Template_group", "view") && (
-                <NavItem title="Template Group" link="/template-group" />
-              )}
-              {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
-              {hasPermission("Meeting", "view") && (
-                <NavItem title="Meeting" link="/meeting" />
-              )}
-              {hasPermission("Meeting_agenda_template", "view") && (
-                <NavItem
-                  title="Meeting Agenda Template"
-                  link="/meeting-agenda-template"
-                />
+              {hasPermission("Customer_Maintenance", "view") && (
+                <NavItem title="Client Records" link="/client-records" />
               )}
               {hasPermission("Committee", "view") && (
                 <NavItem title="Committee" link="/committee" />
@@ -148,8 +134,21 @@ export default function Sidebar() {
               {hasPermission("Committee_Members", "view") && (
                 <NavItem title="Committee Members" link="/committee-members" />
               )}
-              {hasPermission("Customer_Maintenance", "view") && (
-                <NavItem title="Client Records" link="/client-records" />
+              {hasPermission("Meeting_agenda_template", "view") && (
+                <NavItem
+                  title="Meeting Agenda Template"
+                  link="/meeting-agenda-template"
+                />
+              )}
+              {/* {hasPermission("Template_group", "view") && ( */}
+              <NavItem title="System Variables" link="/system-variables" />
+              {/* )} */}
+              {hasPermission("Template_group", "view") && (
+                <NavItem title="Template Group" link="/template-group" />
+              )}
+              {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="Meeting" link="/meeting" />
               )}
             </CollapsableNavItem>
             <CollapsableNavItem eventKey="users/" title="Users" icon={faUser}>

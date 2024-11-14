@@ -35,6 +35,7 @@ import ViewCommitteeMember from "../pages/CommitteeMemberView";
 import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
 import ClientRecord from "../pages/ClientRecord";
+import SystemVariables from "../pages/SystemVariables";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -43,19 +44,6 @@ const RouteWithSidebar = ({ element }) => {
     const timer = setTimeout(() => setLoaded(true), 1000);
     return () => clearTimeout(timer);
   }, []);
-
-  const localStorageIsSettingsVisible = () => {
-    return localStorage.getItem("settingsVisible") === "false" ? false : true;
-  };
-
-  const [showSettings, setShowSettings] = useState(
-    localStorageIsSettingsVisible
-  );
-
-  // const toggleSettings = () => {
-  //   setShowSettings(!showSettings);
-  //   localStorage.setItem("settingsVisible", !showSettings);
-  // };
 
   return (
     <>
@@ -167,6 +155,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<DocumentEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/system-variables"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<SystemVariables />} />
           ) : (
             <Navigate to="/login" />
           )
