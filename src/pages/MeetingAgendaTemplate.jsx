@@ -41,6 +41,7 @@ export default function MeetingAgendaTemplate() {
     meetingType: "",
     templateName: "",
     fileName: "",
+    status: "",
     by: user.id,
   });
   const { rolePermissions } = useAuth();
@@ -101,7 +102,7 @@ export default function MeetingAgendaTemplate() {
   };
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
-    navigate(`/template-generate/${row?.id}`);
+    navigate(`/template-generate/${row?.id}`, { state: row?.fileName });
   };
 
   const handleOpenAddModal = () => {
@@ -156,7 +157,15 @@ export default function MeetingAgendaTemplate() {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
-
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        fileName: file,
+      }));
+    }
+  };
   const handleEditClick = (row) => {
     console.log(row, "muk");
     setEditingRow(row);
@@ -166,78 +175,75 @@ export default function MeetingAgendaTemplate() {
       templateName: row?.templateName,
       fileName: row?.fileName,
       status: row?.status,
+      by: row?.by?.id,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.meetingType || !formData.templateName || !formData.fileName) {
+
+    if (!formData.meetingType || !formData.templateName) {
       toast.error("Please fill out all fields before submitting.");
       return;
     }
+
     setButtonLoading(true);
     try {
       let response;
+      const requestData = new FormData();
+
+      requestData.append("meetingType", formData.meetingType);
+      requestData.append("templateName", formData.templateName);
+      requestData.append("by", formData.by);
+
       if (editingRow) {
+        requestData.append("status", formData.status);
         response = await fetch(
           `${apiURL}/meeting-agenda-template/${editingRow?.id}`,
           {
             method: "PATCH",
-
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
             },
-
-            body: JSON.stringify(formData),
+            body: requestData,
           }
         );
-
-        if (!response.ok) {
-          const errorMessage = await response
-            .json()
-            .then(
-              (data) =>
-                data.message ||
-                "Failed to edit agenda template. Please try again."
-            );
-          toast.error(errorMessage);
-          return;
-        }
-        setRefresh(!refresh);
-        toast.success("Meeting Agenda template edited successfully");
-        setOpenAddModal(false);
       } else {
+        requestData.append("file", formData.fileName);
         response = await fetch(`${apiURL}/meeting-agenda-template`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
-
-          body: JSON.stringify(formData),
+          body: requestData,
         });
-        if (!response.ok) {
-          const errorMessage = await response
-            .json()
-            .then(
-              (data) =>
-                data.message ||
-                "Failed to add agenda template. Please try again."
-            );
-          toast.error(errorMessage);
-          return;
-        }
-        setRefresh(!refresh);
-
-        handleCloseAddModal();
       }
+
+      if (!response.ok) {
+        const errorMessage = await response
+          .json()
+          .then(
+            (data) => data.message || "Operation failed. Please try again."
+          );
+        toast.error(errorMessage);
+        return;
+      }
+
+      // Refresh and close modal on success
+      setRefresh(!refresh);
+      handleCloseAddModal();
+      toast.success(
+        `Meeting Agenda template ${
+          editingRow ? "edited" : "added"
+        } successfully`
+      );
     } catch (error) {
       toast.error(error.message);
     } finally {
       setButtonLoading(false); // Hide button spinner
     }
   };
+
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
@@ -316,18 +322,32 @@ export default function MeetingAgendaTemplate() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
-
-                <Col md={6}>
-                  <Form.Group controlId="fileName">
-                    <Form.Label className="f-label">File Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.fileName}
-                      onChange={handleChange}
-                      placeholder="Enter File Name"
-                    />
-                  </Form.Group>
-                </Col>
+                {!editingRow ? (
+                  <Col md={6}>
+                    <Form.Group controlId="fileName">
+                      <Form.Label className="f-label">Upload File</Form.Label>
+                      <Form.Control
+                        type="file"
+                        onChange={(e) => handleFileChange(e)}
+                        placeholder="Choose a file"
+                      />
+                    </Form.Group>
+                  </Col>
+                ) : (
+                  <>
+                    <Col md={6}>
+                      <Form.Group controlId="fileName">
+                        <Form.Label className="f-label">File Url</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Choose a file"
+                          value={formData.fileName}
+                          readOnly
+                        />
+                      </Form.Group>
+                    </Col>
+                  </>
+                )}
               </Row>
 
               <Row className="mb-3">

@@ -20,7 +20,6 @@ export default function SystemVariables() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [templateNames, setTemplateNames] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,14 +55,6 @@ export default function SystemVariables() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setOpenModal(true);
-    const selectedIds = row?.groupItems
-      ?.map((item) => {
-        const template = templateNames.find(
-          (template) => template.templateName === item.templateName
-        );
-        return template ? template.id : null;
-      })
-      .filter((id) => id !== null);
     setFormData({
       name: row?.name,
       mca_name: row?.mca_name,
@@ -153,7 +144,7 @@ export default function SystemVariables() {
         );
         setRefresh(!refresh);
 
-        toast.success("template edited successfully");
+        toast.success("System Variables edited successfully");
       } else {
         const response = await fetch(`${apiURL}/system-variable`, {
           method: "POST",

@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { saveAs } from "file-saver";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { Button, Form, Table, Container, Row, Col } from "react-bootstrap";
+import {
+  Button,
+  Modal,
+  Form,
+  Table,
+  FormControl,
+  Container,
+  Spinner,
+  Pagination,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
@@ -16,7 +27,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 const TemplateGenerator = () => {
   const [rows, setRows] = useState([]);
-  const [fileUrl, setFileUrl] = useState();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [editorContent, setEditorContent] = useState("");
@@ -27,7 +39,36 @@ const TemplateGenerator = () => {
   const [docFile, setDocFile] = useState(null);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  const fileUrl = location.state;
+  useEffect(() => {
+    const fetchData = async (pageNo) => {
+      try {
+        const response = await fetch(
+          `${apiURL}/system-variable?page=${pageNo}&limit=7`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setTotalPages(data.totalPages);
+
+        setRows(data.results);
+        console.log(data, "mkkl");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData(page);
+  }, [page, token]);
   const handleEditorChange = (content) => {
     setEditorContent(content);
 
@@ -50,6 +91,9 @@ const TemplateGenerator = () => {
       [placeholder]: value,
     }));
   };
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   const handleConfirm = (placeholder) => {
     const value = inputFields[placeholder] || placeholder;
@@ -63,38 +107,11 @@ const TemplateGenerator = () => {
       [placeholder]: true,
     }));
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `${apiURL}/meeting-agenda-template/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        setRows(data);
-        setFileUrl(data.fileName);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
 
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // template file fetch
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
@@ -157,12 +174,12 @@ const TemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(editorContent);
+    const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
       sections: [
         {
-          children: parsedContent, // Insert parsed content into document
+          children: parsedContent,
         },
       ],
     });
@@ -175,11 +192,13 @@ const TemplateGenerator = () => {
   const saveDocument = async () => {
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
+    console.log(docBlob, "mukul");
 
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
 
+    console.log(formData, "tokennn1");
     try {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`, {
@@ -187,12 +206,11 @@ const TemplateGenerator = () => {
 
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
 
         body: formData,
       });
-
+      console.log(formData, "tokennn2");
       if (response.ok) {
         toast.success("Document saved successfully!");
 
@@ -203,13 +221,11 @@ const TemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        setCurrentDocName("");
-        setIsEditing(false);
+        navigate("/meeting-agenda-template");
       } else {
         toast.error("Failed to save the document.");
       }
     } catch (error) {
-      console.error("Error saving document:", error);
       toast.error("Error occurred while saving the document.");
     }
   };
@@ -230,34 +246,88 @@ const TemplateGenerator = () => {
 
   return (
     <Container className="mt-5">
-      <ToastContainer autoClose={2000} />
+      <ToastContainer />
+      <div className="parentContainer">
+        <div className="leftContainer">
+          <h1 className="mb-4">Template Generator</h1>
 
-      <h1 className="mb-4">Meeting Template</h1>
+          {/* CKEditor for writing content */}
+          <CKEditor
+            editor={ClassicEditor}
+            data={editorContent}
+            onChange={(event, editor) => handleEditorChange(editor.getData())}
+            config={{
+              toolbar: [
+                "heading",
+                "|",
+                "bold",
+                "italic",
+                "link",
+                "|",
+                "bulletedList",
+                "numberedList",
+                "blockQuote",
+                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
+              ],
+            }}
+          />
 
-      {/* CKEditor for writing content */}
-      <CKEditor
-        editor={ClassicEditor}
-        data={editorContent}
-        onChange={(event, editor) => handleEditorChange(editor.getData())}
-        config={{
-          toolbar: [
-            "heading",
-            "|",
-            "bold",
-            "italic",
-            "link",
-            "|",
-            "bulletedList",
-            "numberedList",
-            "blockQuote",
-            // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
-          ],
-        }}
-      />
+          <Button variant="success" onClick={saveDocument} className="mt-5">
+            Save Document
+          </Button>
+        </div>
+        <div className="rightContainer">
+          <h4 className="h4-heading-style">System Variables</h4>
 
-      <Button variant="success" onClick={saveDocument} className="mt-5">
-        Save Document
-      </Button>
+          {loading ? (
+            <div className="text-center mt-2">
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </div>
+          ) : (
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th>Variable Name</th>
+                    <th>Mca Name</th>
+                    <th>Formula</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows?.map((row) => (
+                    <tr key={row?.id}>
+                      <td>{row?.name}</td>
+                      <td>{row?.mca_name}</td>
+                      <td>{row?.formula || "---"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              <Pagination className="mt-4">
+                <Pagination.Prev
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                />
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <Pagination.Item
+                    key={index + 1}
+                    active={index + 1 === page}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+                <Pagination.Next
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                />
+              </Pagination>
+            </div>
+          )}
+        </div>
+      </div>
     </Container>
   );
 };

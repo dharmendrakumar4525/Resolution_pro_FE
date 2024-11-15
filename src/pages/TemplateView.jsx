@@ -25,6 +25,9 @@ const TemplateViewer = () => {
 
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  useEffect(() => {
+    handleFileLoad(fileUrl);
+  }, [fileUrl]);
   const handleEditorChange = (content) => {
     setEditorContent(content);
 
@@ -110,12 +113,7 @@ const TemplateViewer = () => {
   };
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
@@ -125,10 +123,6 @@ const TemplateViewer = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-
-  useEffect(() => {
-    handleFileLoad(fileUrl);
-  }, [fileUrl]);
 
   const createWordDocument = async () => {
     const parsedContent = parseHtmlToDocx(editorContent);
