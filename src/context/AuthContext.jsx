@@ -16,7 +16,8 @@ export const AuthProvider = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   // Check if the user is authenticated on component mount
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   // Fetch user permissions based on their role
   useEffect(() => {
     const fetchUserPermissions = async () => {
-      if (user.role) {
+      if (user?.role) {
         try {
           const response = await fetch(`${apiURL}/role`, {
             headers: {
@@ -81,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         const data = await res.json();
         setEmailForOtp(email);
         setIsVerified(true);
-        toast.success("Please enter the OTP sent to your email.");
+        // toast.success("Please enter the OTP sent to your email.");
         navigate("/otp");
       } else {
         const errorData = await res.json();

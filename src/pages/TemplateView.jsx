@@ -212,7 +212,7 @@ const TemplateViewer = () => {
   return (
     <Container className="mt-5">
       <div className="parentContainer">
-        <div className="leftContainer">
+        <div className="leftContainer" style={{ width: "70%" }}>
           <h1 className="mb-4">Template Viewer</h1>
 
           {/* <Form.Group className="mb-3">

@@ -104,7 +104,7 @@ export default function Sidebar() {
               <h4 className="Project-Heading">Resolution Pro</h4>
             </NavLink>
 
-            <CollapsableNavItem
+            {/* <CollapsableNavItem
               eventKey="tables/"
               title="Resolution"
               icon={faTable}
@@ -117,6 +117,24 @@ export default function Sidebar() {
               )}
               {hasPermission("Board_resolution", "view") && (
                 <NavItem title="Board Resolution" link="/board-resolution" />
+              )}
+            </CollapsableNavItem> */}
+            <CollapsableNavItem
+              eventKey="meeting-master/"
+              title="Meetings"
+              icon={faTable}
+            >
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="Board Meeting" link="/meeting" />
+              )}
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="Committee Meeting" link="/meeting" />
+              )}
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="Shareholder Meeting" link="/meeting" />
+              )}
+              {hasPermission("Meeting", "view") && (
+                <NavItem title="CSR Meeting" link="/meeting" />
               )}
             </CollapsableNavItem>
 
@@ -147,9 +165,6 @@ export default function Sidebar() {
                 <NavItem title="Template Group" link="/template-group" />
               )}
               {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
-              {hasPermission("Meeting", "view") && (
-                <NavItem title="Meeting" link="/meeting" />
-              )}
             </CollapsableNavItem>
             <CollapsableNavItem eventKey="users/" title="Users" icon={faUser}>
               {hasPermission("Roles", "view") && (

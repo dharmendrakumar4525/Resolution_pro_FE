@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  TableCell,
+  TableRow,
+  WidthType,
+} from "docx";
+
 import {
   Button,
   Modal,
@@ -161,6 +170,21 @@ const TemplateGenerator = () => {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent })],
           bullet: { level: 0 },
+        });
+      } else if (element.tagName === "TABLE") {
+        const rows = Array.from(element.rows).map((row) => {
+          const cells = Array.from(row.cells).map((cell) => {
+            return new TableCell({
+              children: [
+                new Paragraph({ children: [new TextRun(cell.textContent)] }),
+              ],
+              width: { size: 1000, type: WidthType.AUTO },
+            });
+          });
+          return new TableRow({ children: cells });
+        });
+        return new Table({
+          rows: rows,
         });
       } else {
         return new Paragraph({

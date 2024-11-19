@@ -410,14 +410,8 @@ export default function AddMeeting() {
                         <Form.Label>Meeting Type</Form.Label>
                         <Form.Control
                           as="select"
+                          disabled
                           value={agendaItem?.meetingType || ""}
-                          onChange={(e) =>
-                            handleAgendaItemChange(
-                              index,
-                              "meetingType",
-                              e.target.value
-                            )
-                          }
                         >
                           <option value="board_meeting">Board Meeting</option>
                           <option value="committee_meeting">
