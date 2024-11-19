@@ -76,15 +76,16 @@ export default function CustomerMaintenance() {
     const fetchData = async (pageNo) => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${apiURL}/customer-maintenance?page=${pageNo}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const url =
+          userRole === "672c47cb38903b464c9d2923"
+            ? `${apiURL}/customer-maintenance?alloted_manager=${userManagerId}&page=${pageNo}`
+            : `${apiURL}/customer-maintenance?page=${pageNo}`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setRows(data.docs);
         setTotalPages(data.totalPages);
@@ -137,19 +138,7 @@ export default function CustomerMaintenance() {
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
-      const token = localStorage.getItem("refreshToken");
-
-      const newResponse = await fetch(`${apiURL}/customer-maintenance`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await newResponse.json();
-      setRows(data.docs);
-      if (rows.length === 1 && page > 1) {
-        setPage(page - 1);
-      }
+      setRefresh(!refresh);
 
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -167,6 +156,10 @@ export default function CustomerMaintenance() {
   const handleViewDirectors = (row, e) => {
     e.stopPropagation();
     navigate(`/directors/${row?._id}`);
+  };
+  const handleViewShareholders = (row, e) => {
+    e.stopPropagation();
+    navigate(`/shareholders/${row?._id}`);
   };
 
   const handleRowClick = (row) => {
@@ -301,6 +294,7 @@ export default function CustomerMaintenance() {
                   <th>Revision</th> */}
                   <th>Alloted Manager</th>
                   <th>Directors</th>
+                  <th>Shareholders</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -331,6 +325,15 @@ export default function CustomerMaintenance() {
                           style={{ height: "100%" }}
                           className="director-btn"
                           onClick={(e) => handleViewDirectors(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewShareholders(row, e)}
                         >
                           <FaUser />
                         </button>
