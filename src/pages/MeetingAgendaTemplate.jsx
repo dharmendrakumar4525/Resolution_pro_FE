@@ -209,14 +209,24 @@ export default function MeetingAgendaTemplate() {
           }
         );
       } else {
-        requestData.append("file", formData.fileName);
-        response = await fetch(`${apiURL}/meeting-agenda-template`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: requestData,
-        });
+        if (formData.fileName == "") {
+          response = await fetch(`${apiURL}/meeting-agenda-template`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: requestData,
+          });
+        } else {
+          requestData.append("file", formData.fileName);
+          response = await fetch(`${apiURL}/meeting-agenda-template`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: requestData,
+          });
+        }
       }
 
       if (!response.ok) {
@@ -226,17 +236,19 @@ export default function MeetingAgendaTemplate() {
             (data) => data.message || "Operation failed. Please try again."
           );
         toast.error(errorMessage);
+        handleCloseAddModal();
+
         return;
       }
 
       // Refresh and close modal on success
       setRefresh(!refresh);
-      handleCloseAddModal();
       toast.success(
         `Meeting Agenda template ${
           editingRow ? "edited" : "added"
         } successfully`
       );
+      handleCloseAddModal();
     } catch (error) {
       toast.error(error.message);
     } finally {
