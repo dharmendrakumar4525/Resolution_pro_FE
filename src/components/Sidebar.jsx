@@ -161,9 +161,9 @@ export default function Sidebar() {
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />
               {/* )} */}
-              {hasPermission("Template_group", "view") && (
+              {/* {hasPermission("Template_group", "view") && (
                 <NavItem title="Template Group" link="/template-group" />
-              )}
+              )} */}
               {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
             </CollapsableNavItem>
             <CollapsableNavItem eventKey="users/" title="Users" icon={faUser}>

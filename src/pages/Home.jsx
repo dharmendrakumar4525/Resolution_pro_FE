@@ -97,7 +97,8 @@ const Home = () => {
         );
         setManagers(managerList);
       } catch (error) {
-        toast.error("Error fetching data");
+        // toast.error("Error fetching data");
+        console.error("Error fetching data");
       }
     };
     fetchManagers();
@@ -312,7 +313,8 @@ const Home = () => {
               <h5 className="mb-0">Draft</h5>
             </Card.Header>
             <Card.Body>
-              <h4>{draftCount}</h4>
+              {/* <h4>{draftCount}</h4> */}
+              <h4>5</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -332,7 +334,8 @@ const Home = () => {
               <h5 className="mb-0">In Review</h5>
             </Card.Header>
             <Card.Body>
-              <h4>{inProcessCount}</h4>
+              {/* <h4>{inProcessCount}</h4> */}
+              <h4>3</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -352,7 +355,8 @@ const Home = () => {
               <h5 className="mb-0">Pending for Signature</h5>
             </Card.Header>
             <Card.Body>
-              <h4>{completedCount}</h4>
+              {/* <h4>{completedCount}</h4> */}
+              <h4>21</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -372,7 +376,8 @@ const Home = () => {
               <h5 className="mb-0">Completed</h5>
             </Card.Header>
             <Card.Body>
-              <h4>{totalResolutions}</h4>
+              {/* <h4>{totalResolutions}</h4> */}
+              <h4>26</h4>
             </Card.Body>
           </Card>
         </Col>
