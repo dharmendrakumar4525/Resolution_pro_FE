@@ -8,8 +8,6 @@ import { useLocation } from "react-router-dom";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")) || {});
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -17,8 +15,8 @@ export const AuthProvider = ({ children }) => {
   const [rolePermissions, setRolePermissions] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
-
-
+  const token = localStorage.getItem("refreshToken");
+  const user = JSON.parse(localStorage.getItem("user"));
   // Check if the user is authenticated on component mount
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -35,13 +33,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUserPermissions = async () => {
       if (user.role) {
-        const token = localStorage.getItem("refreshToken");
-  
-        if (!token) {
-          console.error("Token is missing.");
-          return;
-        }
-  
         try {
           const response = await fetch(`${apiURL}/role`, {
             headers: {
@@ -49,31 +40,34 @@ export const AuthProvider = ({ children }) => {
               "Content-Type": "application/json",
             },
           });
-  
+
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-  
+
           const rolePermissionData = await response.json();
           console.log("Fetched role permissions data:", rolePermissionData);
-  
+
           const permittedRole = rolePermissionData.results.find(
             (result) => result.id === user.role
           );
-  
+
           if (permittedRole && permittedRole.dashboard_permissions.length > 0) {
-            const permissions = permittedRole.dashboard_permissions[0].ParentChildchecklist;
+            const permissions =
+              permittedRole.dashboard_permissions[0].ParentChildchecklist;
             setRolePermissions(permissions);
           }
         } catch (error) {
-          console.error("Error fetching role permissions:", error.message || error);
+          console.error(
+            "Error fetching role permissions:",
+            error.message || error
+          );
         }
       }
     };
-  
+
     fetchUserPermissions();
-  }, [user?.role]);
-  
+  }, [user?.role, token]);
 
   const login = async (email, password) => {
     try {
@@ -87,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         const data = await res.json();
         setEmailForOtp(email);
         setIsVerified(true);
-        toast.info("Please enter the OTP sent to your email.");
+        toast.success("Please enter the OTP sent to your email.");
         navigate("/otp");
       } else {
         const errorData = await res.json();
@@ -95,7 +89,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("An error occurred during login. Please try again.");
+      // toast.error("An error occurred during login. Please try again.");
     }
   };
 
@@ -122,9 +116,9 @@ export const AuthProvider = ({ children }) => {
         navigate("/");
       } else {
         const errorData = await res.json();
-        if (location.pathname === `/otp`) {
-          toast.error(errorData.message ||"Wrong OTP. Please try again.");
-        }
+        // if (location.pathname === `/otp`) {
+        //   toast.error(errorData.message ||"Wrong OTP. Please try again.");
+        // }
       }
     } catch (err) {
       console.error("OTP verification error:", err);
@@ -155,7 +149,7 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
-      <ToastContainer autoClose={2000} />
+      <ToastContainer />
     </AuthContext.Provider>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Button,
@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import OTPInput from "otp-input-react";
 import { useAuth } from "../context/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
 
 const OtpPage = () => {
   const [OTP, setOTP] = useState("");
@@ -18,8 +19,13 @@ const OtpPage = () => {
 
   const handleOtpSubmit = async () => {
     setIsLoading(true);
-    await verifyOtp(OTP);
-    setIsLoading(false);
+    try {
+      await verifyOtp(OTP);
+    } catch (error) {
+      // toast.error("Failed to verify OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,6 +72,7 @@ const OtpPage = () => {
           </Card>
         </Col>
       </Row>
+      <ToastContainer />
     </Container>
   );
 };

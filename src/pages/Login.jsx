@@ -26,7 +26,6 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       await login(email, password);
-      navigate("/otp");
     } catch (e) {
       toast.error(e.message || "Invalid email or password");
     } finally {

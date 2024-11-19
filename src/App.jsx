@@ -93,7 +93,10 @@ const AppContent = () => {
             }}
           >
             <Typography variant="body2" sx={{ marginBottom: 1 }}>
-              © {new Date().getFullYear()} Resolution Pro. All rights reserved.
+              © {new Date().getFullYear()} Resolution Pro. Made by{" "}
+              <a href="https://www.avidusinteractive.com/" target="blank">
+                Avidus Interactive
+              </a>
             </Typography>
             {/* <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
               <a href="/privacy-policy" style={{ color: "#ffffff", textDecoration: "none" }}>
