@@ -36,6 +36,7 @@ import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
 import ClientRecord from "../pages/ClientRecord";
 import SystemVariables from "../pages/SystemVariables";
+import Shareholders from "../pages/Shareholders";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -355,6 +356,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Directors />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholders/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Shareholders />} />
           ) : (
             <Navigate to="/login" />
           )

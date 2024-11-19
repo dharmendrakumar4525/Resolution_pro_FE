@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { Button, Form, Container } from "react-bootstrap";
@@ -21,6 +21,7 @@ const TemplateEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,19 +43,17 @@ const TemplateEditor = () => {
     fetchData();
   }, [token]);
 
-  const handleEditorChange = (content) => {
-    setEditorContent(content);
-
-    // Regex to detect placeholders in the formats ${} and #{}
+  // Helper function to process placeholders
+  const processPlaceholders = (content) => {
     const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
     let match;
-    const fields = {};
     let updatedContent = content;
+    const fields = {};
 
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[1] || match[2];
 
-      // Check if the placeholder is a system variable
+      // Check if it's a system variable
       const systemVariable = rows.find((row) => row.name === placeholder);
       if (systemVariable) {
         const value = systemVariable.mca_name; // System variable value
@@ -69,14 +68,45 @@ const TemplateEditor = () => {
           [placeholder]: true,
         }));
       } else {
-        // For non-system placeholders, initialize in inputFields
-        fields[placeholder] = inputFields[placeholder] || ""; // Preserve existing values or initialize empty
+        // Initialize inputFields for non-system placeholders
+        fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
       }
     }
 
-    setEditorContent(updatedContent);
     setInputFields(fields);
+    return updatedContent;
   };
+
+  // Update editorContent whenever rows or input content changes
+  useEffect(() => {
+    if (rows.length > 0 && editorContent) {
+      const updatedContent = processPlaceholders(editorContent);
+      setEditorContent(updatedContent);
+    }
+  }, [rows, editorContent]);
+
+  const handleEditorChange = (content) => {
+    const updatedContent = processPlaceholders(content);
+    setEditorContent(updatedContent);
+  };
+
+  // Load file content and process placeholders
+  const handleFileLoad = async (url) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const arrayBuffer = await response.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      setEditorContent(result.value); // Triggers useEffect for processing
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+
+  // Load content on file URL change
+  useEffect(() => {
+    if (fileUrl) handleFileLoad(fileUrl);
+  }, [fileUrl]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -123,39 +153,75 @@ const TemplateEditor = () => {
     }));
   };
 
-  const handleFileLoad = async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      const htmlContent = result.value;
-      setEditorContent(htmlContent);
-    } catch (error) {
-      console.error("Error fetching or converting the file:", error);
-    }
-  };
-
   useEffect(() => {
     handleFileLoad(fileUrl);
   }, [fileUrl]);
+  const parseHtmlToDocx = (htmlContent) => {
+    const parser = new DOMParser();
+    const content = parser.parseFromString(htmlContent, "text/html");
+    const elements = content.body.childNodes;
 
-  const saveDocument = async () => {
+    const children = Array.from(elements).map((element) => {
+      if (element.tagName === "B" || element.tagName === "STRONG") {
+        return new Paragraph({
+          children: [new TextRun({ text: element.textContent, bold: true })],
+        });
+      } else if (element.tagName === "I" || element.tagName === "EM") {
+        return new Paragraph({
+          children: [new TextRun({ text: element.textContent, italics: true })],
+        });
+      } else if (element.tagName === "U") {
+        return new Paragraph({
+          children: [new TextRun({ text: element.textContent, underline: {} })],
+        });
+      } else if (element.tagName === "H1") {
+        return new Paragraph({
+          children: [
+            new TextRun({ text: element.textContent, bold: true, size: 48 }),
+          ],
+        });
+      } else if (element.tagName === "H2") {
+        return new Paragraph({
+          children: [
+            new TextRun({ text: element.textContent, bold: true, size: 36 }),
+          ],
+        });
+      } else if (element.tagName === "LI") {
+        return new Paragraph({
+          children: [new TextRun({ text: element.textContent })],
+          bullet: { level: 0 },
+        });
+      } else {
+        return new Paragraph({
+          children: [new TextRun(element.textContent)],
+        });
+      }
+    });
+
+    return children;
+  };
+
+  const createWordDocument = async () => {
+    const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const parsedContent = parseHtmlToDocx(formattedContent);
+
     const doc = new Document({
       sections: [
         {
-          children: [
-            new Paragraph({
-              children: [new TextRun(editorContent)],
-            }),
-          ],
+          children: parsedContent,
         },
       ],
     });
 
     const blob = await Packer.toBlob(doc);
+    return blob;
+  };
+
+  const saveDocument = async () => {
+    const docBlob = await createWordDocument();
+
     const formData = new FormData();
-    formData.append("file", blob);
+    formData.append("file", docBlob);
     formData.append("index", index);
 
     try {
@@ -169,6 +235,7 @@ const TemplateEditor = () => {
 
       if (response.ok) {
         toast.success("Document saved successfully!");
+        navigate(`/meeting`);
       } else {
         toast.error("Failed to save the document.");
       }
