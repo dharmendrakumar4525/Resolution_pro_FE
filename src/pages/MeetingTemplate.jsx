@@ -73,7 +73,7 @@ export default function MeetingTemplate() {
   const handleEditClick = (row, index) => {
     setEditingRow(row);
     navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row?.fileName}` },
+      state: { index, fileUrl: `${row?.templateFile}` },
     });
   };
 
