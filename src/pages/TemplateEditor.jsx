@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  Table,
+  TableCell,
+  TableRow,
+  WidthType,
+} from "docx";
 import { Button, Form, Container } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -162,6 +171,7 @@ const DocumentEditor = () => {
     const elements = content.body.childNodes;
 
     const children = Array.from(elements).map((element) => {
+      console.log(element.tagName, "tagss", element);
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -190,6 +200,44 @@ const DocumentEditor = () => {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent })],
           bullet: { level: 0 },
+        });
+      } else if (element.tagName === "FIGURE") {
+        const table = element.querySelector("table"); // Get the table inside the figure
+        if (table) {
+          console.log("table inside figure");
+          const rows = Array.from(table.rows).map((row) => {
+            const cells = Array.from(row.cells).map((cell) => {
+              return new TableCell({
+                children: [
+                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
+                ],
+                width: { size: 1000, type: WidthType.AUTO },
+              });
+            });
+            return new TableRow({ children: cells });
+          });
+          return new Table({
+            rows: rows,
+          });
+        }
+      }
+
+      // Handle tables directly (outside of figure tag)
+      else if (element.tagName === "TABLE") {
+        console.log("table outside figure");
+        const rows = Array.from(element.rows).map((row) => {
+          const cells = Array.from(row.cells).map((cell) => {
+            return new TableCell({
+              children: [
+                new Paragraph({ children: [new TextRun(cell.textContent)] }),
+              ],
+              width: { size: 1000, type: WidthType.AUTO },
+            });
+          });
+          return new TableRow({ children: cells });
+        });
+        return new Table({
+          rows: rows,
         });
       } else {
         return new Paragraph({

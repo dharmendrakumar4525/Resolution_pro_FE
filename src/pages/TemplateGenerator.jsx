@@ -5,6 +5,7 @@ import {
   Packer,
   Paragraph,
   TextRun,
+  Table,
   TableCell,
   TableRow,
   WidthType,
@@ -14,7 +15,6 @@ import {
   Button,
   Modal,
   Form,
-  Table,
   FormControl,
   Container,
   Spinner,
@@ -33,6 +33,7 @@ import { useParams } from "react-router-dom";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { saveAs } from "file-saver";
 
 const TemplateGenerator = () => {
   const [rows, setRows] = useState([]);
@@ -125,6 +126,7 @@ const TemplateGenerator = () => {
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       const htmlContent = result.value;
+      console.log(htmlContent, "htmllll");
       setEditorContent(htmlContent);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -142,6 +144,7 @@ const TemplateGenerator = () => {
     const elements = content.body.childNodes;
 
     const children = Array.from(elements).map((element) => {
+      console.log(element.tagName, "tagss", element);
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -171,7 +174,30 @@ const TemplateGenerator = () => {
           children: [new TextRun({ text: element.textContent })],
           bullet: { level: 0 },
         });
-      } else if (element.tagName === "TABLE") {
+      } else if (element.tagName === "FIGURE") {
+        const table = element.querySelector("table"); // Get the table inside the figure
+        if (table) {
+          console.log("table inside figure");
+          const rows = Array.from(table.rows).map((row) => {
+            const cells = Array.from(row.cells).map((cell) => {
+              return new TableCell({
+                children: [
+                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
+                ],
+                width: { size: 1000, type: WidthType.AUTO },
+              });
+            });
+            return new TableRow({ children: cells });
+          });
+          return new Table({
+            rows: rows,
+          });
+        }
+      }
+
+      // Handle tables directly (outside of figure tag)
+      else if (element.tagName === "TABLE") {
+        console.log("table outside figure");
         const rows = Array.from(element.rows).map((row) => {
           const cells = Array.from(row.cells).map((cell) => {
             return new TableCell({
@@ -217,7 +243,8 @@ const TemplateGenerator = () => {
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
     console.log(docBlob, "mukul");
-
+    // saveAs(docBlob, "mukul.docx")
+    // return
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
@@ -311,12 +338,7 @@ const TemplateGenerator = () => {
             </div>
           ) : (
             <div className="table-responsive mt-5">
-              <Table bordered hover className="Master-table">
-                <thead className="Master-Thead">
-                  <tr>
-                    <th>Variable Name</th>
-                  </tr>
-                </thead>
+              <table className="Master-table p-5">
                 <tbody>
                   {rows?.map((row) => (
                     <tr key={row?.id}>
@@ -324,7 +346,7 @@ const TemplateGenerator = () => {
                     </tr>
                   ))}
                 </tbody>
-              </Table>
+              </table>
               <Pagination className="mt-4">
                 <Pagination.Prev
                   onClick={() => handlePageChange(page - 1)}

@@ -14,6 +14,7 @@ import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { saveAs } from "file-saver";
 
 export default function MeetingDocuments() {
   const [rows, setRows] = useState([]);
@@ -137,7 +138,11 @@ export default function MeetingDocuments() {
                     </td>
                     <td>
                       <Button variant="outline-primary" className="me-2">
-                        <a href={row?.fileName}>
+                        <a
+                          href={row?.fileName}
+                          download="customFileName.docx"
+                          target="_blank"
+                        >
                           <FaFileWord />
                         </a>
                       </Button>
