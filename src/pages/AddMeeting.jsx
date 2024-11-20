@@ -34,19 +34,13 @@ export default function AddMeeting() {
     title: "",
     client_name: "",
     description: "",
-    meetingType: "",
+    meetingType: "board_meeting",
     date: "",
     startTime: "",
     endTime: "",
     organizer: user.id,
     participants: [],
-    agendaItems: [
-      {
-        templateName: "",
-        meetingType: "",
-        templateFile: "",
-      },
-    ],
+    agendaItems: [],
     location: "",
     status: "scheduled",
   });
@@ -97,6 +91,7 @@ export default function AddMeeting() {
           },
         });
         const data = await response.json();
+        console.log("data", data);
         const usableAgendas = data.results.filter(
           (item) => item.status === "usable"
         );
@@ -136,33 +131,32 @@ export default function AddMeeting() {
     }
   };
 
-  const handleAgendaItemChange = (index, field, value) => {
-    setFormData((prevData) => {
-      const updatedAgendaItems = [...prevData.agendaItems];
+  const handleAgendaItemChange = (selectedOptions) => {
+    const selectedAgendas = selectedOptions
+      ? selectedOptions.map((option) => {
+          const agenda = agendaList.find(
+            (item) => item.templateName === option.value
+          );
+          return {
+            templateName: option.value,
+            meetingType: agenda?.meetingType || "",
+            templateFile: agenda?.fileName || "",
+          };
+        })
+      : [];
 
-      // Update the selected field value
-      updatedAgendaItems[index] = {
-        ...updatedAgendaItems[index],
-        [field]: value,
-      };
+    setFormData((prevData) => ({
+      ...prevData,
+      agendaItems: selectedAgendas,
+    }));
+  };
 
-      // Auto-fill related fields based on Template Name selection
-      if (field === "templateName") {
-        const selectedAgenda = agendaList.find(
-          (agenda) => agenda.templateName === value
-        );
-
-        if (selectedAgenda) {
-          updatedAgendaItems[index].meetingType = selectedAgenda.meetingType;
-          updatedAgendaItems[index].templateFile = selectedAgenda.fileName;
-        } else {
-          updatedAgendaItems[index].meetingType = "";
-          updatedAgendaItems[index].templateFile = "";
-        }
-      }
-
-      return { ...prevData, agendaItems: updatedAgendaItems };
-    });
+  const handleSelectChange = (selectedOptions) => {
+    // Extract only the selected values (IDs)
+    const selectedValues = selectedOptions
+      ? selectedOptions.map((option) => option.value)
+      : [];
+    setFormData({ ...formData, agendaItems: selectedValues });
   };
 
   const addAgendaItem = () => {
@@ -216,7 +210,6 @@ export default function AddMeeting() {
       !title ||
       !client_name ||
       !description ||
-      !meetingType ||
       !date ||
       !startTime ||
       !endTime ||
@@ -313,6 +306,17 @@ export default function AddMeeting() {
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col>
+                <Form.Group controlId="title">
+                  <Form.Label>Title</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Enter Title"
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
                   <Form.Control
@@ -330,17 +334,6 @@ export default function AddMeeting() {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="Enter Title"
-                  />
-                </Form.Group>
-              </Col>
             </Row>
 
             <Row>
@@ -355,112 +348,24 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group controlId="meetingType">
-                  <Form.Label className="f-label">Meeting Type</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={formData.meetingType}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Meeting Type</option>
-
-                    <option value="board_meeting">Board Meeting</option>
-                    <option value="committee_meeting">Committee Meeting</option>
-                    <option value="annual_general_meeting">
-                      annual_general_meeting
-                    </option>
-                  </Form.Control>
-                </Form.Group>
-              </Col>
             </Row>
 
             <Row className="mt-4">
-              <h5>Agenda Items</h5>
+              <h5>Meeting Documents</h5>
 
-              {formData?.agendaItems?.map((agendaItem, index) => (
-                <div key={index} className="agenda-item-block mb-4">
-                  <Row className="mb-3">
-                    <Col>
-                      <Form.Group controlId={`templateName-${index}`}>
-                        <Form.Label>Template Name</Form.Label>
-
-                        <Select
-                          options={agendaOptions}
-                          placeholder="Select Meeting Template"
-                          value={
-                            agendaOptions.find(
-                              (option) =>
-                                option.value === agendaItem?.templateName
-                            ) || null
-                          } // Set initial value
-                          onChange={(selectedOption) =>
-                            handleAgendaItemChange(
-                              index,
-                              "templateName",
-                              selectedOption ? selectedOption.value : ""
-                            )
-                          }
-                          isClearable
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId={`meetingType-${index}`}>
-                        <Form.Label>Meeting Type</Form.Label>
-                        <Form.Control
-                          as="select"
-                          disabled
-                          value={agendaItem?.meetingType || ""}
-                        >
-                          <option value="board_meeting">Board Meeting</option>
-                          <option value="committee_meeting">
-                            Committee Meeting
-                          </option>
-                          <option value="annual_general_meeting">
-                            Annual General Meeting
-                          </option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId={`fileName-${index}`}>
-                        <Form.Label className="f-label">File Name</Form.Label>
-
-                        <Select
-                          options={agendaFileOptions}
-                          value={
-                            agendaFileOptions.find(
-                              (option) =>
-                                option.value === agendaItem?.templateFile
-                            ) || null
-                          }
-                          isDisabled
-                          isSearchable={false}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Button
-                        className="d-flex align-items-center gap-2 mt-4"
-                        variant="outline-danger"
-                        onClick={() => removeAgendaItem(index)}
-                      >
-                        <FaTrash /> Agenda Item
-                      </Button>
-                    </Col>
-                  </Row>
-                </div>
-              ))}
-              <Button
-                className="add-button mb-4"
-                variant="primary"
-                onClick={addAgendaItem}
-              >
-                Add Agenda Item
-              </Button>
+              <Form.Group controlId="agendaItems">
+                <Select
+                  options={agendaOptions}
+                  placeholder="Select Meeting Documents"
+                  isMulti
+                  value={formData.agendaItems.map((item) => ({
+                    value: item.templateName,
+                    label: item.templateName,
+                  }))}
+                  onChange={handleAgendaItemChange}
+                  isClearable
+                />
+              </Form.Group>
             </Row>
 
             <Row>

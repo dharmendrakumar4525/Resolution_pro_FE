@@ -15,8 +15,9 @@ import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function MeetingTemplate() {
+export default function MeetingDocuments() {
   const [rows, setRows] = useState([]);
+  const [participants, setPartcipants] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,7 @@ export default function MeetingTemplate() {
         });
         const data = await response.json();
         setRows(data?.agendaItems);
+        setPartcipants(data?.participants);
         console.log(data, "pert");
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -87,7 +89,7 @@ export default function MeetingTemplate() {
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Meeting Templates</h4>
+          <h4 className="h4-heading-style">Documents</h4>
         </div>
 
         {loading ? (
@@ -106,12 +108,13 @@ export default function MeetingTemplate() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
-                  <th>Edit Template</th>
-                  <th>View Template</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
+                {rows?.map((row, index) => (
                   <tr key={row?._id}>
                     <td>{row?.templateName}</td>
                     <td>
@@ -132,6 +135,13 @@ export default function MeetingTemplate() {
                         <FaFileWord />
                       </Button>
                     </td>
+                    <td>
+                      <Button variant="outline-primary" className="me-2">
+                        <a href={row?.fileName}>
+                          <FaFileWord />
+                        </a>
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -139,6 +149,39 @@ export default function MeetingTemplate() {
           </div>
         )}
       </Container>
+      <Container fluid className="styled-table pt-3 mt-4 pb-3">
+        <div className="d-flex align-items-center justify-content-between mt-3 head-box">
+          <h4 className="h4-heading-style">Participants Name</h4>
+        </div>
+
+        {loading ? (
+          <div className="text-center mt-5">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : participants.length === 0 ? (
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
+        ) : (
+          <div className="table-responsive mt-5" style={{ border: "none" }}>
+            <Table
+              className="Master-table"
+              style={{ border: "none", width: "20%" }}
+            >
+              <tbody>
+                {participants?.map((participant, index) => (
+                  <tr key={participant?.id}>
+                    <td>{participant?.name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+      </Container>
+
       <ToastContainer />
     </>
   );

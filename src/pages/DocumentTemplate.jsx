@@ -25,7 +25,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
 
-export default function MeetingAgendaTemplate() {
+export default function DocumentTemplate() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -244,9 +244,7 @@ export default function MeetingAgendaTemplate() {
       // Refresh and close modal on success
       setRefresh(!refresh);
       toast.success(
-        `Meeting Agenda template ${
-          editingRow ? "edited" : "added"
-        } successfully`
+        `Document template ${editingRow ? "edited" : "added"} successfully`
       );
       handleCloseAddModal();
     } catch (error) {
@@ -271,7 +269,7 @@ export default function MeetingAgendaTemplate() {
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Meeting Agenda Template</h4>
+          <h4 className="h4-heading-style">Document Template</h4>
           {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin
             <Form className="d-flex">
               <Form.Control
@@ -309,29 +307,21 @@ export default function MeetingAgendaTemplate() {
         <Modal show={openAddModal} onHide={handleCloseAddModal}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {editingRow ? "Edit" : "Add"} Meeting Agenda
+              {editingRow ? "Edit" : "Add"} Document Template
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Row>
                 <Col md={6}>
-                  <Form.Group controlId="meetingType">
-                    <Form.Label className="f-label">Meeting Type</Form.Label>
+                  <Form.Group controlId="templateName">
+                    <Form.Label className="f-label">Template Name</Form.Label>
                     <Form.Control
-                      as="select"
-                      value={formData.meetingType}
+                      type="text"
+                      value={formData.templateName}
                       onChange={handleChange}
-                    >
-                      <option value="">Select Meeting Type</option>
-                      <option value="board_meeting">Board Meeting</option>
-                      <option value="committee_meeting">
-                        Committee Meeting
-                      </option>
-                      <option value="annual_general_meeting">
-                        Annual General Meeting
-                      </option>
-                    </Form.Control>
+                      placeholder="Enter Template Name"
+                    />
                   </Form.Group>
                 </Col>
                 {!editingRow ? (
@@ -364,14 +354,22 @@ export default function MeetingAgendaTemplate() {
 
               <Row className="mb-3">
                 <Col md={6}>
-                  <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Template Name</Form.Label>
+                  <Form.Group controlId="meetingType">
+                    <Form.Label className="f-label">Meeting Type</Form.Label>
                     <Form.Control
-                      type="text"
-                      value={formData.templateName}
+                      as="select"
+                      value={formData.meetingType}
                       onChange={handleChange}
-                      placeholder="Enter Template Name"
-                    />
+                    >
+                      <option value="">Select Meeting Type</option>
+                      <option value="board_meeting">Board Meeting</option>
+                      <option value="committee_meeting">
+                        Committee Meeting
+                      </option>
+                      <option value="annual_general_meeting">
+                        Annual General Meeting
+                      </option>
+                    </Form.Control>
                   </Form.Group>
                 </Col>
                 {editingRow && user?.role === "672c47c238903b464c9d2920" && (
@@ -436,7 +434,7 @@ export default function MeetingAgendaTemplate() {
             <Table bordered hover responsive className="Master-table mt-5">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Template Name</th>
+                  <th>Name</th>
                   <th>Meeting Type</th>
                   <th>File</th>
                   <th>Status</th>

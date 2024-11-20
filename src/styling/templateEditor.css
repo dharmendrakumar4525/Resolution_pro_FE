@@ -4,11 +4,11 @@
   align-items: flex-start;
 }
 .leftContainer {
-  width: 50%;
+  width: 65%;
   overflow-y: auto;
 }
 .rightContainer {
-  width: 40%;
+  width: 30%;
   overflow-y: auto;
 }
 .container {

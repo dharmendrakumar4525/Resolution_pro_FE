@@ -10,7 +10,6 @@ import OtpPage from "../pages/OtpPage";
 import { useAuth } from "../context/AuthContext";
 import CustomerMaintenance from "../pages/CustomerMaintenance";
 import Directors from "../pages/Directors";
-import MeetingAgendaTemplate from "../pages/MeetingAgendaTemplate";
 import CommitteeMembers from "../pages/CommitteeMembers";
 import Committee from "../pages/Committee";
 import Preloader from "../components/Preloader";
@@ -28,7 +27,7 @@ import TestFile from "../pages/TestFile";
 import AddCommitteeMember from "../pages/AddCommitteeMember";
 import EditCommitteeMember from "../pages/EditCommitteeMember";
 import CustomerMaintenanceForm from "../pages/CustomerMaintenanceForm";
-import MeetingTemplate from "../pages/MeetingTemplate";
+import DocumentTemplate from "../pages/DocumentTemplate";
 import AddMeeting from "../pages/AddMeeting";
 import EditMeeting from "../pages/EditMeeting";
 import ViewCommitteeMember from "../pages/CommitteeMemberView";
@@ -37,6 +36,7 @@ import TemplateViewer from "../pages/TemplateView";
 import ClientRecord from "../pages/ClientRecord";
 import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
+import MeetingDocuments from "../pages/MeetingDocuments";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -232,20 +232,20 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/meeting-template/:id"
+        path="/documents/:id"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<MeetingTemplate />} />
+            <RouteWithSidebar element={<MeetingDocuments />} />
           ) : (
             <Navigate to="/login" />
           )
         }
       />
       <Route
-        path="/meeting-agenda-template"
+        path="/document-template"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<MeetingAgendaTemplate />} />
+            <RouteWithSidebar element={<DocumentTemplate />} />
           ) : (
             <Navigate to="/login" />
           )

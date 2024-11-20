@@ -11,6 +11,8 @@ import {
   Container,
   Spinner,
   Pagination,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus, FaEye, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -58,12 +60,15 @@ export default function Meeting() {
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
-        const response = await fetch(`${apiURL}/meeting?page=${pageNo}&limit=10`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${apiURL}/meeting?page=${pageNo}&limit=10`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setRows(data.results);
         setTotalPages(data.totalPages);
@@ -171,6 +176,13 @@ export default function Meeting() {
   const handleRedirectAddModal = () => {
     navigate("/meeting/add-form");
   };
+  const handleViewDocument = (row, e) => {
+    e.stopPropagation();
+    navigate(`/directors/${row?._id}`);
+  };
+  const handleRowClick = (row) => {
+    navigate(`/documents/${row?.id}`);
+  };
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Meeting")?.childList ||
     [];
@@ -217,7 +229,6 @@ export default function Meeting() {
                   <th>Meeting Name</th>
                   <th>Client Name</th>
                   <th>Meeting Type</th>
-                  <th>Agendas'</th>
                   <th>Start Time</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -225,40 +236,41 @@ export default function Meeting() {
               </thead>
               <tbody>
                 {rows.map((row, index) => (
-                  <tr key={row?.id}>
-                    <td>{row?.title}</td>
-                    <td>{row?.client_name?.name}</td>
-                    <td>{row?.meetingType}</td>
-                    <td>
-                      <button
-                        style={{ textAlign: "center" }}
-                        className="director-btn"
-                        onClick={() => navigate(`/meeting-template/${row?.id}`)}
-                      >
-                        <FaFileWord
-                          style={{ height: "40px", alignContent: "center" }}
-                        />
-                      </button>
-                    </td>
-                    <td style={{ textAlign: "center" }}>{row?.startTime}</td>
-                    <td>{new Date(row?.date).toLocaleDateString()}</td>
+                  <OverlayTrigger
+                    key={row?.id}
+                    placement="top"
+                    overlay={<Tooltip>Click to view</Tooltip>}
+                  >
+                    <tr key={row?.id} onClick={() => handleRowClick(row)}>
+                      <td>{row?.title}</td>
+                      <td>{row?.client_name?.name}</td>
+                      <td>{row?.meetingType}</td>
+                      <td style={{ textAlign: "center" }}>{row?.startTime}</td>
+                      <td>{new Date(row?.date).toLocaleDateString()}</td>
 
-                    <td>
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => handleRedirectEdit(row)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    </td>
-                  </tr>
+                      <td>
+                        <Button
+                          variant="outline-secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRedirectEdit(row);
+                          }}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(row);
+                          }}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </td>
+                    </tr>
+                  </OverlayTrigger>
                 ))}
               </tbody>
             </Table>

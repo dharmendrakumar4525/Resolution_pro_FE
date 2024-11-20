@@ -9,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -153,10 +154,7 @@ export default function Sidebar() {
                 <NavItem title="Committee Members" link="/committee-members" />
               )}
               {hasPermission("Meeting_agenda_template", "view") && (
-                <NavItem
-                  title="Meeting Agenda Template"
-                  link="/meeting-agenda-template"
-                />
+                <NavItem title="Document Template" link="/document-template" />
               )}
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />
@@ -180,6 +178,7 @@ export default function Sidebar() {
           </Nav>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

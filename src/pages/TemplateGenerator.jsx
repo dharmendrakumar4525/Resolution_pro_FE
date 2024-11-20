@@ -245,7 +245,7 @@ const TemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/meeting-agenda-template");
+        navigate("/document-template");
       } else {
         toast.error("Failed to save the document.");
       }
@@ -273,7 +273,7 @@ const TemplateGenerator = () => {
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Template Generator</h1>
+          <h1 className="mb-4">Document Template Generator</h1>
 
           {/* CKEditor for writing content */}
           <CKEditor
@@ -315,16 +315,12 @@ const TemplateGenerator = () => {
                 <thead className="Master-Thead">
                   <tr>
                     <th>Variable Name</th>
-                    <th>Mca Name</th>
-                    <th>Formula</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows?.map((row) => (
                     <tr key={row?.id}>
                       <td>{row?.name}</td>
-                      <td>{row?.mca_name}</td>
-                      <td>{row?.formula || "---"}</td>
                     </tr>
                   ))}
                 </tbody>

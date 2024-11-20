@@ -11,7 +11,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 
-const TemplateEditor = () => {
+const DocumentEditor = () => {
   const [rows, setRows] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
@@ -235,7 +235,7 @@ const TemplateEditor = () => {
 
       if (response.ok) {
         toast.success("Document saved successfully!");
-        navigate(`/meeting`);
+        navigate(`/documents/${id}`);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -250,15 +250,12 @@ const TemplateEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Template Editor</h1>
+      <h1>Document Editor</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
             editor={ClassicEditor}
             data={editorContent}
-            onReady={(editor) => {
-              editor.enableReadOnlyMode("read-only-mode");
-            }}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
             config={{
               toolbar: false,
@@ -298,7 +295,7 @@ const TemplateEditor = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
             >
-              Save Meeting Template
+              Save Meeting Document
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>
@@ -314,4 +311,4 @@ const TemplateEditor = () => {
   );
 };
 
-export default TemplateEditor;
+export default DocumentEditor;

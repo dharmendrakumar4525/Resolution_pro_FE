@@ -213,7 +213,7 @@ const TemplateViewer = () => {
     <Container className="mt-5">
       <div className="parentContainer">
         <div className="leftContainer" style={{ width: "70%" }}>
-          <h1 className="mb-4">Template Viewer</h1>
+          <h1 className="mb-4">Document Viewer</h1>
 
           {/* <Form.Group className="mb-3">
             <Form.Label>Upload DOCX File</Form.Label>
@@ -287,7 +287,7 @@ const TemplateViewer = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
             >
-              Save Meeting Template
+              Save Meeting Document
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>
