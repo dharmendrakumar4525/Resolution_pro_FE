@@ -37,6 +37,7 @@ import ClientRecord from "../pages/ClientRecord";
 import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
+import DocEditor from "../pages/DocEditor";
 
 const RouteWithSidebar = ({ element }) => {
   const [loaded, setLoaded] = useState(false);
@@ -146,6 +147,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<TemplateEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/doc-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DocEditor />} />
           ) : (
             <Navigate to="/login" />
           )

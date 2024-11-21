@@ -20,7 +20,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 
-const DocumentEditor = () => {
+const DocEditor = () => {
   const [rows, setRows] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
@@ -158,14 +158,6 @@ const DocumentEditor = () => {
         let res = systemVariable.mca_name;
         let value;
         console.log("b4 counter", res);
-        function getOrdinalSuffix(number) {
-          const suffixes = ["th", "st", "nd", "rd"];
-          const value = number % 100;
-          return (
-            number +
-            (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-          );
-        }
         if (res == "count") {
           console.log("inside counter");
           // Example usage
@@ -175,39 +167,7 @@ const DocumentEditor = () => {
             selectedId
           );
 
-          let result = getOrdinalSuffix(previousMeetingsCount);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-        } else if (res == "date") {
-          function getFormattedDate(dateString) {
-            const dateObj = new Date(dateString);
-
-            const day = dateObj.toLocaleDateString("en-US", {
-              weekday: "long",
-            });
-            const month = dateObj.toLocaleDateString("en-US", {
-              month: "long",
-            });
-            const date = dateObj.getDate();
-            const year = dateObj.getFullYear();
-            console.log(
-              `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`,
-              "day_date"
-            );
-            return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
-          }
-
-          let result = getFormattedDate(meetInfo[res]);
-          value = result;
+          value = previousMeetingsCount;
           updatedContent = updatedContent.replace(
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
@@ -219,8 +179,7 @@ const DocumentEditor = () => {
             [placeholder]: true,
           }));
         } else if (res in clientInfo) {
-          value = clientInfo[res]; // Dynamically access the key in clientInfo
-          console.log("cust-ok", value);
+          value = clientInfo[res];
           updatedContent = updatedContent.replace(
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
@@ -510,7 +469,7 @@ const DocumentEditor = () => {
               Autofill Placeholders
             </Button>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <Button
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
@@ -523,7 +482,7 @@ const DocumentEditor = () => {
                 saving.
               </p>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
       <ToastContainer />
@@ -531,4 +490,4 @@ const DocumentEditor = () => {
   );
 };
 
-export default DocumentEditor;
+export default DocEditor;

@@ -9,101 +9,270 @@ import {
   Col,
   Row,
   Spinner,
+  Tabs,
+  Tab,
 } from "react-bootstrap";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { saveAs } from "file-saver";
 
 export default function MeetingDocuments() {
   const [rows, setRows] = useState([]);
-  const [participants, setPartcipants] = useState([]);
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [editingRow, setEditingRow] = useState(null);
+  const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    company_id: "",
-    name: "",
-    designation: "",
-    begin_date: "",
-    "din/pan": "",
-    email: "",
-  });
+  const [key, setKey] = useState("agenda"); // Default tab
+
   const token = localStorage.getItem("refreshToken");
-
   const navigate = useNavigate();
-
   const { id } = useParams();
+
+  // Tab-specific IDs
+  const tabIds = {
+    agenda: id,
+    notice: "673ebf07ace56b4760e36c9c",
+    mom: "673ebf07ace56b4760e36c9c",
+    resolution: "673ebf07ace56b4760e36c9c",
+    attendance: "673ebf07ace56b4760e36c9c",
+  };
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        const response = await fetch(`${apiURL}/meeting/${tabIds[key]}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
         const data = await response.json();
-        setRows(data?.agendaItems);
-        setPartcipants(data?.participants);
-        console.log(data, "pert");
+
+        setRows(data?.agendaItems || []); // Adjust based on API response
+        // if (key === "attendance") {
+        //   setParticipants(data?.participants || []);
+        // }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error(`Error fetching ${key} data:`, error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [id]);
 
-  const handleDeleteClick = async (row) => {
-    try {
-      await fetch(`${apiURL}/director-data/${row?.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
-      toast.success("Director deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete director");
-    }
-  };
+    fetchData();
+  }, [key, token]);
 
   const handleEditClick = (row, index) => {
-    setEditingRow(row);
-    navigate(`/template-edit/${id}`, {
+    navigate(`/template-edit/${tabIds[key]}`, {
       state: { index, fileUrl: `${row?.templateFile}` },
     });
   };
-  const handleView = (row, index) => {
-    setEditingRow(row);
-    navigate(`/template-group-meeting-view/${id}`, {
-      state: { index, fileUrl: `${row?.fileName}` },
+  const handleView = (row) => {
+    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+      state: { fileUrl: `${row?.fileName}` },
+    });
+  };
+  const handleNoticeEditClick = (row, index) => {
+    navigate(`/doc-edit/${tabIds[key]}`, {
+      state: { index, fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx` },
+    });
+  };
+
+  const handleNoticeView = (row) => {
+    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+      state: {
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
+      },
+    });
+  };
+  const handleMOMEditClick = (row, index) => {
+    navigate(`/doc-edit/${tabIds[key]}`, {
+      state: {
+        index,
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
+      },
+    });
+  };
+
+  const handleMOMView = (row) => {
+    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+      state: {
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
+      },
+    });
+  };
+  const handleAttendanceEditClick = (row, index) => {
+    navigate(`/doc-edit/${tabIds[key]}`, {
+      state: {
+        index,
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
+      },
+    });
+  };
+
+  const handleAttendanceView = (row) => {
+    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+      state: {
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
+      },
+    });
+  };
+
+  const handleResolEditClick = (row, index) => {
+    navigate(`/doc-edit/${tabIds[key]}`, {
+      state: {
+        index,
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+      },
+    });
+  };
+
+  const handleResolView = (row) => {
+    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+      state: {
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+      },
     });
   };
 
   return (
     <>
-      <Container fluid className="styled-table pt-3 mt-4 pb-3">
-        <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Documents</h4>
-        </div>
+      <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
+        <h4 className="h4-heading-style">Meeting Info</h4>
+      </div>
+      <Tabs
+        id="controlled-tab-example"
+        activeKey={key}
+        onSelect={(k) => setKey(k)}
+        className="mb-3"
+      >
+        <Tab eventKey="agenda" title="Meeting Agenda">
+          {loading ? (
+            <SpinnerContent />
+          ) : rows.length === 0 ? (
+            <NoDataContent />
+          ) : (
+            <TableContent
+              rows={rows}
+              handleEditClick={handleEditClick}
+              handleView={handleView}
+            />
+          )}
+        </Tab>
 
-        {loading ? (
-          <div className="text-center mt-5">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="text-center mt-5">
-            <h5>No data available</h5>
-          </div>
-        ) : (
+        <Tab eventKey="notice" title="Notice">
+          {loading ? (
+            <SpinnerContent />
+          ) : rows.length === 0 ? (
+            <NoDataContent />
+          ) : (
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th>Name</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                    <th>Download</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, index) => (
+                    <tr key={row?._id}>
+                      <td>Notice Document</td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleNoticeEditClick(row, index)}
+                        >
+                          <FaEdit />
+                        </Button>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleNoticeView(row)}
+                        >
+                          <FaFileWord />
+                        </Button>
+                      </td>
+                      <td>
+                        <Button variant="outline-primary">
+                          <a
+                            href={row?.fileName}
+                            download="customFileName.docx"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <FaFileWord />
+                          </a>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+        </Tab>
+
+        <Tab eventKey="mom" title="MOM">
+          {loading ? (
+            <SpinnerContent />
+          ) : rows.length === 0 ? (
+            <NoDataContent />
+          ) : (
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th>Name</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                    <th>Download</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, index) => (
+                    <tr key={row?._id}>
+                      <td>MOM Document</td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleMOMEditClick(row, index)}
+                        >
+                          <FaEdit />
+                        </Button>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleMOMView(row)}
+                        >
+                          <FaFileWord />
+                        </Button>
+                      </td>
+                      <td>
+                        <Button variant="outline-primary">
+                          <a
+                            href={row?.fileName}
+                            download="customFileName.docx"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <FaFileWord />
+                          </a>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+        </Tab>
+
+        <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
@@ -115,14 +284,13 @@ export default function MeetingDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {rows?.map((row, index) => (
+                {rows.map((row, index) => (
                   <tr key={row?._id}>
-                    <td>{row?.templateName}</td>
+                    <td>Attendance</td>
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleEditClick(row, index)}
-                        className="me-2"
+                        onClick={() => handleAttendanceEditClick(row, index)}
                       >
                         <FaEdit />
                       </Button>
@@ -130,18 +298,18 @@ export default function MeetingDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleView(row, index)}
-                        className="me-2"
+                        onClick={() => handleAttendanceView(row)}
                       >
                         <FaFileWord />
                       </Button>
                     </td>
                     <td>
-                      <Button variant="outline-primary" className="me-2">
+                      <Button variant="outline-primary">
                         <a
                           href={row?.fileName}
                           download="customFileName.docx"
                           target="_blank"
+                          rel="noopener noreferrer"
                         >
                           <FaFileWord />
                         </a>
@@ -152,42 +320,129 @@ export default function MeetingDocuments() {
               </tbody>
             </Table>
           </div>
-        )}
-      </Container>
-      <Container fluid className="styled-table pt-3 mt-4 pb-3">
-        <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Participants Name</h4>
-        </div>
+        </Tab>
 
-        {loading ? (
-          <div className="text-center mt-5">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
-          </div>
-        ) : participants.length === 0 ? (
-          <div className="text-center mt-5">
-            <h5>No data available</h5>
-          </div>
-        ) : (
-          <div className="table-responsive mt-5" style={{ border: "none" }}>
-            <Table
-              className="Master-table"
-              style={{ border: "none", width: "20%" }}
-            >
+        <Tab eventKey="resolution" title="Resolution">
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
               <tbody>
-                {participants?.map((participant, index) => (
-                  <tr key={participant?.id}>
-                    <td>{participant?.name}</td>
+                {rows.map((row, index) => (
+                  <tr key={row?._id}>
+                    <td>Resolution</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => handleResolEditClick(row, index)}
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => handleResolView(row)}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button variant="outline-primary">
+                        <a
+                          href={row?.fileName}
+                          download="customFileName.docx"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </a>
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </Table>
           </div>
-        )}
-      </Container>
-
+        </Tab>
+      </Tabs>
       <ToastContainer />
     </>
+  );
+}
+
+function SpinnerContent() {
+  return (
+    <div className="text-center mt-5">
+      <Spinner animation="border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </Spinner>
+    </div>
+  );
+}
+
+function NoDataContent() {
+  return (
+    <div className="text-center mt-5">
+      <h5>No data available</h5>
+    </div>
+  );
+}
+
+function TableContent({ rows, handleEditClick, handleView }) {
+  return (
+    <div className="table-responsive mt-5">
+      <Table bordered hover className="Master-table">
+        <thead className="Master-Thead">
+          <tr>
+            <th>Name</th>
+            <th>Edit</th>
+            <th>View</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={row?._id}>
+              <td>{row?.templateName}</td>
+              <td>
+                <Button
+                  variant="outline-primary"
+                  onClick={() => handleEditClick(row, index)}
+                >
+                  <FaEdit />
+                </Button>
+              </td>
+              <td>
+                <Button
+                  variant="outline-primary"
+                  onClick={() => handleView(row)}
+                >
+                  <FaFileWord />
+                </Button>
+              </td>
+              <td>
+                <Button variant="outline-primary">
+                  <a
+                    href={row?.fileName}
+                    download="customFileName.docx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaFileWord />
+                  </a>
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 }

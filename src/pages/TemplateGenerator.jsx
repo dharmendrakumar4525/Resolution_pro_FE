@@ -124,7 +124,20 @@ const TemplateGenerator = () => {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const mammothOptions = {
+        styleMap: [
+          "p[style-name='Heading 1'] => h1:fresh",
+          "p[style-name='Heading 2'] => h2:fresh",
+          "p[style-name='Normal'] => p:fresh",
+          "p[style-name='AlignedCenter'] => p.text-center:fresh",
+          "p[style-name='AlignedRight'] => p.text-right:fresh",
+        ],
+      };
+
+      const result = await mammoth.convertToHtml(
+        { arrayBuffer },
+        mammothOptions
+      );
       const htmlContent = result.value;
       console.log(htmlContent, "htmllll");
       setEditorContent(htmlContent);

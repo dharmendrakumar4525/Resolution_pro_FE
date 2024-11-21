@@ -250,6 +250,7 @@ export default function AddMeeting() {
           body: JSON.stringify(formData),
         });
         toast.success("Meeting template edited successfully");
+        navigate("/meeting");
       } else {
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
@@ -270,8 +271,6 @@ export default function AddMeeting() {
         navigate("/meeting");
       }
 
-      handleCloseAddModal();
-      navigate("/meeting");
       setFormData({
         title: "",
         client_name: "",
