@@ -30,10 +30,10 @@ export default function MeetingDocuments() {
   // Tab-specific IDs
   const tabIds = {
     agenda: id,
-    notice: "673ebf07ace56b4760e36c9c",
-    mom: "673ebf07ace56b4760e36c9c",
-    resolution: "673ebf07ace56b4760e36c9c",
-    attendance: "673ebf07ace56b4760e36c9c",
+    notice: "673f3637640f38762b045474",
+    mom: "673f3637640f38762b045474",
+    resolution: "673f3637640f38762b045474",
+    attendance: "673f3637640f38762b045474",
   };
 
   useEffect(() => {
@@ -74,7 +74,10 @@ export default function MeetingDocuments() {
   };
   const handleNoticeEditClick = (row, index) => {
     navigate(`/doc-edit/${tabIds[key]}`, {
-      state: { index, fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx` },
+      state: {
+        index,
+        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
+      },
     });
   };
 
