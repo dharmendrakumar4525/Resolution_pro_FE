@@ -30,17 +30,17 @@ export default function MeetingDocuments() {
   // Tab-specific IDs
   const tabIds = {
     agenda: id,
-    notice: "673f3637640f38762b045474",
-    mom: "673f3637640f38762b045474",
-    resolution: "673f3637640f38762b045474",
-    attendance: "673f3637640f38762b045474",
+    notice: id,
+    mom: id,
+    resolution: id,
+    attendance: id,
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/meeting/${tabIds[key]}`, {
+        const response = await fetch(`${apiURL}/meeting/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -73,7 +73,7 @@ export default function MeetingDocuments() {
     });
   };
   const handleNoticeEditClick = (row, index) => {
-    navigate(`/doc-edit/${tabIds[key]}`, {
+    navigate(`/doc-edit/1`, {
       state: {
         index,
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
@@ -82,14 +82,14 @@ export default function MeetingDocuments() {
   };
 
   const handleNoticeView = (row) => {
-    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+    navigate(`/template-group-meeting-view/1}`, {
       state: {
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
       },
     });
   };
   const handleMOMEditClick = (row, index) => {
-    navigate(`/doc-edit/${tabIds[key]}`, {
+    navigate(`/doc-edit/1`, {
       state: {
         index,
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
@@ -98,14 +98,14 @@ export default function MeetingDocuments() {
   };
 
   const handleMOMView = (row) => {
-    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+    navigate(`/template-group-meeting-view/1}`, {
       state: {
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
       },
     });
   };
   const handleAttendanceEditClick = (row, index) => {
-    navigate(`/doc-edit/${tabIds[key]}`, {
+    navigate(`/doc-edit/1`, {
       state: {
         index,
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
@@ -114,7 +114,7 @@ export default function MeetingDocuments() {
   };
 
   const handleAttendanceView = (row) => {
-    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+    navigate(`/template-group-meeting-view/1`, {
       state: {
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
       },
@@ -122,7 +122,7 @@ export default function MeetingDocuments() {
   };
 
   const handleResolEditClick = (row, index) => {
-    navigate(`/doc-edit/${tabIds[key]}`, {
+    navigate(`/doc-edit/1}`, {
       state: {
         index,
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
@@ -131,7 +131,7 @@ export default function MeetingDocuments() {
   };
 
   const handleResolView = (row) => {
-    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+    navigate(`/template-group-meeting-view/1`, {
       state: {
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
       },
@@ -164,115 +164,99 @@ export default function MeetingDocuments() {
         </Tab>
 
         <Tab eventKey="notice" title="Notice">
-          {loading ? (
-            <SpinnerContent />
-          ) : rows.length === 0 ? (
-            <NoDataContent />
-          ) : (
-            <div className="table-responsive mt-5">
-              <Table bordered hover className="Master-table">
-                <thead className="Master-Thead">
-                  <tr>
-                    <th>Name</th>
-                    <th>Edit</th>
-                    <th>View</th>
-                    <th>Download</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr key={row?._id}>
-                      <td>Notice Document</td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleNoticeEditClick(row, index)}
-                        >
-                          <FaEdit />
-                        </Button>
-                      </td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleNoticeView(row)}
-                        >
-                          <FaFileWord />
-                        </Button>
-                      </td>
-                      <td>
-                        <Button variant="outline-primary">
-                          <a
-                            href={row?.fileName}
-                            download="customFileName.docx"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <FaFileWord />
-                          </a>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          )}
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Notice Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleNoticeEditClick(1, 1)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleNoticeView(1)}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="outline-primary">
+                      <a
+                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx"
+                        download="customFileName.docx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </a>
+                    </Button>
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
         </Tab>
 
         <Tab eventKey="mom" title="MOM">
-          {loading ? (
-            <SpinnerContent />
-          ) : rows.length === 0 ? (
-            <NoDataContent />
-          ) : (
-            <div className="table-responsive mt-5">
-              <Table bordered hover className="Master-table">
-                <thead className="Master-Thead">
-                  <tr>
-                    <th>Name</th>
-                    <th>Edit</th>
-                    <th>View</th>
-                    <th>Download</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr key={row?._id}>
-                      <td>MOM Document</td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleMOMEditClick(row, index)}
-                        >
-                          <FaEdit />
-                        </Button>
-                      </td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleMOMView(row)}
-                        >
-                          <FaFileWord />
-                        </Button>
-                      </td>
-                      <td>
-                        <Button variant="outline-primary">
-                          <a
-                            href={row?.fileName}
-                            download="customFileName.docx"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <FaFileWord />
-                          </a>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          )}
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MOM Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMOMEditClick(1, 1)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMOMView(1)}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="outline-primary">
+                      <a
+                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx"
+                        download="customFileName.docx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </a>
+                    </Button>
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
         </Tab>
 
         <Tab eventKey="attendance" title="Attendance Register">
@@ -287,39 +271,37 @@ export default function MeetingDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
-                  <tr key={row?._id}>
-                    <td>Attendance</td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleAttendanceEditClick(row, index)}
-                      >
-                        <FaEdit />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleAttendanceView(row)}
+                <tr>
+                  <td>Attendance Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleAttendanceEditClick(1, 1)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleAttendanceView(1)}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="outline-primary">
+                      <a
+                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx"
+                        download="customFileName.docx"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <FaFileWord />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button variant="outline-primary">
-                        <a
-                          href={row?.fileName}
-                          download="customFileName.docx"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FaFileWord />
-                        </a>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </a>
+                    </Button>
+                  </td>
+                </tr>
               </tbody>
             </Table>
           </div>
@@ -337,39 +319,37 @@ export default function MeetingDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
-                  <tr key={row?._id}>
-                    <td>Resolution</td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleResolEditClick(row, index)}
-                      >
-                        <FaEdit />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleResolView(row)}
+                <tr>
+                  <td>Resolution Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleResolEditClick(1, 1)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleResolView(1)}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="outline-primary">
+                      <a
+                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx"
+                        download="customFileName.docx"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <FaFileWord />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button variant="outline-primary">
-                        <a
-                          href={row?.fileName}
-                          download="customFileName.docx"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FaFileWord />
-                        </a>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </a>
+                    </Button>
+                  </td>
+                </tr>
               </tbody>
             </Table>
           </div>
