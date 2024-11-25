@@ -40,6 +40,12 @@ export default function AddMeeting() {
     endTime: "",
     organizer: user.id,
     participants: [],
+    other_participants: [
+      {
+        name: "",
+        email: "",
+      },
+    ],
     agendaItems: [],
     location: "",
     status: "scheduled",
@@ -122,7 +128,34 @@ export default function AddMeeting() {
       console.error("Error fetching directors:", error);
     }
   };
+  const handleAddParticipant = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      other_participants: [
+        ...prevState.other_participants,
+        { name: "", email: "" },
+      ],
+    }));
+  };
+  const handleRemoveParticipant = (index) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      other_participants: prevState.other_participants.filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+  const handleParticipantChange = (index, field, value) => {
+    const updatedParticipants = formData.other_participants.map(
+      (participant, i) =>
+        i === index ? { ...participant, [field]: value } : participant
+    );
 
+    setFormData((prevState) => ({
+      ...prevState,
+      other_participants: updatedParticipants,
+    }));
+  };
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });
@@ -159,26 +192,6 @@ export default function AddMeeting() {
     setFormData({ ...formData, agendaItems: selectedValues });
   };
 
-  const addAgendaItem = () => {
-    setFormData((prevData) => ({
-      ...prevData,
-      agendaItems: [
-        ...prevData.agendaItems,
-        { templateName: "", meetingType: "board_meeting", templateFile: "" },
-      ],
-    }));
-  };
-
-  const removeAgendaItem = (index) => {
-    if (formData.agendaItems.length > 1) {
-      setFormData((prevData) => ({
-        ...prevData,
-        agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
-      }));
-    } else {
-      toast.error("Please fill atleast 1 Agenda Item");
-    }
-  };
   const agendaOptions = agendaList.map((agenda) => ({
     value: agenda.templateName,
     label: agenda.templateName,
@@ -315,6 +328,7 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
+
               <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
@@ -401,7 +415,68 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
             </Row>
+            <Col>
+              <Form.Group className="mt-2" controlId="other-participants">
+                <Form.Label>Other Participants</Form.Label>
+                {formData.other_participants.map((participant, index) => (
+                  <div key={index} className="participant-inputs">
+                    <Row>
+                      <Col>
+                        <Form.Control
+                          type="text"
+                          value={participant.name || ""}
+                          onChange={(e) =>
+                            handleParticipantChange(
+                              index,
+                              "name",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Enter Participant Name"
+                        />
+                      </Col>
+                      <Col>
+                        <Form.Control
+                          type="email"
+                          value={participant.email || ""}
+                          onChange={(e) =>
+                            handleParticipantChange(
+                              index,
+                              "email",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Enter Participant Email"
+                        />
+                      </Col>
+                    </Row>
 
+                    <Row>
+                      <Col>
+                        <Button
+                          className="mt-2"
+                          type="button"
+                          variant="danger"
+                          onClick={() => handleRemoveParticipant(index)}
+                        >
+                          Remove
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                ))}
+              </Form.Group>
+            </Col>
+            <Row>
+              <Button
+                className="mt-2"
+                style={{ width: "300px", marginBottom: "30px" }}
+                type="button"
+                onClick={handleAddParticipant}
+              >
+                Add Participant
+              </Button>
+            </Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
