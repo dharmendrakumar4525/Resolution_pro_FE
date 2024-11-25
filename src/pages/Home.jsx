@@ -8,7 +8,9 @@ import {
   Form,
   Modal,
   Table,
+  ListGroup,
 } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -42,7 +44,13 @@ const Home = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [inProcessCount, setInProcessCount] = useState(0);
   const [totalResolutions, setTotalResolutions] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
+  const handleNavigate = (path) => {
+    setShowModal(false); // Close the modal
+    navigate(path); // Navigate to the selected route
+  };
   // New state to track selected resolution type
   const [selectedResolutionType, setSelectedResolutionType] = useState("");
 
@@ -108,7 +116,6 @@ const Home = () => {
     if (selectedManager) {
       const fetchCompanies = async () => {
         try {
-
           const response = await fetch(`${apiURL}/customer-maintenance`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -251,14 +258,58 @@ const Home = () => {
     <Container fluid className="mt-5">
       <ToastContainer autoClose={1000} />
 
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        backdrop="static"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Meeting</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ListGroup>
+            <ListGroup.Item
+              action
+              onClick={() => handleNavigate("/meeting/add-form")}
+            >
+              Board Meeting
+            </ListGroup.Item>
+            <ListGroup.Item
+              action
+              onClick={() => handleNavigate("/meeting/add-form")}
+            >
+              Committee Meeting
+            </ListGroup.Item>
+            <ListGroup.Item
+              action
+              onClick={() => handleNavigate("/meeting/add-form")}
+            >
+              Shareholder Meeting
+            </ListGroup.Item>
+            <ListGroup.Item
+              action
+              onClick={() => handleNavigate("/meeting/add-form")}
+            >
+              CSR Meeting
+            </ListGroup.Item>
+          </ListGroup>
+        </Modal.Body>
+      </Modal>
+
       <h2
         className="text-center mb-4"
         style={{ fontWeight: 700, color: themeColors.textPrimary }}
       >
         Dashboard
       </h2>
-
-      <Row className="mb-4">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "80px",
+        }}
+      >
         {user.role === "670cbe9a5a015431b1d2d513" && (
           <Col md={6}>
             <Form.Group controlId="managerFilter">
@@ -295,7 +346,15 @@ const Home = () => {
             </Form.Select>
           </Form.Group>
         </Col>
-      </Row>
+
+        <Button
+          variant="primary"
+          onClick={() => setShowModal(true)}
+          style={{ marginBottom: "20px" }}
+        >
+          Add Meeting
+        </Button>
+      </div>
 
       <Row className="g-4">
         <Col xs={12} md={6} lg={3}>
