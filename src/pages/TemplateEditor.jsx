@@ -286,7 +286,9 @@ const DocumentEditor = () => {
 
   // Load content on file URL change
   useEffect(() => {
-    if (fileUrl) handleFileLoad(fileUrl);
+    setTimeout(() => {
+      if (fileUrl) handleFileLoad(fileUrl);
+    }, 3000);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
@@ -334,9 +336,6 @@ const DocumentEditor = () => {
     }));
   };
 
-  useEffect(() => {
-    handleFileLoad(fileUrl);
-  }, [fileUrl]);
   const parseHtmlToDocx = (htmlContent) => {
     const parser = new DOMParser();
     const content = parser.parseFromString(htmlContent, "text/html");
