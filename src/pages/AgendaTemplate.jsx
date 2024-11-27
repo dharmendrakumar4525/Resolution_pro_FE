@@ -25,7 +25,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
 
-export default function ResolutionTemplate() {
+export default function AgendaTemplate() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -103,7 +103,7 @@ export default function ResolutionTemplate() {
   };
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
-    navigate(`/resolution-generate/${row?.id}`, { state: row?.fileName });
+    navigate(`/agenda-generate/${row?.id}`, { state: row?.fileName });
   };
 
   const handleOpenAddModal = () => {
@@ -237,7 +237,7 @@ export default function ResolutionTemplate() {
       // Refresh and close modal on success
       setRefresh(!refresh);
       toast.success(
-        `Resolution template ${editingRow ? "edited" : "added"} successfully`
+        `Agenda template ${editingRow ? "edited" : "added"} successfully`
       );
       handleCloseAddModal();
     } catch (error) {
@@ -262,7 +262,7 @@ export default function ResolutionTemplate() {
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Resolution Template</h4>
+          <h4 className="h4-heading-style">Agenda Template</h4>
           {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin
             <Form className="d-flex">
               <Form.Control
@@ -300,7 +300,7 @@ export default function ResolutionTemplate() {
         <Modal show={openAddModal} onHide={handleCloseAddModal}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {editingRow ? "Edit" : "Add"} Resolution Template
+              {editingRow ? "Edit" : "Add"} Agenda Template
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>

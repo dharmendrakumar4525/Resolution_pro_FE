@@ -35,7 +35,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
 
-const ResolutionTemplateGenerator = () => {
+const AgendaTemplateGenerator = () => {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -120,7 +120,6 @@ const ResolutionTemplateGenerator = () => {
 
   const handleFileLoad = async (url) => {
     try {
-      // template file fetch
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
@@ -139,7 +138,6 @@ const ResolutionTemplateGenerator = () => {
         mammothOptions
       );
       const htmlContent = result.value;
-      console.log(htmlContent, "htmllll");
       setEditorContent(htmlContent);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -147,9 +145,7 @@ const ResolutionTemplateGenerator = () => {
   };
 
   useEffect(() => {
-    handleFileLoad(
-      
-    );
+    handleFileLoad(fileUrl);
   }, [fileUrl]);
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
@@ -278,7 +274,7 @@ const ResolutionTemplateGenerator = () => {
       });
       console.log(formData, "tokennn2");
       if (response.ok) {
-        toast.success("Resolution saved successfully!");
+        toast.success("Agenda saved successfully!");
 
         // Optionally update your document list
         const newDoc = {
@@ -287,7 +283,7 @@ const ResolutionTemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/resolution-template");
+        navigate("/agenda-template");
       } else {
         toast.error("Failed to save the document.");
       }
@@ -315,7 +311,7 @@ const ResolutionTemplateGenerator = () => {
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Resolution Template Generator</h1>
+          <h1 className="mb-4">Agenda Template Generator</h1>
 
           {/* CKEditor for writing content */}
           <CKEditor
@@ -339,7 +335,7 @@ const ResolutionTemplateGenerator = () => {
           />
 
           <Button variant="success" onClick={saveDocument} className="mt-5">
-            Save Resolution
+            Save Agenda
           </Button>
         </div>
         <div className="rightContainer">
@@ -389,4 +385,4 @@ const ResolutionTemplateGenerator = () => {
   );
 };
 
-export default ResolutionTemplateGenerator;
+export default AgendaTemplateGenerator;

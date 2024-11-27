@@ -156,10 +156,7 @@ export default function Sidebar() {
               {hasPermission("Meeting_agenda_template", "view") && (
                 <NavItem title="Document Template" link="/document-template" />
               )}
-              <NavItem
-                title="Resolution Template"
-                link="/resolution-template"
-              />
+              <NavItem title="Agenda Template" link="/agenda-template" />
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />
               {/* )} */}

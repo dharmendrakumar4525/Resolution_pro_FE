@@ -38,8 +38,9 @@ import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
 import DocEditor from "../pages/DocEditor";
-import ResolutionTemplate from "../pages/ResolutionTemplate";
-import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
+import AgendaTemplate from "../pages/AgendaTemplate";
+import AgendaTemplateGenerator from "../pages/AgendaTemplateGenerator";
+
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
 const RouteWithSidebar = ({ element }) => {
@@ -146,10 +147,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/resolution-generate/:id"
+        path="/agenda-generate/:id"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<ResolutionTemplateGenerator />} />
+            <RouteWithSidebar element={<AgendaTemplateGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -286,10 +287,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/resolution-template"
+        path="/agenda-template"
         element={
           isAuthenticated ? (
-            <RouteWithSidebar element={<ResolutionTemplate />} />
+            <RouteWithSidebar element={<AgendaTemplate />} />
           ) : (
             <Navigate to="/login" />
           )
