@@ -147,7 +147,9 @@ const ResolutionTemplateGenerator = () => {
   };
 
   useEffect(() => {
-    handleFileLoad(fileUrl);
+    handleFileLoad(
+      
+    );
   }, [fileUrl]);
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
