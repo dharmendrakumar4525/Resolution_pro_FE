@@ -155,6 +155,25 @@ const CustomerMaintenanceDetail = () => {
           </tbody>
         </Table>
       </div>
+      <div className="mt-4"></div>
+      <h3>Additional Participants</h3>
+      <div className="card-section">
+        {row?.otherparticipantsDetails && row?.otherparticipantsDetails.length > 0 ? (
+          row?.otherparticipantsDetails.map((partcipant, index) => (
+            <div key={index} className="director-card">
+              <div>
+                <strong>Participant Name:</strong> {partcipant.name || "-"}
+              </div>
+
+              <div>
+                <strong>Email:</strong> {partcipant.email || "-"}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No partcipant details available.</p>
+        )}
+      </div>
     </div>
   );
 };
