@@ -19,13 +19,17 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import Select from "react-select";
 
 const DocumentEditor = () => {
   const [rows, setRows] = useState([]);
+  const [resolutionList, setResolutionList] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
+  const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
   const location = useLocation();
@@ -74,7 +78,6 @@ const DocumentEditor = () => {
         );
         const data = await response.json();
 
-        console.log(data, "mlkl");
         setClientInfo(data);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -83,6 +86,26 @@ const DocumentEditor = () => {
 
     fetchData(meetData.client_name?.id);
   }, [meetData.client_name?.id, token]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/agenda`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        console.log(data.results, "mkjl");
+        setResolutionList(data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -95,7 +118,6 @@ const DocumentEditor = () => {
         const data = await response.json();
 
         setRows(data.results);
-        console.log(data.results, "mkkl");
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -136,9 +158,6 @@ const DocumentEditor = () => {
     // Set the count in the current meeting object (if needed)
     currentMeeting.previousMeetingCount = count;
 
-    console.log(`Count of previous meetings: ${count}`);
-    console.log("Updated current meeting:", currentMeeting);
-
     return count;
   };
 
@@ -157,7 +176,6 @@ const DocumentEditor = () => {
       if (systemVariable) {
         let res = systemVariable.mca_name;
         let value;
-        console.log("b4 counter", res);
         function getOrdinalSuffix(number) {
           const suffixes = ["th", "st", "nd", "rd"];
           const value = number % 100;
@@ -167,8 +185,6 @@ const DocumentEditor = () => {
           );
         }
         if (res == "count") {
-          console.log("inside counter");
-          // Example usage
           const selectedId = id; // Replace with the id of the current meeting
           const previousMeetingsCount = countPreviousMeetings(
             meetData,
@@ -199,10 +215,7 @@ const DocumentEditor = () => {
             });
             const date = dateObj.getDate();
             const year = dateObj.getFullYear();
-            console.log(
-              `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`,
-              "day_date"
-            );
+
             return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
           }
 
@@ -219,8 +232,7 @@ const DocumentEditor = () => {
             [placeholder]: true,
           }));
         } else if (res in clientInfo) {
-          value = clientInfo[res]; // Dynamically access the key in clientInfo
-          console.log("cust-ok", value);
+          value = clientInfo[res];
           updatedContent = updatedContent.replace(
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
@@ -242,8 +254,7 @@ const DocumentEditor = () => {
           setConfirmedFields((prevState) => ({
             ...prevState,
             [placeholder]: true,
-          })); // Dynamically access the key in meetInfo
-          console.log("cust-meet", value);
+          }));
         } else {
           fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
         }
@@ -278,11 +289,51 @@ const DocumentEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value); // Triggers useEffect for processing
+      setEditorContent(result.value);
+      setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
+  useEffect(() => {
+    const handleMultipleFilesAddOn = async (urls) => {
+      try {
+        // Fetch and process files concurrently
+        console.log(urls, "mk");
+        const fetchPromises = urls.map(async (url) => {
+          if (url?.templateFile) {
+            // Check if templateFile is not empty or undefined
+            console.log(url, "mk");
+            const response = await fetch(url.templateFile);
+            if (!response.ok)
+              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            return result.value;
+          } else {
+            console.warn(
+              "Skipped processing due to missing templateFile:",
+              url
+            );
+            return ""; // Return an empty string or handle as needed
+          }
+        });
+
+        const results = await Promise.all(fetchPromises);
+        const combinedContent = results.join("");
+        setEditorContent(initializedContent + combinedContent);
+      } catch (error) {
+        console.error("Error fetching or converting one or more files:", error);
+      }
+    };
+    handleMultipleFilesAddOn(selectedData);
+  }, [selectedData]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (fileUrl) handleFileLoad(fileUrl);
+    }, 3000);
+  }, [fileUrl]);
 
   // Load content on file URL change
   useEffect(() => {
@@ -342,7 +393,6 @@ const DocumentEditor = () => {
     const elements = content.body.childNodes;
 
     const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagss", element);
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -375,7 +425,6 @@ const DocumentEditor = () => {
       } else if (element.tagName === "FIGURE") {
         const table = element.querySelector("table"); // Get the table inside the figure
         if (table) {
-          console.log("table inside figure");
           const rows = Array.from(table.rows).map((row) => {
             const cells = Array.from(row.cells).map((cell) => {
               return new TableCell({
@@ -395,7 +444,6 @@ const DocumentEditor = () => {
 
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
-        console.log("table outside figure");
         const rows = Array.from(element.rows).map((row) => {
           const cells = Array.from(row.cells).map((cell) => {
             return new TableCell({
@@ -435,7 +483,10 @@ const DocumentEditor = () => {
     const blob = await Packer.toBlob(doc);
     return blob;
   };
-
+  const resolOptions = resolutionList.map((resol) => ({
+    value: resol.templateName,
+    label: resol.templateName,
+  }));
   const saveDocument = async () => {
     const docBlob = await createWordDocument();
 
@@ -462,7 +513,26 @@ const DocumentEditor = () => {
       toast.error("Error occurred while saving the document.");
     }
   };
-
+  const handleAgendaItemChange = (selectedOptions) => {
+    const selectedAgendas = selectedOptions
+      ? selectedOptions.map((option) => {
+          const agenda = resolutionList.find(
+            (item) => item.templateName === option.value
+          );
+          return {
+            // templateName: option.value,
+            // meetingType: agenda?.meetingType || "",
+            templateFile: agenda?.fileName || "",
+          };
+        })
+      : [];
+    console.log("dds", selectedAgendas);
+    setSelectedData(selectedAgendas);
+    // setFormData((prevData) => ({
+    //   ...prevData,
+    //   agendaItems: selectedAgendas,
+    // }));
+  };
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
@@ -470,6 +540,8 @@ const DocumentEditor = () => {
   return (
     <Container className="mt-5">
       <h1>Document Editor</h1>
+      {/* <Button onClick={handleFileAddOn}>Add On</Button>
+      <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -483,23 +555,44 @@ const DocumentEditor = () => {
         </div>
         <div className="rightContainer">
           <div>
+            <Form.Group controlId="agendaItems" className="mb-5">
+              <Select
+                options={resolOptions}
+                placeholder="Select Meeting Documents"
+                isMulti
+                onChange={handleAgendaItemChange}
+                // isClearable
+              />
+            </Form.Group>
             <h3>Detected Placeholders:</h3>
             {Object.keys(inputFields).length > 0 ? (
-              Object.keys(inputFields).map((placeholder) => (
-                <div key={placeholder}>
-                  <label>{placeholder} :</label>
-                  <> </>
-                  <input
-                    className="mt-2"
-                    type="text"
-                    value={inputFields[placeholder]}
-                    onChange={(e) =>
-                      handleInputChange(placeholder, e.target.value)
-                    }
-                    disabled={confirmedFields[placeholder]}
-                  />
-                </div>
-              ))
+              Object.keys(inputFields).map((placeholder) => {
+                const pascalCasePlaceholder = placeholder
+                  .replace(/_/g, " ")
+                  .replace(
+                    /\w\S*/g,
+                    (txt) =>
+                      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                  );
+
+                return (
+                  <div key={placeholder}>
+                    <td>
+                      <label>{pascalCasePlaceholder} :</label>
+                    </td>
+                    <> </>
+                    <input
+                      className="mt-1 mb-2"
+                      type="text"
+                      value={inputFields[placeholder]}
+                      onChange={(e) =>
+                        handleInputChange(placeholder, e.target.value)
+                      }
+                      disabled={confirmedFields[placeholder]}
+                    />
+                  </div>
+                );
+              })
             ) : (
               <p>All placeholders are filled</p>
             )}
@@ -509,6 +602,7 @@ const DocumentEditor = () => {
               Autofill Placeholders
             </Button>
           </div>
+
           <div className="mt-4">
             <Button
               onClick={saveDocument}
