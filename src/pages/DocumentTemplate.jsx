@@ -194,7 +194,6 @@ export default function DocumentTemplate() {
 
       requestData.append("meetingType", formData.meetingType);
       requestData.append("templateName", formData.templateName);
-      requestData.append("by", formData.by);
 
       if (editingRow) {
         requestData.append("status", formData.status);
@@ -209,6 +208,8 @@ export default function DocumentTemplate() {
           }
         );
       } else {
+        requestData.append("by", formData.by);
+
         if (formData.fileName == "") {
           response = await fetch(`${apiURL}/meeting-agenda-template`, {
             method: "POST",

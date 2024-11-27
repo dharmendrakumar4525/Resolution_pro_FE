@@ -111,6 +111,35 @@ export default function AddMeeting() {
     fetchClientList();
     fetchAgendaList();
   }, []);
+  useEffect(() => {
+    if (formData.client_name && clientList.length > 0) {
+      const selectedCompany = clientList.find(
+        (company) => company._id === formData.client_name
+      );
+      console.log("Selected Company ID:", selectedCompany);
+
+      if (selectedCompany) {
+        countPreviousMeetings(rows, selectedCompany._id);
+      }
+    }
+  }, [formData.client_name, clientList, rows]);
+  function getOrdinalSuffix(number) {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const value = number % 100;
+    return (
+      number + (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
+    );
+  }
+  const countPreviousMeetings = (meetData, selectedId) => {
+    const previousCount = meetData.filter(
+      (meeting) =>
+        meeting.client_name.id === selectedId &&
+        new Date(meeting.createdAt) < new Date()
+    ).length;
+    let result = getOrdinalSuffix(previousCount + 1);
+    setFormData((prev) => ({ ...prev, title: result + " " + "Board Meeting" }));
+  };
+
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -156,6 +185,7 @@ export default function AddMeeting() {
       other_participants: updatedParticipants,
     }));
   };
+
   const handleChange = (e) => {
     const { id, name, value } = e.target;
     setFormData({ ...formData, [id || name]: value });

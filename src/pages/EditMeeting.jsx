@@ -156,7 +156,6 @@ export default function EditMeeting() {
       }));
     }
   };
- 
 
   const handleEditClick = (row) => {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
@@ -179,16 +178,15 @@ export default function EditMeeting() {
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
-        fileName: agendaItem.fileName,
       })),
       other_participants: row.other_participants.length
-      ? row.other_participants
-      : [
+        ? row.other_participants
+        : [
             {
-                name: "",
-                email: "",
+              name: "",
+              email: "",
             },
-        ],
+          ],
       location: row.location,
       status: row.status,
     });
@@ -294,17 +292,8 @@ export default function EditMeeting() {
   const validateForm = () => {
     const { meetingType, date, startTime, endTime, location } = formData;
 
-    if (!meetingType || !date || !startTime || !endTime || !location) {
+    if (!meetingType || !date || !startTime || !location) {
       toast.error("Please fill out all required fields.");
-      return false;
-    }
-    if (new Date(date) < new Date()) {
-      toast.error("Date cannot be in the past.");
-      return false;
-    }
-
-    if (startTime && endTime && endTime <= startTime) {
-      toast.error("End time cannot be before or equal to start time.");
       return false;
     }
 
@@ -314,68 +303,66 @@ export default function EditMeeting() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonLoading(true);
+
     try {
-      let response;
       if (!validateForm()) {
+        setButtonLoading(false);
         return;
       }
+
       if (editingRow) {
-        console.log(formData, "cg-1");
+        const sanitizedFormData = {
+          ...formData,
+          other_participants: formData.other_participants.map(
+            ({ _id, ...rest }) => rest
+          ),
+        };
+
+        let response;
+        // Update an existing meeting
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify(formData),
+          body: JSON.stringify(sanitizedFormData),
         });
         if (!response.ok) {
           const errorData = await response.json();
           toast.error(errorData.message || "Error editing the meeting.");
+          setButtonLoading(false);
           return;
         }
-
-        toast.success("Meeting document edited successfully");
         navigate("/meeting");
+        toast.success("Meeting document edited successfully");
       } else {
+        const sanitizedFormData = {
+          ...formData,
+          other_participants: formData.other_participants.map(
+            ({ _id, ...rest }) => rest
+          ),
+        };
+
+        let response;
+        // Create a new meeting
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify(formData),
+          body: JSON.stringify(sanitizedFormData),
         });
         if (!response.ok) {
-          const errorMessage = await response
-            .json()
-            .then((data) => data.message || "Failed to add item");
-          toast.error(errorMessage);
+          const errorData = await response.json();
+          toast.error(errorData.message || "Failed to add item.");
+          setButtonLoading(false);
           return;
         }
-        toast.success("Meeting added successfully");
-        const updatedResponse = await fetch(`${apiURL}/meeting`);
-        const data = await updatedResponse.json();
-        setRows(data.results);
-      }
 
-      handleCloseAddModal();
-      setFormData({
-        title: "",
-        client_name: "",
-        description: "",
-        meetingType: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        organizer: user.id,
-        participants: [],
-        agendaItems: [{ templateName: "", meetingType: "", fileName: "" }],
-        location: "",
-        status: "scheduled",
-      });
+        toast.success("Meeting added successfully");
+      }
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -500,7 +487,6 @@ export default function EditMeeting() {
                     classNamePrefix="select"
                   />
                 </Form.Group>
-               
               </Col>
             </Row>
             <Col>
