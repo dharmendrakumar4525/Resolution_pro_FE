@@ -408,6 +408,13 @@ h2 {
 .location-card {
   display: block;
 }
-.rightContainerHidden{
+.rightContainerHidden {
   display: none;
+}
+.title-wrap {
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }

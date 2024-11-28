@@ -41,6 +41,8 @@ export default function AgendaTemplate() {
     meetingType: "",
     templateName: "",
     fileName: "",
+    resolutionUrl: "",
+    title: "",
     status: "",
     by: user.id,
   });
@@ -105,6 +107,10 @@ export default function AgendaTemplate() {
     e.stopPropagation();
     navigate(`/agenda-generate/${row?.id}`, { state: row?.fileName });
   };
+  const handleViewResolutionTemplate = (row, e) => {
+    e.stopPropagation();
+    navigate(`/resolution-generate/${row?.id}`, { state: row?.resolutionUrl });
+  };
 
   const handleOpenAddModal = () => {
     setEditingRow(null);
@@ -113,6 +119,8 @@ export default function AgendaTemplate() {
       templateName: "",
       fileName: "",
       by: user.id,
+      resolutionUrl: "",
+      title: "",
     });
     setOpenAddModal(true);
   };
@@ -172,6 +180,8 @@ export default function AgendaTemplate() {
       templateName: row?.templateName,
       fileName: row?.fileName,
       status: row?.status,
+      resolutionUrl: row?.resolutionUrl,
+      title: row?.title,
     });
   };
 
@@ -305,7 +315,7 @@ export default function AgendaTemplate() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Row>
+              <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group controlId="templateName">
                     <Form.Label className="f-label">Template Name</Form.Label>
@@ -317,10 +327,23 @@ export default function AgendaTemplate() {
                     />
                   </Form.Group>
                 </Col>
+                <Col md={6}>
+                  <Form.Group controlId="title">
+                    <Form.Label className="f-label">Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.title}
+                      onChange={handleChange}
+                      placeholder="Enter Template Name"
+                    />
+                  </Form.Group>
+                </Col>
                 {!editingRow ? (
                   <Col md={6}>
                     <Form.Group controlId="fileName">
-                      <Form.Label className="f-label">Upload File</Form.Label>
+                      <Form.Label className="f-label">
+                        Upload Agenda Template
+                      </Form.Label>
                       <Form.Control
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -332,7 +355,9 @@ export default function AgendaTemplate() {
                   <>
                     <Col md={6}>
                       <Form.Group controlId="fileName">
-                        <Form.Label className="f-label">File Url</Form.Label>
+                        <Form.Label className="f-label">
+                          Agenda File Url
+                        </Form.Label>
                         <Form.Control
                           type="text"
                           placeholder="Choose a file"
@@ -343,9 +368,37 @@ export default function AgendaTemplate() {
                     </Col>
                   </>
                 )}
-              </Row>
 
-              <Row className="mb-3">
+                {!editingRow ? (
+                  <Col md={6}>
+                    <Form.Group controlId="fileName">
+                      <Form.Label className="f-label">
+                        Upload Resolution Template
+                      </Form.Label>
+                      <Form.Control
+                        type="file"
+                        onChange={(e) => handleFileChange(e)}
+                        placeholder="Choose a file"
+                      />
+                    </Form.Group>
+                  </Col>
+                ) : (
+                  <>
+                    <Col md={6}>
+                      <Form.Group controlId="fileName">
+                        <Form.Label className="f-label">
+                          Resolution File Url
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Choose a file"
+                          value={formData.resolutionUrl}
+                          readOnly
+                        />
+                      </Form.Group>
+                    </Col>
+                  </>
+                )}
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
                     <Form.Label className="f-label">Meeting Type</Form.Label>
@@ -428,8 +481,11 @@ export default function AgendaTemplate() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
+                  <th>Title</th>
+
                   <th>Meeting Type</th>
-                  <th>File</th>
+                  <th>Agenda Template</th>
+                  <th>Resolution Template</th>
                   <th>Status</th>
                   <th>By</th>
                   <th>Creation date</th>
@@ -450,11 +506,22 @@ export default function AgendaTemplate() {
         )}
       </td> */}
                     <td>{row?.templateName}</td>
+                    <td className="title-wrap">{row?.title}</td>
                     <td>{row?.meetingType}</td>
                     <td>
                       <button
                         className="director-btn"
                         onClick={(e) => handleViewTemplate(row, e)}
+                      >
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="director-btn"
+                        onClick={(e) => handleViewResolutionTemplate(row, e)}
                       >
                         <FaFileWord
                           style={{ height: "40px", alignContent: "center" }}

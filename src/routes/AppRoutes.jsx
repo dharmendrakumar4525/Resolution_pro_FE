@@ -40,6 +40,7 @@ import MeetingDocuments from "../pages/MeetingDocuments";
 import DocEditor from "../pages/DocEditor";
 import AgendaTemplate from "../pages/AgendaTemplate";
 import AgendaTemplateGenerator from "../pages/AgendaTemplateGenerator";
+import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -151,6 +152,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<AgendaTemplateGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/resolution-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ResolutionTemplateGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
