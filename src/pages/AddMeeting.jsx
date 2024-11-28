@@ -47,8 +47,25 @@ export default function AddMeeting() {
       },
     ],
     agendaItems: [],
-    location: "",
-    status: "scheduled",
+    variables: {},
+    notes: {
+      templateName: "Notice",
+      meetingType: "board_meeting",
+      templateFile:
+        "https://resolutionpro.s3.amazonaws.com/agendas/Notice_1732180834066.docx",
+    },
+    mom: {
+      templateName: "MOM",
+      meetingType: "board_meeting",
+      templateFile:
+        "https://resolutionpro.s3.amazonaws.com/agendas/MOM_1732190305036.docx",
+    },
+    attendance: {
+      templateName: "Attendance",
+      meetingType: "board_meeting",
+      templateFile:
+        "https://resolutionpro.s3.amazonaws.com/agendas/Attendance_1732190319661.docx",
+    },
   });
   const navigate = useNavigate();
   useEffect(() => {
@@ -313,21 +330,6 @@ export default function AddMeeting() {
         toast.success("Meeting added successfully");
         navigate("/meeting");
       }
-
-      setFormData({
-        title: "",
-        client_name: "",
-        description: "",
-        meetingType: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        organizer: user.id,
-        participants: [],
-        agendaItems: [{ templateName: "", meetingType: "", templateFile: "" }],
-        location: "",
-        status: "scheduled",
-      });
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -348,18 +350,6 @@ export default function AddMeeting() {
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col>
-                <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="Enter Title"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
                   <Form.Control
@@ -375,6 +365,17 @@ export default function AddMeeting() {
                       </option>
                     ))}
                   </Form.Control>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group controlId="title">
+                  <Form.Label>Title</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Enter Title"
+                  />
                 </Form.Group>
               </Col>
             </Row>

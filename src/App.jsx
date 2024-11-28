@@ -107,7 +107,7 @@ const AppContent = () => {
               </a>
             </Box> */}
           </Box>
-          <ToastContainer />
+          <ToastContainer autoClose={1000} />
         </>
       ) : (
         <Box sx={{ flexGrow: 1 }}>

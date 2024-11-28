@@ -200,6 +200,7 @@ export default function AgendaTemplate() {
 
       requestData.append("meetingType", formData.meetingType);
       requestData.append("templateName", formData.templateName);
+      requestData.append("title", formData.title);
 
       if (editingRow) {
         requestData.append("status", formData.status);
