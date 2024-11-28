@@ -21,6 +21,14 @@ export default function CustomerMaintenanceForm() {
     pan: "",
     gstin: "",
     revision: "",
+    secretary_detail: {
+      name: "",
+      email: "",
+    },
+    auditor_detail: {
+      name: "",
+      email: "",
+    },
     o: false,
     c: false,
     v: false,
@@ -114,6 +122,20 @@ export default function CustomerMaintenanceForm() {
     setFormData((prevData) => ({ ...prevData, [id]: value }));
   };
 
+  const handleAuditorChange = (field, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      auditor_detail: { ...prevData.auditor_detail, [field]: value },
+    }));
+  };
+
+  const handleSecretaryChange = (field, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      secretary_detail: { ...prevData.secretary_detail, [field]: value },
+    }));
+  };
+
   const handleLocationChange = (index, field, value) => {
     setFormData((prevData) => {
       const updatedLocations = [...prevData.locations];
@@ -176,20 +198,30 @@ export default function CustomerMaintenanceForm() {
       e.stopPropagation();
     } else {
       try {
+        const dataToSubmit = { ...formData };
+        delete dataToSubmit.createdAt;
+        delete dataToSubmit.updatedAt;
+
         const token = localStorage.getItem("refreshToken");
         const method = customerId ? "PATCH" : "POST";
         const endpoint = customerId
           ? `${apiURL}/customer-maintenance/${customerId}`
           : `${apiURL}/customer-maintenance`;
-        const response = await fetch(endpoint, {
+
+        const requestConfig = {
           method,
           headers: {
             "Content-Type": "application/json",
-
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formData),
-        });
+        };
+
+        if (customerId) {
+          requestConfig.body = JSON.stringify(dataToSubmit);
+        } else {
+          requestConfig.body = JSON.stringify(formData);
+        }
+        const response = await fetch(endpoint, requestConfig);
 
         if (!response.ok) {
           const errorMessage = await response
@@ -232,6 +264,77 @@ export default function CustomerMaintenanceForm() {
               </Form.Group>
             </Col>
             <Col>
+              <Form.Group controlId="cin">
+                <Form.Label>CIN</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.cin}
+                  onChange={handleChange}
+                  placeholder="Enter CIN"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="secretary_detail.name">
+                <Form.Label>Secretary Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="secretary_detail.name"
+                  value={formData.secretary_detail.name}
+                  onChange={(e) =>
+                    handleSecretaryChange("name", e.target.value)
+                  }
+                  placeholder="Enter Secretary Name"
+                />
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="secretary_detail.email">
+                <Form.Label>Secretary Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="secretary_detail.email"
+                  value={formData.secretary_detail.email}
+                  onChange={(e) =>
+                    handleSecretaryChange("email", e.target.value)
+                  }
+                  placeholder="Enter Secretary Email"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="auditor_detail.name">
+                <Form.Label>Auditor Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="auditor_detail.name"
+                  value={formData.auditor_detail.name}
+                  onChange={(e) => handleAuditorChange("name", e.target.value)}
+                  placeholder="Enter Auditor Name"
+                />
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="auditor_detail.email">
+                <Form.Label>Auditor Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="auditor_detail.email"
+                  value={formData.auditor_detail.email}
+                  onChange={(e) => handleAuditorChange("email", e.target.value)}
+                  placeholder="Enter Auditor Email"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
               <Form.Group controlId="state">
                 <Form.Label>State</Form.Label>
                 <Form.Control
@@ -243,8 +346,7 @@ export default function CustomerMaintenanceForm() {
                 />
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mb-3">
+
             <Col>
               <Form.Group controlId="country">
                 <Form.Label>Country</Form.Label>
@@ -254,17 +356,6 @@ export default function CustomerMaintenanceForm() {
                   onChange={handleChange}
                   placeholder="Enter Country"
                   required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="cin">
-                <Form.Label>CIN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.cin}
-                  onChange={handleChange}
-                  placeholder="Enter CIN"
                 />
               </Form.Group>
             </Col>

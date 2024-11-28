@@ -293,6 +293,8 @@ export default function CustomerMaintenance() {
 
                   <th>Revision</th> */}
                   <th>Alloted Manager</th>
+                  <th>Secretary </th>
+                  <th>Auditor</th>
                   <th>Directors</th>
                   <th>Shareholders</th>
                   <th>Actions</th>
@@ -310,16 +312,13 @@ export default function CustomerMaintenance() {
                       <td>{row?.state}</td>
                       <td>{row?.country}</td>
                       <td>{row?.cin}</td>
-                      {/* <td>{row?.pan}</td> */}
+
                       <td>{row?.gstin}</td>
-                      {/* <td>{row?.o ? "Yes" : "No"}</td>
-                    <td>{row?.c ? "Yes" : "No"}</td>
-                    <td>{row?.v ? "Yes" : "No"}</td>
-                    <td>{row?.ro ? "Yes" : "No"}</td>
-                    <td className="text-center">{row?.revision}</td> */}
                       <td className="">
                         {row?.alloted_manager[0]?.name || "-"}
                       </td>
+                      <td>{row?.secretary_detail?.name || "-"}</td>
+                      <td>{row?.auditor_detail?.name || "-"}</td>
                       <td>
                         <button
                           style={{ height: "100%" }}

@@ -22,6 +22,26 @@ const CustomerMaintenanceDetail = () => {
       <h2>Details for {row?.name}</h2>
       <div className="details-grid">
         <div>
+          <strong>Alloted Manager:</strong>
+        </div>
+        <div>{row?.alloted_manager[0]?.name || "-"}</div>
+        <div>
+          <strong>Secretary Name:</strong>
+        </div>
+        <div>{row?.secretary_detail?.name || "-"}</div>
+        <div>
+          <strong>Secretary Email:</strong>
+        </div>
+        <div>{row?.secretary_detail?.email || "-"}</div>
+        <div>
+          <strong>Auditor Name:</strong>
+        </div>
+        <div>{row?.auditor_detail?.name || "-"}</div>
+        <div>
+          <strong>Auditor Email:</strong>
+        </div>
+        <div>{row?.auditor_detail?.email || "-"}</div>
+        <div>
           <strong>State:</strong>
         </div>
         <div>{row?.state}</div>
@@ -70,11 +90,6 @@ const CustomerMaintenanceDetail = () => {
           <strong>Revision:</strong>
         </div>
         <div>{row?.revision}</div>
-
-        <div>
-          <strong>Alloted Manager:</strong>
-        </div>
-        <div>{row?.alloted_manager[0]?.name || "-"}</div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
@@ -158,7 +173,8 @@ const CustomerMaintenanceDetail = () => {
       <div className="mt-4"></div>
       <h3>Additional Participants</h3>
       <div className="card-section">
-        {row?.otherparticipantsDetails && row?.otherparticipantsDetails.length > 0 ? (
+        {row?.otherparticipantsDetails &&
+        row?.otherparticipantsDetails.length > 0 ? (
           row?.otherparticipantsDetails.map((partcipant, index) => (
             <div key={index} className="director-card">
               <div>
