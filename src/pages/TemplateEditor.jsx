@@ -647,7 +647,7 @@ const DocumentEditor = () => {
             <Form.Group controlId="agendaItems" className="mb-5">
               <Select
                 options={resolOptions}
-                placeholder="Select Meeting Documents"
+                placeholder="Select Agenda Documents"
                 isMulti
                 onChange={handleAgendaItemChange}
                 // isClearable
