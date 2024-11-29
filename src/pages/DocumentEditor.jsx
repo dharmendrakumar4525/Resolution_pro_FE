@@ -19,6 +19,7 @@ const DocumentTemplate = () => {
   const [documents, setDocuments] = useState([]); // To save files
   const [currentDocName, setCurrentDocName] = useState(""); // Track current doc
   const [isEditing, setIsEditing] = useState(false); // Editing state for opening docs
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -51,10 +52,19 @@ const DocumentTemplate = () => {
   const updateEditorContent = () => {
     let updatedContent = editorContent
       .replace(/\${Client Name}/g, formData.clientName || "${Client Name}")
-      .replace(/\${Client Reg Address}/g, formData.clientRegAddress || "${Client Reg Address}")
+      .replace(
+        /\${Client Reg Address}/g,
+        formData.clientRegAddress || "${Client Reg Address}"
+      )
       .replace(/\${Meeting Date}/g, formData.meetingDate || "${Meeting Date}")
-      .replace(/\${Absent Dir Name}/g, formData.absentDirName || "${Absent Dir Name}")
-      .replace(/\${Absent Dir DIN}/g, formData.absentDirDIN || "${Absent Dir DIN}");
+      .replace(
+        /\${Absent Dir Name}/g,
+        formData.absentDirName || "${Absent Dir Name}"
+      )
+      .replace(
+        /\${Absent Dir DIN}/g,
+        formData.absentDirDIN || "${Absent Dir DIN}"
+      );
 
     setEditorContent(updatedContent);
 
@@ -139,7 +149,11 @@ const DocumentTemplate = () => {
             {/* Upload DOCX File */}
             <Form.Group controlId="fileUpload" className="mt-3">
               <Form.Label>Upload DOCX File</Form.Label>
-              <Form.Control type="file" accept=".docx" onChange={handleFileUpload} />
+              <Form.Control
+                type="file"
+                accept=".docx"
+                onChange={handleFileUpload}
+              />
             </Form.Group>
 
             <Form.Group controlId="clientName" className="mt-3">
@@ -196,7 +210,11 @@ const DocumentTemplate = () => {
               />
             </Form.Group>
 
-            <Button variant="primary" className="mt-4" onClick={updateEditorContent}>
+            <Button
+              variant="primary"
+              className="mt-4"
+              onClick={updateEditorContent}
+            >
               Update Document Preview
             </Button>
           </Form>
@@ -212,7 +230,7 @@ const DocumentTemplate = () => {
         <div className="mt-5">
           <h3>Saved Documents</h3>
           <Table bordered hover className="Master-table">
-          <thead className="Master-Thead">
+            <thead className="Master-Thead">
               <tr>
                 <th>#</th>
                 <th>Document Name</th>

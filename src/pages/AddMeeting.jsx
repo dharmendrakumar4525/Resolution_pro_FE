@@ -18,6 +18,7 @@ import Select from "react-select";
 
 export default function AddMeeting() {
   const [rows, setRows] = useState([]);
+  const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => navigate("/meeting");
@@ -51,23 +52,79 @@ export default function AddMeeting() {
     notes: {
       templateName: "Notice",
       meetingType: "board_meeting",
-      templateFile:
-        "https://resolutionpro.s3.amazonaws.com/agendas/Notice_1732180834066.docx",
+      templateFile: "",
     },
     mom: {
       templateName: "MOM",
       meetingType: "board_meeting",
-      templateFile:
-        "https://resolutionpro.s3.amazonaws.com/agendas/MOM_1732190305036.docx",
+      templateFile: "",
     },
     attendance: {
       templateName: "Attendance",
       meetingType: "board_meeting",
-      templateFile:
-        "https://resolutionpro.s3.amazonaws.com/agendas/Attendance_1732190319661.docx",
+      templateFile: "",
     },
   });
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setDocxUrl(data?.results);
+        const noticeTemplate = data?.results?.find(
+          (item) => item.id === "673efb66ace56b4760e37c61"
+        );
+  
+        if (noticeTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            notes: {
+              ...prevFormData.notes,
+              templateFile: noticeTemplate.fileName,
+            },
+          }));
+        }
+        const momTemplate = data?.results?.find(
+          (item) => item.id === "673f2063640f38762b0450c4"
+        );
+  
+        if (momTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            mom: {
+              ...prevFormData.mom,
+              templateFile: momTemplate.fileName,
+            },
+          }));
+        }
+        const attendanceTemplate = data?.results?.find(
+          (item) => item.id === "673f2072640f38762b0450ca"
+        );
+  
+        if (attendanceTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            attendance: {
+              ...prevFormData.attendance,
+              templateFile: attendanceTemplate.fileName,
+            },
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {

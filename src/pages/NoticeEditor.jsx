@@ -11,7 +11,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-import { Button, Form, Container } from "react-bootstrap";
+import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
@@ -33,7 +33,9 @@ const NoticeEditor = () => {
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
-  const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
+  const [confirmedFields, setConfirmedFields] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
+
   const location = useLocation();
   const { id } = useParams();
   const token = localStorage.getItem("refreshToken");
@@ -245,41 +247,6 @@ const NoticeEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  // useEffect(() => {
-  //   const handleMultipleFilesAddOn = async (urls) => {
-  //     console.log(urls,"urls")
-  //     try {
-  //       // Fetch and process files concurrently
-  //       console.log(urls, "mk");
-  //       const fetchPromises = urls.map(async (url) => {
-  //         if (url?.templateFile) {
-  //           // Check if templateFile is not empty or undefined
-  //           console.log(url, "mk");
-  //           const response = await fetch(url.templateFile);
-  //           if (!response.ok)
-  //             throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-  //           const arrayBuffer = await response.arrayBuffer();
-  //           const result = await mammoth.convertToHtml({ arrayBuffer });
-  //           return result.value;
-  //         } else {
-  //           console.warn(
-  //             "Skipped processing due to missing templateFile:",
-  //             url
-  //           );
-  //           return ""; // Return an empty string or handle as needed
-  //         }
-  //       });
-
-  //       const results = await Promise.all(fetchPromises);
-  //       const combinedContent = results.join("");
-  //       setEditorContent(initializedContent + combinedContent);
-  //     } catch (error) {
-  //       console.error("Error fetching or converting one or more files:", error);
-  //     }
-  //   };
-  //   handleMultipleFilesAddOn(selectedData);
-
-  // }, [selectedData]);
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
       try {
@@ -504,6 +471,8 @@ const NoticeEditor = () => {
     label: resol.templateName,
   }));
   const saveDocument = async () => {
+    setButtonLoading(true);
+
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
@@ -524,6 +493,8 @@ const NoticeEditor = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
@@ -532,7 +503,7 @@ const NoticeEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Notice Editor</h1>
+      <h1>Notice Document</h1>
       {/* <Button onClick={handleFileAddOn}>Add On</Button>
       <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
       <div className="parentContainer">
@@ -592,7 +563,17 @@ const NoticeEditor = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
             >
-              Save Notice
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Save Notice"
+              )}
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>

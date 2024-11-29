@@ -11,7 +11,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-import { Button, Form, Container } from "react-bootstrap";
+import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
@@ -35,6 +35,8 @@ const DocumentEditor = () => {
   const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
   const location = useLocation();
   const { id } = useParams();
+  const [buttonLoading, setButtonLoading] = useState(false);
+
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
@@ -343,41 +345,7 @@ const DocumentEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  // useEffect(() => {
-  //   const handleMultipleFilesAddOn = async (urls) => {
-  //     console.log(urls,"urls")
-  //     try {
-  //       // Fetch and process files concurrently
-  //       console.log(urls, "mk");
-  //       const fetchPromises = urls.map(async (url) => {
-  //         if (url?.templateFile) {
-  //           // Check if templateFile is not empty or undefined
-  //           console.log(url, "mk");
-  //           const response = await fetch(url.templateFile);
-  //           if (!response.ok)
-  //             throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-  //           const arrayBuffer = await response.arrayBuffer();
-  //           const result = await mammoth.convertToHtml({ arrayBuffer });
-  //           return result.value;
-  //         } else {
-  //           console.warn(
-  //             "Skipped processing due to missing templateFile:",
-  //             url
-  //           );
-  //           return ""; // Return an empty string or handle as needed
-  //         }
-  //       });
 
-  //       const results = await Promise.all(fetchPromises);
-  //       const combinedContent = results.join("");
-  //       setEditorContent(initializedContent + combinedContent);
-  //     } catch (error) {
-  //       console.error("Error fetching or converting one or more files:", error);
-  //     }
-  //   };
-  //   handleMultipleFilesAddOn(selectedData);
-
-  // }, [selectedData]);
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
       try {
@@ -602,6 +570,8 @@ const DocumentEditor = () => {
     label: resol.templateName,
   }));
   const saveDocument = async () => {
+    setButtonLoading(true);
+
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
@@ -625,6 +595,8 @@ const DocumentEditor = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handleAgendaItemChange = (selectedOptions) => {
@@ -725,7 +697,17 @@ const DocumentEditor = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
             >
-              Save Meeting Document
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Save Meeting Document"
+              )}
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>

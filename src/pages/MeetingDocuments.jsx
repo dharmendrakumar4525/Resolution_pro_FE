@@ -18,9 +18,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function MeetingDocuments() {
+  const [data,setData]=useState({})
   const [rows, setRows] = useState([]);
   const [notice, setNotice] = useState({});
-  const [attendances, setAttendances] = useState({});
+  const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,14 +51,15 @@ export default function MeetingDocuments() {
           },
         });
         const data = await response.json();
-        setRows(data?.agendaItems || []); // Adjust based on API response
-        console.log(data?.agendaItems || [], "agena"); // Adjust based on API response
+        setRows(data?.agendaItems || []);
+        console.log(data, "agena");
         // if (key === "attendance") {
         //   setParticipants(data?.participants || []);
         // }
+        setData(data)
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
-        setAttendances(data?.attendance || {});
+        setAttendance(data?.attendance || {});
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
       } finally {
@@ -149,11 +151,11 @@ export default function MeetingDocuments() {
   };
   useEffect(
     () => {
-      console.log(notice, minutes, attendances, "mat");
+      console.log(notice, minutes, attendance, "mat");
     },
     notice,
     minutes,
-    attendances
+    attendance
   );
   return (
     <>
@@ -227,7 +229,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx"
+                        href={`${notice?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -277,7 +279,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx"
+                        href={`${minutes?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -310,7 +312,7 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceEditClick(attendances?.templateFile, 1)
+                        handleAttendanceEditClick(attendance?.templateFile, 1)
                       }
                     >
                       <FaEdit />
@@ -320,7 +322,7 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceView(attendances?.fileName, 1)
+                        handleAttendanceView(attendance?.fileName, 1)
                       }
                     >
                       <FaFileWord />
@@ -329,7 +331,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx"
+                        href={`${attendance?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"

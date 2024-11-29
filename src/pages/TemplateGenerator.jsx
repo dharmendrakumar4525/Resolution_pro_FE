@@ -46,6 +46,7 @@ const TemplateGenerator = () => {
   const [currentDocName, setCurrentDocName] = useState("");
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [docFile, setDocFile] = useState(null);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
@@ -253,6 +254,8 @@ const TemplateGenerator = () => {
 
   // Save the document in the dashboard list
   const saveDocument = async () => {
+    setButtonLoading(true);
+
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
     console.log(docBlob, "mukul");
@@ -291,6 +294,8 @@ const TemplateGenerator = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   // Save changes to an existing document
@@ -337,7 +342,17 @@ const TemplateGenerator = () => {
           />
 
           <Button variant="success" onClick={saveDocument} className="mt-5">
-            Save Document
+            {buttonLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Save Document"
+            )}
           </Button>
         </div>
         <div className="rightContainer">
