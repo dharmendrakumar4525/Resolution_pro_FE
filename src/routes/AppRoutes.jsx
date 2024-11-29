@@ -41,6 +41,8 @@ import DocEditor from "../pages/DocEditor";
 import AgendaTemplate from "../pages/AgendaTemplate";
 import AgendaTemplateGenerator from "../pages/AgendaTemplateGenerator";
 import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
+import NoticeEditor from "../pages/NoticeEditor";
+import MomEditor from "../pages/MomEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -192,6 +194,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<DocEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/notice-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<NoticeEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/mom-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<MomEditor />} />
           ) : (
             <Navigate to="/login" />
           )
