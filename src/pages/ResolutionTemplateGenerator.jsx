@@ -47,6 +47,7 @@ const ResolutionTemplateGenerator = () => {
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
   const [docFile, setDocFile] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
   const navigate = useNavigate();
@@ -251,6 +252,8 @@ const ResolutionTemplateGenerator = () => {
 
   // Save the document in the dashboard list
   const saveDocument = async () => {
+    setButtonLoading(true);
+
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
     const formData = new FormData();
@@ -284,6 +287,8 @@ const ResolutionTemplateGenerator = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
   // Save changes to an existing document
@@ -330,7 +335,17 @@ const ResolutionTemplateGenerator = () => {
           />
 
           <Button variant="success" onClick={saveDocument} className="mt-5">
-            Save Resolution
+            {buttonLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Save Resolution"
+            )}
           </Button>
         </div>
         <div className="rightContainer">

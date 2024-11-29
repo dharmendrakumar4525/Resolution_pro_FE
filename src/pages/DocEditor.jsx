@@ -11,7 +11,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-import { Button, Form, Container } from "react-bootstrap";
+import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
@@ -29,6 +29,7 @@ const DocEditor = () => {
   const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
   const location = useLocation();
+  const [buttonLoading, setButtonLoading] = useState(false);
   const { id } = useParams();
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
@@ -398,6 +399,7 @@ const DocEditor = () => {
 
   const saveDocument = async () => {
     const docBlob = await createWordDocument();
+    setButtonLoading(true);
 
     const formData = new FormData();
     formData.append("file", docBlob);
@@ -420,6 +422,8 @@ const DocEditor = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -474,7 +478,17 @@ const DocEditor = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
             >
-              Save Meeting Document
+            {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+              "Save Meeting Document"
+              )}
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>

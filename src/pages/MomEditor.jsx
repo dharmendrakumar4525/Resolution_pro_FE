@@ -21,8 +21,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 import Select from "react-select";
 
-const DocumentEditor = () => {
+const MomEditor = () => {
   const [rows, setRows] = useState([]);
+  const [variable, setVariable] = useState({});
   const [resolutionList, setResolutionList] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
@@ -35,11 +36,11 @@ const DocumentEditor = () => {
   const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
   const location = useLocation();
   const { id } = useParams();
-  const [buttonLoading, setButtonLoading] = useState(false);
-
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const [buttonLoading, setButtonLoading] = useState(false);
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -126,7 +127,22 @@ const DocumentEditor = () => {
         console.error("Error fetching data:", error);
       }
     };
+    const fetchVariables = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
 
+        setVariable(data.variables);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchVariables();
     fetchData();
   }, [token]);
   const countPreviousMeetings = (meetData, selectedId) => {
@@ -176,138 +192,24 @@ const DocumentEditor = () => {
       const placeholder = match[1] || match[2];
 
       // Check if it's a system variable
-      const systemVariable = rows.find((row) => row.name === placeholder);
+      const systemVariable = variable[placeholder];
+      // const systemVariable = rows.find((row) => row.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
-        let res = systemVariable.mca_name;
+        // let res = systemVariable.mca_name;
         let value;
-        function getOrdinalSuffix(number) {
-          const suffixes = ["th", "st", "nd", "rd"];
-          const value = number % 100;
-          return (
-            number +
-            (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-          );
-        }
-        if (res == "count") {
-          const selectedId = id; // Replace with the id of the current meeting
-          const previousMeetingsCount = countPreviousMeetings(
-            meetData,
-            selectedId
-          );
+        value = systemVariable;
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          value
+        );
 
-          let result = getOrdinalSuffix(previousMeetingsCount);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
+        // Mark as confirmed
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
 
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res == "current_year") {
-          function getCurrentFinancialYear() {
-            const today = new Date();
-            const year = today.getFullYear();
-
-            if (today.getMonth() + 1 >= 4) {
-              return `${year}-${year + 1}`;
-            } else {
-              return `${year - 1}-${year}`;
-            }
-          }
-
-          let result = getCurrentFinancialYear();
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res == "date") {
-          function getFormattedDate(dateString) {
-            const dateObj = new Date(dateString);
-
-            const day = dateObj.toLocaleDateString("en-US", {
-              weekday: "long",
-            });
-            const month = dateObj.toLocaleDateString("en-US", {
-              month: "long",
-            });
-            const date = dateObj.getDate();
-            const year = dateObj.getFullYear();
-
-            return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
-          }
-
-          let result = getFormattedDate(meetInfo[res]);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res in clientInfo) {
-          console.log(clientInfo, "clientid");
-          value = clientInfo[res];
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res in meetInfo) {
-          value = meetInfo[res];
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else {
-          fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
-        }
         // const value = systemVariable.mca_name; // System variable value
       } else {
         // Initialize inputFields for non-system placeholders
@@ -345,7 +247,6 @@ const DocumentEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
       try {
@@ -575,10 +476,7 @@ const DocumentEditor = () => {
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
-    formData.append("file", docBlob);
-    formData.append("index", index);
-    formData.append("variables", JSON.stringify(placeVar));
-    console.log(JSON.stringify(placeVar));
+    formData.append("notes_file", docBlob);
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
@@ -599,38 +497,13 @@ const DocumentEditor = () => {
       setButtonLoading(false);
     }
   };
-  const handleAgendaItemChange = (selectedOptions) => {
-    console.log(resolutionList, "resol-lis");
-    const selectedAgendas = selectedOptions
-      ? selectedOptions.map((option) => {
-          const agenda = resolutionList.find(
-            (item) => item.templateName === option.value
-          );
-          return {
-            // templateName: option.value,
-            // meetingType: agenda?.meetingType || "",
-            title: agenda?.title || "",
-            templateFile: agenda?.fileName || "",
-            resolutionFile: agenda?.resolutionUrl || "",
-          };
-        })
-      : [];
-    console.log("dds", selectedAgendas);
-    setSelectedData(selectedAgendas);
-    // setFormData((prevData) => ({
-    //   ...prevData,
-    //   agendaItems: selectedAgendas,
-    // }));
-  };
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
 
   return (
     <Container className="mt-5">
-      <h1>Document Editor</h1>
-      {/* <Button onClick={handleFileAddOn}>Add On</Button>
-      <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
+      <h1>Mom Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -644,15 +517,6 @@ const DocumentEditor = () => {
         </div>
         <div className="rightContainer">
           <div>
-            <Form.Group controlId="agendaItems" className="mb-5">
-              <Select
-                options={resolOptions}
-                placeholder="Select Meeting Documents"
-                isMulti
-                onChange={handleAgendaItemChange}
-                // isClearable
-              />
-            </Form.Group>
             <h3>Detected Placeholders:</h3>
             {Object.keys(inputFields).length > 0 ? (
               Object.keys(inputFields).map((placeholder) => {
@@ -706,7 +570,7 @@ const DocumentEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Meeting Document"
+                "Save Mom"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -723,4 +587,4 @@ const DocumentEditor = () => {
   );
 };
 
-export default DocumentEditor;
+export default MomEditor;

@@ -18,7 +18,11 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function MeetingDocuments() {
+  const [data,setData]=useState({})
   const [rows, setRows] = useState([]);
+  const [notice, setNotice] = useState({});
+  const [attendance, setAttendance] = useState({});
+  const [minutes, setMinutes] = useState({});
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState("agenda"); // Default tab
@@ -47,11 +51,15 @@ export default function MeetingDocuments() {
           },
         });
         const data = await response.json();
-
-        setRows(data?.agendaItems || []); // Adjust based on API response
+        setRows(data?.agendaItems || []);
+        console.log(data, "agena");
         // if (key === "attendance") {
         //   setParticipants(data?.participants || []);
         // }
+        setData(data)
+        setNotice(data?.notes || {});
+        setMinutes(data?.mom || {});
+        setAttendance(data?.attendance || {});
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
       } finally {
@@ -63,66 +71,70 @@ export default function MeetingDocuments() {
   }, [key, token]);
 
   const handleEditClick = (row, index) => {
-    navigate(`/template-edit/${tabIds[key]}`, {
+    navigate(`/template-edit/${id}`, {
       state: { index, fileUrl: `${row?.templateFile}` },
     });
   };
   const handleView = (row) => {
-    navigate(`/template-group-meeting-view/${tabIds[key]}`, {
+    navigate(`/template-group-meeting-view/${id}`, {
       state: { fileUrl: `${row?.fileName}` },
     });
   };
-  const handleNoticeEditClick = (row, index) => {
-    navigate(`/doc-edit/1`, {
+  const handleNoticeEditClick = (url, index) => {
+    console.log(url, "notice");
+    navigate(`/notice-edit/${id}`, {
       state: {
         index,
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
+        fileUrl: url,
       },
     });
   };
 
-  const handleNoticeView = (row) => {
-    navigate(`/template-group-meeting-view/1}`, {
-      state: {
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx`,
-      },
-    });
-  };
-  const handleMOMEditClick = (row, index) => {
-    navigate(`/doc-edit/1`, {
+  const handleNoticeView = (url, index) => {
+    navigate(`/template-group-meeting-view/${id}}`, {
       state: {
         index,
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
+        fileUrl: url,
       },
     });
   };
-
-  const handleMOMView = (row) => {
-    navigate(`/template-group-meeting-view/1}`, {
-      state: {
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx`,
-      },
-    });
-  };
-  const handleAttendanceEditClick = (row, index) => {
-    navigate(`/doc-edit/1`, {
+  const handleMOMEditClick = (url, index) => {
+    navigate(`/mom-edit/${id}`, {
       state: {
         index,
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
+        fileUrl: url,
       },
     });
   };
 
-  const handleAttendanceView = (row) => {
-    navigate(`/template-group-meeting-view/1`, {
+  const handleMOMView = (url, index) => {
+    navigate(`/template-group-meeting-view/${id}}`, {
       state: {
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx`,
+        index,
+        fileUrl: url,
+      },
+    });
+  };
+  const handleAttendanceEditClick = (url, index) => {
+    navigate(`/doc-edit/${id}`, {
+      state: {
+        index,
+        fileUrl: url,
       },
     });
   };
 
-  const handleResolEditClick = (row, index) => {
-    navigate(`/doc-edit/1}`, {
+  const handleAttendanceView = (url, index) => {
+    navigate(`/template-group-meeting-view/${id}`, {
+      state: {
+        index,
+        fileUrl: url,
+      },
+    });
+  };
+
+  const handleResolEditClick = (url, index) => {
+    navigate(`/doc-edit/${id}}`, {
       state: {
         index,
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
@@ -130,14 +142,21 @@ export default function MeetingDocuments() {
     });
   };
 
-  const handleResolView = (row) => {
-    navigate(`/template-group-meeting-view/1`, {
+  const handleResolView = (url) => {
+    navigate(`/template-group-meeting-view/${id}`, {
       state: {
         fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
       },
     });
   };
-
+  useEffect(
+    () => {
+      console.log(notice, minutes, attendance, "mat");
+    },
+    notice,
+    minutes,
+    attendance
+  );
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
@@ -146,7 +165,19 @@ export default function MeetingDocuments() {
       <Tabs
         id="controlled-tab-example"
         activeKey={key}
-        onSelect={(k) => setKey(k)}
+        onSelect={(k) => {
+          if (
+            (k === "notice" ||
+              k === "mom" ||
+              k === "attendance" ||
+              k == "resolution") &&
+            !rows.some((row) => row?.fileName)
+          ) {
+            toast.warning("Please save meeting agenda document first.");
+          } else {
+            setKey(k);
+          }
+        }}
         className="mb-3"
       >
         <Tab eventKey="agenda" title="Meeting Agenda">
@@ -180,7 +211,9 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleNoticeEditClick(1, 1)}
+                      onClick={() =>
+                        handleNoticeEditClick(notice?.templateFile, 1)
+                      }
                     >
                       <FaEdit />
                     </Button>
@@ -188,7 +221,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleNoticeView(1)}
+                      onClick={() => handleNoticeView(notice?.fileName, 1)}
                     >
                       <FaFileWord />
                     </Button>
@@ -196,7 +229,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Notice_1732180834066.docx"
+                        href={`${notice?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -228,7 +261,9 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMEditClick(1, 1)}
+                      onClick={() =>
+                        handleMOMEditClick(minutes.templateFile, 1)
+                      }
                     >
                       <FaEdit />
                     </Button>
@@ -236,7 +271,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMView(1)}
+                      onClick={() => handleMOMView(minutes?.fileName, 11)}
                     >
                       <FaFileWord />
                     </Button>
@@ -244,7 +279,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/MOM_1732190305036.docx"
+                        href={`${minutes?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -276,7 +311,9 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleAttendanceEditClick(1, 1)}
+                      onClick={() =>
+                        handleAttendanceEditClick(attendance?.templateFile, 1)
+                      }
                     >
                       <FaEdit />
                     </Button>
@@ -284,7 +321,9 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleAttendanceView(1)}
+                      onClick={() =>
+                        handleAttendanceView(attendance?.fileName, 1)
+                      }
                     >
                       <FaFileWord />
                     </Button>
@@ -292,7 +331,7 @@ export default function MeetingDocuments() {
                   <td>
                     <Button variant="outline-primary">
                       <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Attendance_1732190319661.docx"
+                        href={`${attendance?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"

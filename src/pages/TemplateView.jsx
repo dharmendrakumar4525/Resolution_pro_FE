@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
+
+import { getDocument } from "pdfjs-dist";
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { Button, Form, Table, Container } from "react-bootstrap";
+import { Button, Form, Table, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
@@ -22,6 +24,7 @@ const TemplateViewer = () => {
   const location = useLocation();
   const { id } = useParams();
   const token = localStorage.getItem("refreshToken");
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
@@ -111,17 +114,47 @@ const TemplateViewer = () => {
 
     return children;
   };
+
   const handleFileLoad = async (url) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      const htmlContent = result.value;
-      setEditorContent(htmlContent);
+
+      const fileType = url.split(".").pop().toLowerCase(); // Determine file type by extension
+
+      if (fileType === "docx") {
+        // Handle DOCX file
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const htmlContent = result.value;
+        setEditorContent(htmlContent);
+      } else if (fileType === "pdf") {
+        // Handle PDF file
+        const textContent = await extractPdfText(arrayBuffer);
+        setEditorContent(textContent);
+      } else {
+        throw new Error(
+          "Unsupported file format. Only DOCX and PDF are supported."
+        );
+      }
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
+  };
+
+  const extractPdfText = async (arrayBuffer) => {
+    const pdf = await getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+    let text = "";
+
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map((item) => item.str).join(" ");
+      text += pageText + "\n";
+    }
+
+    return text;
   };
 
   const createWordDocument = async () => {
@@ -140,7 +173,8 @@ const TemplateViewer = () => {
   };
   const saveDocument = async () => {
     const docBlob = await createWordDocument();
-    console.log(docBlob, "docbl");
+    setButtonLoading(true);
+
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("templateName", docBlob);
@@ -176,6 +210,8 @@ const TemplateViewer = () => {
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -214,27 +250,6 @@ const TemplateViewer = () => {
       <div className="parentContainer">
         <div className="leftContainer" style={{ width: "70%" }}>
           <h1 className="mb-4">Document Viewer</h1>
-
-          {/* <Form.Group className="mb-3">
-            <Form.Label>Upload DOCX File</Form.Label>
-            <Form.Control
-              type="file"
-              accept=".docx"
-              onChange={handleFileUpload}
-            />
-          </Form.Group> */}
-
-          {/* <Form>
-            <Form.Group controlId="documentName">
-              <Form.Label>Document Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter document name"
-                value={currentDocName}
-                onChange={(e) => setCurrentDocName(e.target.value)}
-              />
-            </Form.Group>
-          </Form> */}
 
           <CKEditor
             editor={ClassicEditor}
@@ -287,7 +302,17 @@ const TemplateViewer = () => {
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
             >
-              Save Meeting Document
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Save Meeting Document"
+              )}
             </Button>
             {hasUnconfirmedPlaceholders && (
               <p style={{ color: "red" }}>

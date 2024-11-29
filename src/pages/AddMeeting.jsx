@@ -18,6 +18,7 @@ import Select from "react-select";
 
 export default function AddMeeting() {
   const [rows, setRows] = useState([]);
+  const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => navigate("/meeting");
@@ -37,9 +38,9 @@ export default function AddMeeting() {
     meetingType: "board_meeting",
     date: "",
     startTime: "",
-    endTime: "",
     organizer: user.id,
     participants: [],
+    status: "scheduled",
     other_participants: [
       {
         name: "",
@@ -47,10 +48,83 @@ export default function AddMeeting() {
       },
     ],
     agendaItems: [],
-    location: "",
-    status: "scheduled",
+    variables: {},
+    notes: {
+      templateName: "Notice",
+      meetingType: "board_meeting",
+      templateFile: "",
+    },
+    mom: {
+      templateName: "MOM",
+      meetingType: "board_meeting",
+      templateFile: "",
+    },
+    attendance: {
+      templateName: "Attendance",
+      meetingType: "board_meeting",
+      templateFile: "",
+    },
   });
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setDocxUrl(data?.results);
+        const noticeTemplate = data?.results?.find(
+          (item) => item.id === "673efb66ace56b4760e37c61"
+        );
+  
+        if (noticeTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            notes: {
+              ...prevFormData.notes,
+              templateFile: noticeTemplate.fileName,
+            },
+          }));
+        }
+        const momTemplate = data?.results?.find(
+          (item) => item.id === "673f2063640f38762b0450c4"
+        );
+  
+        if (momTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            mom: {
+              ...prevFormData.mom,
+              templateFile: momTemplate.fileName,
+            },
+          }));
+        }
+        const attendanceTemplate = data?.results?.find(
+          (item) => item.id === "673f2072640f38762b0450ca"
+        );
+  
+        if (attendanceTemplate) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            attendance: {
+              ...prevFormData.attendance,
+              templateFile: attendanceTemplate.fileName,
+            },
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -244,7 +318,6 @@ export default function AddMeeting() {
       meetingType,
       date,
       startTime,
-      endTime,
       organizer,
       location,
     } = formData;
@@ -255,7 +328,6 @@ export default function AddMeeting() {
       !description ||
       !date ||
       !startTime ||
-      !endTime ||
       !organizer ||
       !location
     ) {
@@ -264,11 +336,6 @@ export default function AddMeeting() {
     }
     if (new Date(date) < new Date()) {
       toast.error("Date cannot be in the past.");
-      return false;
-    }
-
-    if (startTime && endTime && endTime <= startTime) {
-      toast.error("End time cannot be before or equal to start time.");
       return false;
     }
 
@@ -313,21 +380,6 @@ export default function AddMeeting() {
         toast.success("Meeting added successfully");
         navigate("/meeting");
       }
-
-      setFormData({
-        title: "",
-        client_name: "",
-        description: "",
-        meetingType: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        organizer: user.id,
-        participants: [],
-        agendaItems: [{ templateName: "", meetingType: "", templateFile: "" }],
-        location: "",
-        status: "scheduled",
-      });
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -348,18 +400,6 @@ export default function AddMeeting() {
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col>
-                <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="Enter Title"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
                   <Form.Control
@@ -375,6 +415,17 @@ export default function AddMeeting() {
                       </option>
                     ))}
                   </Form.Control>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group controlId="title">
+                  <Form.Label>Title</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Enter Title"
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -520,20 +571,6 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
               <Col>
-                <Form.Group controlId="endTime">
-                  <Form.Label>End Time</Form.Label>
-                  <Form.Control
-                    type="time"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">Location</Form.Label>
                   <Form.Control
@@ -544,23 +581,8 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group controlId="status">
-                  <Form.Label className="f-label">Status</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </Form.Control>
-                </Form.Group>
-              </Col>
             </Row>
+
             <div className="mt-2">
               <Button
                 variant="primary"
