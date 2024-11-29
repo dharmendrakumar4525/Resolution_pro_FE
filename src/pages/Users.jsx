@@ -144,7 +144,16 @@ export default function CustomerMaintenance() {
 
           body: JSON.stringify(formData),
         });
-
+        if (!response.ok) {
+          const errorMessage = await response
+            .json()
+            .then(
+              (data) =>
+                data.message || "Failed to update user. Please try again."
+            );
+          toast.error(errorMessage);
+          return;
+        }
         const response = await fetch(`${apiURL}/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
