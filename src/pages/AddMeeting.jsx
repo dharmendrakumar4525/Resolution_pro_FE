@@ -37,16 +37,12 @@ export default function AddMeeting() {
     description: "",
     meetingType: "board_meeting",
     date: "",
+    description: "To disburse Salary",
     startTime: "",
     organizer: user.id,
     participants: [],
     status: "scheduled",
-    other_participants: [
-      {
-        name: "",
-        email: "",
-      },
-    ],
+    other_participants: [],
     agendaItems: [],
     variables: {},
     notes: {
@@ -80,7 +76,7 @@ export default function AddMeeting() {
         const noticeTemplate = data?.results?.find(
           (item) => item.id === "673efb66ace56b4760e37c61"
         );
-  
+
         if (noticeTemplate) {
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -93,7 +89,7 @@ export default function AddMeeting() {
         const momTemplate = data?.results?.find(
           (item) => item.id === "673f2063640f38762b0450c4"
         );
-  
+
         if (momTemplate) {
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -106,7 +102,7 @@ export default function AddMeeting() {
         const attendanceTemplate = data?.results?.find(
           (item) => item.id === "673f2072640f38762b0450ca"
         );
-  
+
         if (attendanceTemplate) {
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -343,10 +339,10 @@ export default function AddMeeting() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setButtonLoading(true);
     if (!validateForm()) {
       return;
     }
+    setButtonLoading(true);
     try {
       let response;
       if (editingRow) {
@@ -384,6 +380,7 @@ export default function AddMeeting() {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
       setButtonLoading(false);
+      setLoading(false);
     }
   };
 
@@ -425,20 +422,6 @@ export default function AddMeeting() {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="Enter Title"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
-                <Form.Group controlId="description">
-                  <Form.Label className="f-label">Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
                   />
                 </Form.Group>
               </Col>
@@ -501,7 +484,7 @@ export default function AddMeeting() {
                 <Form.Label>Other Participants</Form.Label>
                 {formData.other_participants.map((participant, index) => (
                   <div key={index} className="participant-inputs">
-                    <Row>
+                    <Row className="mt-2">
                       <Col>
                         <Form.Control
                           type="text"
@@ -555,13 +538,13 @@ export default function AddMeeting() {
                 type="button"
                 onClick={handleAddParticipant}
               >
-                Add Participant
+                Click to add more Participant
               </Button>
             </Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
-                  <Form.Label>Start Time</Form.Label>
+                  <Form.Label className="f-label">Start Time</Form.Label>
                   <Form.Control
                     type="time"
                     value={formData.startTime}

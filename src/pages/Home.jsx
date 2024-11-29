@@ -373,7 +373,7 @@ const Home = () => {
             </Card.Header>
             <Card.Body>
               {/* <h4>{draftCount}</h4> */}
-              <h4>5</h4>
+              <h4>0</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -394,7 +394,7 @@ const Home = () => {
             </Card.Header>
             <Card.Body>
               {/* <h4>{inProcessCount}</h4> */}
-              <h4>3</h4>
+              <h4>0</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -415,7 +415,7 @@ const Home = () => {
             </Card.Header>
             <Card.Body>
               {/* <h4>{completedCount}</h4> */}
-              <h4>21</h4>
+              <h4>0</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -436,7 +436,7 @@ const Home = () => {
             </Card.Header>
             <Card.Body>
               {/* <h4>{totalResolutions}</h4> */}
-              <h4>26</h4>
+              <h4>0</h4>
             </Card.Body>
           </Card>
         </Col>
