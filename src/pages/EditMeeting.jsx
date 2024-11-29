@@ -40,7 +40,6 @@ export default function EditMeeting() {
     meetingType: "",
     date: "",
     startTime: "",
-    endTime: "",
     organizer: user.id,
     participants: [],
     other_participants: [
@@ -171,7 +170,6 @@ export default function EditMeeting() {
       meetingType: "board_meeting",
       date: new Date(row.date).toLocaleDateString(),
       startTime: row.startTime,
-      endTime: row.endTime,
       organizer: row.organizer?.role,
       participants: participantIds,
       agendaItems: row.agendaItems.map((agendaItem) => ({
@@ -188,7 +186,6 @@ export default function EditMeeting() {
             },
           ],
       location: row.location,
-      status: row.status,
     });
     if (row.client_name?.id) {
       fetchDirectors(row.client_name.id);
@@ -290,7 +287,7 @@ export default function EditMeeting() {
     label: director.name,
   }));
   const validateForm = () => {
-    const { meetingType, date, startTime, endTime, location } = formData;
+    const { meetingType, date, startTime, location } = formData;
 
     if (!meetingType || !date || !startTime || !location) {
       toast.error("Please fill out all required fields.");
@@ -564,20 +561,6 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
               <Col>
-                <Form.Group controlId="endTime">
-                  <Form.Label>End Time</Form.Label>
-                  <Form.Control
-                    type="time"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">Location</Form.Label>
                   <Form.Control
@@ -588,23 +571,8 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group controlId="status">
-                  <Form.Label className="f-label">Status</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </Form.Control>
-                </Form.Group>
-              </Col>
             </Row>
+
             <div className="mt-2">
               <Button
                 variant="primary"

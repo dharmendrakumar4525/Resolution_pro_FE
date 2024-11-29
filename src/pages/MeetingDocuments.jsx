@@ -51,6 +51,7 @@ export default function MeetingDocuments() {
         });
         const data = await response.json();
         setRows(data?.agendaItems || []); // Adjust based on API response
+        console.log(data?.agendaItems || [], "agena"); // Adjust based on API response
         // if (key === "attendance") {
         //   setParticipants(data?.participants || []);
         // }
@@ -162,7 +163,19 @@ export default function MeetingDocuments() {
       <Tabs
         id="controlled-tab-example"
         activeKey={key}
-        onSelect={(k) => setKey(k)}
+        onSelect={(k) => {
+          if (
+            (k === "notice" ||
+              k === "mom" ||
+              k === "attendance" ||
+              k == "resolution") &&
+            !rows.some((row) => row?.fileName)
+          ) {
+            toast.warning("Please save meeting agenda document first.");
+          } else {
+            setKey(k);
+          }
+        }}
         className="mb-3"
       >
         <Tab eventKey="agenda" title="Meeting Agenda">
