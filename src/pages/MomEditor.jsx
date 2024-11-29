@@ -476,7 +476,7 @@ const MomEditor = () => {
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
-    formData.append("notes_file", docBlob);
+    formData.append("mom_file", docBlob);
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
