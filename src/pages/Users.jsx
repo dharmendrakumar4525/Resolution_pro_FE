@@ -144,16 +144,7 @@ export default function CustomerMaintenance() {
 
           body: JSON.stringify(formData),
         });
-        if (!response.ok) {
-          const errorMessage = await response
-            .json()
-            .then(
-              (data) =>
-                data.message || "Failed to update user. Please try again."
-            );
-          toast.error(errorMessage);
-          return;
-        }
+
         const response = await fetch(`${apiURL}/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -238,6 +229,8 @@ export default function CustomerMaintenance() {
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
   return (
     <>
+      <ToastContainer />
+
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Users</h4>
@@ -414,7 +407,6 @@ export default function CustomerMaintenance() {
           </div>
         )}
       </Container>
-      <ToastContainer />
     </>
   );
 }
