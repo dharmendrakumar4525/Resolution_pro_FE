@@ -18,7 +18,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function MeetingDocuments() {
-  const [data,setData]=useState({})
+  const [data, setData] = useState({});
   const [rows, setRows] = useState([]);
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
@@ -56,7 +56,7 @@ export default function MeetingDocuments() {
         // if (key === "attendance") {
         //   setParticipants(data?.participants || []);
         // }
-        setData(data)
+        setData(data);
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
         setAttendance(data?.attendance || {});
@@ -452,7 +452,7 @@ function TableContent({ rows, handleEditClick, handleView }) {
               <td>
                 <Button variant="outline-primary">
                   <a
-                    href={row?.fileName}
+                    href={`${row?.fileName}`}
                     download="customFileName.docx"
                     target="_blank"
                     rel="noopener noreferrer"
