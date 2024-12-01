@@ -462,19 +462,62 @@ export default function AddMeeting() {
                   <Form.Label>Participants</Form.Label>
                   <Select
                     isMulti
-                    options={directorOptions}
-                    value={directorOptions.filter((option) =>
-                      formData.participants.includes(option.value)
-                    )}
+                    options={[
+                      { value: "selectAll", label: "Select All" },
+                      ...directorOptions,
+                    ]}
+                    value={
+                      formData.participants.length === directorOptions.length
+                        ? [
+                            { value: "selectAll", label: "Select All" },
+                            ...directorOptions,
+                          ]
+                        : directorOptions.filter((option) =>
+                            formData.participants.some(
+                              (participant) =>
+                                participant.director === option.value
+                            )
+                          )
+                    }
                     onChange={(selectedOptions) => {
-                      // Update the formData with the selected participant IDs
-                      setFormData({
-                        ...formData,
-                        participants: selectedOptions.map(
-                          (option) => option.value
-                        ),
-                      });
+                      if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.participants.length !== directorOptions.length
+                      ) {
+                        // Select all participants
+                        setFormData({
+                          ...formData,
+                          participants: directorOptions.map((option) => ({
+                            director: option.value,
+                            isPresent: false,
+                          })),
+                        });
+                      } else if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.participants.length === directorOptions.length
+                      ) {
+                        setFormData({
+                          ...formData,
+                          participants: [],
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          participants: selectedOptions
+                            .filter((option) => option.value !== "selectAll")
+                            .map((option) => ({
+                              director: option.value,
+                              isPresent: false,
+                            })),
+                        });
+                      }
                     }}
+                    isClearable
+                    isSearchable
                   />
                 </Form.Group>
               </Col>
