@@ -18,12 +18,12 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function MeetingDocuments() {
-  const [data, setData] = useState({});
   const [rows, setRows] = useState([]);
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
   const [participants, setParticipants] = useState([]);
+  const [participantAttendance, setParticipantAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState("agenda"); // Default tab
 
@@ -53,10 +53,7 @@ export default function MeetingDocuments() {
         const data = await response.json();
         setRows(data?.agendaItems || []);
         console.log(data, "agena");
-        // if (key === "attendance") {
-        //   setParticipants(data?.participants || []);
-        // }
-        setData(data);
+        setParticipants(data?.participants || []);
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
         setAttendance(data?.attendance || {});
@@ -116,7 +113,7 @@ export default function MeetingDocuments() {
     });
   };
   const handleAttendanceEditClick = (url, index) => {
-    navigate(`/doc-edit/${id}`, {
+    navigate(`/attendance-edit/${id}`, {
       state: {
         index,
         fileUrl: url,
@@ -152,11 +149,50 @@ export default function MeetingDocuments() {
   useEffect(
     () => {
       console.log(notice, minutes, attendance, "mat");
+      console.log(participants, "paerttg");
     },
     notice,
     minutes,
     attendance
   );
+  const handleCheckboxChange = (e, participant) => {
+    const isChecked = e.target.checked;
+
+    const updatedParticipants = participants.map((p) =>
+      p.director.id === participant.director.id
+        ? { ...p, isPresent: isChecked }
+        : p
+    );
+    setParticipants(updatedParticipants);
+  };
+
+  const patchAttendance = async () => {
+    try {
+      const url = `${apiURL}/meeting/${id}`;
+      const transformedParticipants = participants.map((participant) => ({
+        director: participant?.director?.id,
+        isPresent: participant?.isPresent,
+      }));
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ participants: transformedParticipants }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      toast.success("Attendance updated successfully:", data);
+    } catch (error) {
+      toast.error("Error updating attendance:", error);
+    }
+  };
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
@@ -296,6 +332,37 @@ export default function MeetingDocuments() {
 
         <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th>Name</th>
+                  <th>Present in the Meeting</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.map((participant, index) => (
+                  <tr key={index}>
+                    <td>{participant?.director?.name}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent}
+                        onChange={(e) => handleCheckboxChange(e, participant)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Button
+              className="mb-4 mt-2"
+              style={{ alignContent: "right" }}
+              onClick={patchAttendance}
+            >
+              Mark Attendance
+            </Button>
+            <br />
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
