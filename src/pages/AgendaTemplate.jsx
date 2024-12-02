@@ -335,7 +335,7 @@ export default function AgendaTemplate() {
                       type="text"
                       value={formData.title}
                       onChange={handleChange}
-                      placeholder="Enter Template Name"
+                      placeholder="Enter Title"
                     />
                   </Form.Group>
                 </Col>

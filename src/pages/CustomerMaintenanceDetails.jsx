@@ -22,7 +22,7 @@ const CustomerMaintenanceDetail = () => {
       <h2>Details for {row?.name}</h2>
       <div className="details-grid">
         <div>
-          <strong>Alloted Manager:</strong>
+          <strong>Client Manager:</strong>
         </div>
         <div>{row?.alloted_manager[0]?.name || "-"}</div>
         <div>

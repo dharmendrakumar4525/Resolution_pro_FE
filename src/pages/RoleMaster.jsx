@@ -65,7 +65,13 @@ export default function RoleMaster() {
   };
 
   const handleEditClick = (row) => {
-    if (["admin", "user", "manager"].includes(row?.role.toLowerCase())) {
+    const nonEditableIds = [
+      "672c47cb38903b464c9d2923",
+      "672c47c238903b464c9d2920",
+      "6728ae3b6177fee637232a73",
+    ];
+
+    if (nonEditableIds.includes(row?.id)) {
       toast.warn("This role cannot be edited.");
       return;
     }
@@ -76,7 +82,13 @@ export default function RoleMaster() {
   };
 
   const handleDeleteClick = async (row) => {
-    if (["admin", "user", "manager"].includes(row?.role.toLowerCase())) {
+    const nonEditableIds = [
+      "672c47cb38903b464c9d2923",
+      "672c47c238903b464c9d2920",
+      "6728ae3b6177fee637232a73",
+    ];
+
+    if (nonEditableIds.includes(row?.id)) {
       toast.warn("This role cannot be deleted.");
       return;
     }
