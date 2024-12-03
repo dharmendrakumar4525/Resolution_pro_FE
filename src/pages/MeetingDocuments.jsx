@@ -75,12 +75,15 @@ export default function MeetingDocuments() {
     });
   };
   const handleView = (row) => {
+    if (`${row?.filedocx}` == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
     navigate(`/template-group-meeting-view/${id}`, {
       state: { fileUrl: `${row?.filedocx}` },
     });
   };
   const handleNoticeEditClick = (url, index) => {
-    console.log(url, "notice");
     navigate(`/notice-edit/${id}`, {
       state: {
         index,
@@ -90,6 +93,10 @@ export default function MeetingDocuments() {
   };
 
   const handleNoticeView = (url, index) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
     navigate(`/template-group-meeting-view/${id}}`, {
       state: {
         index,
@@ -107,6 +114,10 @@ export default function MeetingDocuments() {
   };
 
   const handleMOMView = (url, index) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
     navigate(`/template-group-meeting-view/${id}}`, {
       state: {
         index,
@@ -124,6 +135,10 @@ export default function MeetingDocuments() {
   };
 
   const handleAttendanceView = (url, index) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
     navigate(`/template-group-meeting-view/${id}`, {
       state: {
         index,
@@ -142,6 +157,10 @@ export default function MeetingDocuments() {
   };
 
   const handleResolView = (url) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
     navigate(`/template-group-meeting-view/${id}`, {
       state: {
         fileUrl: url,
@@ -266,27 +285,36 @@ export default function MeetingDocuments() {
                     </Button>
                   </td>
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${notice?.fileName}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {notice?.fileName && notice?.fileName !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={notice?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
+
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${notice?.filedocx}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {notice?.filedocx && notice?.filedocx !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={notice?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -328,27 +356,36 @@ export default function MeetingDocuments() {
                     </Button>
                   </td>
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${minutes?.fileName}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {minutes?.fileName && minutes?.fileName !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
+
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${minutes?.filedocx}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {minutes?.filedocx ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -366,7 +403,7 @@ export default function MeetingDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {participants.map((participant, index) => (
+                {participants?.map((participant, index) => (
                   <tr key={index}>
                     <td>{participant?.director?.name}</td>
                     <td>
@@ -423,28 +460,36 @@ export default function MeetingDocuments() {
                     </Button>
                   </td>
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${attendance?.fileName}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {attendance?.fileName ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={attendance?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
+
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      as="a"
-                      href={`${attendance?.filedocx}`}
-                      download="customFileName.docx"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <FaFileWord />
-                    </Button>
+                    {attendance?.filedocx ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={attendance?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -478,6 +523,7 @@ export default function MeetingDocuments() {
                         <FaEdit />
                       </Button>
                     </td>
+
                     <td>
                       <Button
                         variant="outline-primary"
@@ -487,27 +533,36 @@ export default function MeetingDocuments() {
                       </Button>
                     </td>
                     <td>
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={`${row?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
+                      {row?.fileName && row?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.fileName}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
                     </td>
+
                     <td>
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={`${row?.filedocx}`}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
+                      {row?.filedocx && row?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.filedocx}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -573,27 +628,36 @@ function TableContent({ rows, handleEditClick, handleView }) {
                 </Button>
               </td>
               <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.fileName}`}
-                  download="customFileName.docx"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaFileWord />
-                </Button>
+                {row?.fileName && row?.fileName !== "" ? (
+                  <Button
+                    variant="outline-primary"
+                    as="a"
+                    href={`${row?.fileName}`}
+                    download="customFileName.docx"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <FaFileWord />
+                  </Button>
+                ) : (
+                  <span>No file available</span>
+                )}
               </td>
+
               <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.filedocx}`}
-                  download="customFileName.docx"
-                  rel="noopener noreferrer"
-                >
-                  <FaFileWord />
-                </Button>
+                {row?.filedocx && row?.filedocx !== "" ? (
+                  <Button
+                    variant="outline-primary"
+                    as="a"
+                    href={`${row?.filedocx}`}
+                    download="customFileName.docx"
+                    rel="noopener noreferrer"
+                  >
+                    <FaFileWord />
+                  </Button>
+                ) : (
+                  <span>No file available</span>
+                )}
               </td>
             </tr>
           ))}

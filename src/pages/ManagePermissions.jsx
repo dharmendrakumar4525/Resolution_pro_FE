@@ -179,11 +179,16 @@ const ManagePermissions = () => {
                   <option value="" disabled>
                     Select a role
                   </option>
-                  {roles.map((role, index) => (
-                    <option key={index} value={role.id}>
-                      {role.role}
-                    </option>
-                  ))}
+                  {roles?.map((role, index) => {
+                    if (role.id === "674ec68ffa5589405df5dc84") {
+                      return null; // Skip rendering this option
+                    }
+                    return (
+                      <option key={index} value={role.id}>
+                        {role.role}
+                      </option>
+                    );
+                  })}
                 </Form.Control>
               ) : (
                 <p>No roles found.</p>
