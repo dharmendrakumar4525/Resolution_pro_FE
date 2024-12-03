@@ -97,7 +97,7 @@ export default function CustomerMaintenance() {
       name: row?.name,
       email: row?.email,
       password: row?.password,
-      role: row?.role?.role || "",
+      role: row?.role?.id || "",
     });
     setOpenAddModal(true);
   };
@@ -168,7 +168,6 @@ export default function CustomerMaintenance() {
         const localStorageUser = JSON.parse(localStorage.getItem("user"));
         if (localStorageUser && localStorageUser.id === editingRow.id) {
           const updatedUser = { ...localStorageUser, ...formData };
-          console.log(updatedUser, "dsdsds");
 
           localStorage.setItem("user", JSON.stringify(updatedUser));
         }
@@ -227,11 +226,13 @@ export default function CustomerMaintenance() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+    console.log(formData,"formData")
   return (
     <>
-      <ToastContainer />
 
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
+      <ToastContainer />
+
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Users</h4>
           {hasPermission("add") && (
@@ -283,7 +284,7 @@ export default function CustomerMaintenance() {
                 <Form.Control
                   as="select"
                   name="role"
-                  value={formData?.role?.id}
+                  value={formData?.role}
                   onChange={handleChange}
                 >
                   <option value="">Select Role</option>
