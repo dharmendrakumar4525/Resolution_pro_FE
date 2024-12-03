@@ -168,7 +168,7 @@ export default function EditMeeting() {
       client_name: row.client_name?.id || "",
       description: row.description,
       meetingType: "board_meeting",
-      date: new Date(row.date).toLocaleDateString(),
+      date: row.date.split("T")[0],
       startTime: row?.startTime,
       organizer: row.organizer?.role,
       participants: participantIds,
@@ -296,10 +296,12 @@ export default function EditMeeting() {
     value: agenda.fileName,
     label: agenda.fileName,
   }));
+
   const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
   }));
+  console.log(formData.participants, "directOption");
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
 
@@ -385,7 +387,6 @@ export default function EditMeeting() {
     value: director?.id,
     label: director?.name,
   }));
-
   return (
     <>
       <div
@@ -443,7 +444,7 @@ export default function EditMeeting() {
               </Col>
             </Row>
 
-            <Row className="mt-4">
+            <Row className="mt-4 mb-3">
               <h5>Meeting Documents</h5>
 
               <Form.Group controlId="agendaItems">
@@ -504,8 +505,7 @@ export default function EditMeeting() {
                           ]
                         : directorOptions.filter((option) =>
                             formData.participants.some(
-                              (participant) =>
-                                participant.director === option.value
+                              (participant) => participant == option.value
                             )
                           )
                     }
@@ -516,7 +516,6 @@ export default function EditMeeting() {
                         ) &&
                         formData.participants.length !== directorOptions.length
                       ) {
-                        // Select all participants
                         setFormData({
                           ...formData,
                           participants: directorOptions?.map((option) => ({
@@ -628,7 +627,7 @@ export default function EditMeeting() {
               </Col>
               <Col>
                 <Form.Group controlId="location">
-                  <Form.Label className="f-label">Location</Form.Label>
+                  <Form.Label>Location</Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.location}
