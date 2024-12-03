@@ -76,23 +76,22 @@ export default function Committee() {
     try {
       const response = await fetch(`${apiURL}/committee-master/${row?.id}`, {
         method: "DELETE",
+
         headers: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
+      toast.success("Item deleted successfully");
 
       setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
       if (rows.length === 1 && page > 1) {
         setPage(page - 1);
       }
-      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
       toast.error("Failed to delete item. Please try again.");
@@ -112,6 +111,7 @@ export default function Committee() {
           },
           body: JSON.stringify({ name: formData.committeeName }),
         });
+        toast.success("Committee Master edited successfully");
         setRows((prevRows) =>
           prevRows.map((row) =>
             row?.id === editingRow.id
@@ -119,7 +119,6 @@ export default function Committee() {
               : row
           )
         );
-        toast.success("Committee Master edited successfully");
       } else {
         const response = await fetch(`${apiURL}/committee-master`, {
           method: "POST",
@@ -157,6 +156,8 @@ export default function Committee() {
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
+        <ToastContainer autoClose={2000} />
+
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Master</h4>
           {hasPermission("add") && (
@@ -277,7 +278,6 @@ export default function Committee() {
           </div>
         )}
       </Container>
-      <ToastContainer />
     </>
   );
 }
