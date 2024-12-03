@@ -164,12 +164,12 @@ export default function EditMeeting() {
       (participant) => participant?.director?.id
     );
     setFormData({
-      title: row.title,
+      title: row?.title,
       client_name: row.client_name?.id || "",
       description: row.description,
       meetingType: "board_meeting",
       date: new Date(row.date).toLocaleDateString(),
-      startTime: row.startTime,
+      startTime: row?.startTime,
       organizer: row.organizer?.role,
       participants: participantIds,
       agendaItems: row.agendaItems.map((agendaItem) => ({
@@ -222,35 +222,49 @@ export default function EditMeeting() {
       other_participants: updatedParticipants,
     }));
   };
-  //   const handleAgendaItemChange = (index, field, value) => {
-  //     setFormData((prevData) => {
-  //       const updatedAgendaItems = [...prevData.agendaItems];
-  //       updatedAgendaItems[index] = {
-  //         ...updatedAgendaItems[index],
-  //         [field]: value,
-  //       };
-  //       return { ...prevData, agendaItems: updatedAgendaItems };
-  //     });
-  //   };
-  const handleAgendaItemChange = (selectedOptions) => {
-    const selectedAgendas = selectedOptions
-      ? selectedOptions.map((option) => {
-          const agenda = agendaList.find(
-            (item) => item.templateName === option.value
-          );
-          return {
-            templateName: option.value,
-            meetingType: agenda?.meetingType || "",
-            templateFile: agenda?.fileName || "",
-          };
-        })
-      : [];
+  const handleAgendaItemChange = (selectedOption) => {
+    if (!selectedOption) {
+      setFormData((prevData) => ({
+        ...prevData,
+        agendaItems: [],
+      }));
+      return;
+    }
+
+    const agenda = agendaList.find(
+      (item) => item.templateName === selectedOption.value
+    );
 
     setFormData((prevData) => ({
       ...prevData,
-      agendaItems: selectedAgendas,
+      agendaItems: [
+        {
+          templateName: selectedOption.value,
+          meetingType: agenda?.meetingType || "",
+          templateFile: agenda?.fileName || "",
+        },
+      ],
     }));
   };
+  // const handleAgendaItemChange = (selectedOptions) => {
+  //   const selectedAgendas = selectedOptions
+  //     ? selectedOptions.map((option) => {
+  //         const agenda = agendaList.find(
+  //           (item) => item.templateName === option.value
+  //         );
+  //         return {
+  //           templateName: option.value,
+  //           meetingType: agenda?.meetingType || "",
+  //           templateFile: agenda?.fileName || "",
+  //         };
+  //       })
+  //     : [];
+
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     agendaItems: selectedAgendas,
+  //   }));
+  // };
 
   const addAgendaItem = () => {
     setFormData((prevData) => ({
@@ -282,7 +296,7 @@ export default function EditMeeting() {
     value: agenda.fileName,
     label: agenda.fileName,
   }));
-  const directorOptions = directorList.map((director) => ({
+  const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
   }));
@@ -367,9 +381,9 @@ export default function EditMeeting() {
     }
   };
 
-  const options = directorList.map((director) => ({
-    value: director.id,
-    label: director.name,
+  const options = directorList?.map((director) => ({
+    value: director?.id,
+    label: director?.name,
   }));
 
   return (
@@ -435,6 +449,20 @@ export default function EditMeeting() {
               <Form.Group controlId="agendaItems">
                 <Select
                   options={agendaOptions}
+                  placeholder="Select Meeting Document"
+                  value={
+                    formData.agendaItems.length > 0
+                      ? {
+                          value: formData.agendaItems[0].templateName,
+                          label: formData.agendaItems[0].templateName,
+                        }
+                      : null
+                  }
+                  onChange={handleAgendaItemChange}
+                  isClearable
+                />
+                {/* <Select
+                  options={agendaOptions}
                   placeholder="Select Meeting Documents"
                   isMulti
                   value={formData.agendaItems.map((item) => ({
@@ -443,7 +471,7 @@ export default function EditMeeting() {
                   }))}
                   onChange={handleAgendaItemChange}
                   isClearable
-                />
+                /> */}
               </Form.Group>
             </Row>
 
@@ -469,7 +497,7 @@ export default function EditMeeting() {
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions.length
+                      formData.participants.length === directorOptions?.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
@@ -491,7 +519,7 @@ export default function EditMeeting() {
                         // Select all participants
                         setFormData({
                           ...formData,
-                          participants: directorOptions.map((option) => ({
+                          participants: directorOptions?.map((option) => ({
                             director: option.value,
                             isPresent: false,
                           })),

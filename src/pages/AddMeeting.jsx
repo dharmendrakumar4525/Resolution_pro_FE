@@ -263,26 +263,50 @@ export default function AddMeeting() {
       fetchDirectors(value);
     }
   };
-
-  const handleAgendaItemChange = (selectedOptions) => {
-    const selectedAgendas = selectedOptions
-      ? selectedOptions.map((option) => {
-          const agenda = agendaList.find(
-            (item) => item.templateName === option.value
-          );
-          return {
-            templateName: option.value,
-            meetingType: agenda?.meetingType || "",
-            templateFile: agenda?.fileName || "",
-          };
-        })
-      : [];
-
+  const handleAgendaItemChange = (selectedOption) => {
+    if (!selectedOption) {
+      setFormData((prevData) => ({
+        ...prevData,
+        agendaItems: [],
+      }));
+      return;
+    }
+  
+    const agenda = agendaList.find(
+      (item) => item.templateName === selectedOption.value
+    );
+  
     setFormData((prevData) => ({
       ...prevData,
-      agendaItems: selectedAgendas,
+      agendaItems: [
+        {
+          templateName: selectedOption.value,
+          meetingType: agenda?.meetingType || "",
+          templateFile: agenda?.fileName || "",
+        },
+      ],
     }));
   };
+  
+  // const handleAgendaItemChange = (selectedOptions) => {
+  //   const selectedAgendas = selectedOptions
+  //     ? selectedOptions.map((option) => {
+  //         const agenda = agendaList.find(
+  //           (item) => item.templateName === option.value
+  //         );
+  //         return {
+  //           templateName: option.value,
+  //           meetingType: agenda?.meetingType || "",
+  //           templateFile: agenda?.fileName || "",
+  //         };
+  //       })
+  //     : [];
+
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     agendaItems: selectedAgendas,
+  //   }));
+  // };
 
   const handleSelectChange = (selectedOptions) => {
     // Extract only the selected values (IDs)
@@ -433,15 +457,34 @@ export default function AddMeeting() {
               <Form.Group controlId="agendaItems">
                 <Select
                   options={agendaOptions}
-                  placeholder="Select Meeting Documents"
-                  isMulti
-                  value={formData.agendaItems.map((item) => ({
-                    value: item.templateName,
-                    label: item.templateName,
-                  }))}
+                  placeholder="Select Meeting Document"
+                  value={
+                    formData.agendaItems.length > 0
+                      ? {
+                          value: formData.agendaItems[0].templateName,
+                          label: formData.agendaItems[0].templateName,
+                        }
+                      : null
+                  }
                   onChange={handleAgendaItemChange}
                   isClearable
                 />
+
+                {/* <Select
+                  options={agendaOptions}
+                  placeholder="Select Meeting Documents"
+                  isMulti
+                  value={
+                    formData.agendaItems.length > 0
+                      ? {
+                          value: formData.agendaItems[0].templateName,
+                          label: formData.agendaItems[0].templateName,
+                        }
+                      : null
+                  }
+                  onChange={handleAgendaItemChange}
+                  isClearable
+                /> */}
               </Form.Group>
             </Row>
 
