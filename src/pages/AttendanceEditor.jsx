@@ -340,7 +340,7 @@ const AttendanceEditor = () => {
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    }, 6000);
   }, [fileUrl, participants]);
 
   // Load content on file URL change

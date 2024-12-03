@@ -22,6 +22,7 @@ export default function MeetingDocuments() {
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
+  const [resolutions, setResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [participantAttendance, setParticipantAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ export default function MeetingDocuments() {
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
         setAttendance(data?.attendance || {});
+        setResolutions(data?.resolutions || []);
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
       } finally {
@@ -74,7 +76,7 @@ export default function MeetingDocuments() {
   };
   const handleView = (row) => {
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.fileName}` },
+      state: { fileUrl: `${row?.filedocx}` },
     });
   };
   const handleNoticeEditClick = (url, index) => {
@@ -131,10 +133,10 @@ export default function MeetingDocuments() {
   };
 
   const handleResolEditClick = (url, index) => {
-    navigate(`/doc-edit/${id}}`, {
+    navigate(`/resolution-edit/${id}`, {
       state: {
         index,
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+        fileUrl: url,
       },
     });
   };
@@ -142,7 +144,7 @@ export default function MeetingDocuments() {
   const handleResolView = (url) => {
     navigate(`/template-group-meeting-view/${id}`, {
       state: {
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+        fileUrl: url,
       },
     });
   };
@@ -235,10 +237,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,21 +260,32 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleNoticeView(notice?.fileName, 1)}
+                      onClick={() => handleNoticeView(notice?.filedocx, 1)}
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${notice?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${notice?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${notice?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -285,10 +299,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -307,21 +322,32 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.fileName, 11)}
+                      onClick={() => handleMOMView(minutes?.filedocx, 11)}
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${minutes?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${minutes?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${minutes?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -366,10 +392,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -389,22 +416,34 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceView(attendance?.fileName, 1)
+                        handleAttendanceView(attendance?.filedocx, 1)
                       }
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${attendance?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${attendance?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${attendance?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -418,44 +457,60 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Resolution Document</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleResolEditClick(1, 1)}
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleResolView(1)}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx"
+                {resolutions.map((row, index) => (
+                  <tr key={row?._id}>
+                    <td>{row?.templateName}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleResolEditClick(row?.templateFile, index)
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => handleResolView(row?.filedocx)}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={`${row?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <FaFileWord />
-                      </a>
-                    </Button>
-                  </td>
-                </tr>
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={`${row?.filedocx}`}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           </div>
@@ -490,10 +545,11 @@ function TableContent({ rows, handleEditClick, handleView }) {
       <Table bordered hover className="Master-table">
         <thead className="Master-Thead">
           <tr>
-            <th>Name</th>
+            <th style={{ width: "30%" }}>Name</th>
             <th>Edit</th>
             <th>View</th>
-            <th>Download</th>
+            <th>Download-as PDF</th>
+            <th>Download-as Docx</th>
           </tr>
         </thead>
         <tbody>
@@ -517,15 +573,26 @@ function TableContent({ rows, handleEditClick, handleView }) {
                 </Button>
               </td>
               <td>
-                <Button variant="outline-primary">
-                  <a
-                    href={`${row?.fileName}`}
-                    download="customFileName.docx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaFileWord />
-                  </a>
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.fileName}`}
+                  download="customFileName.docx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaFileWord />
+                </Button>
+              </td>
+              <td>
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.filedocx}`}
+                  download="customFileName.docx"
+                  rel="noopener noreferrer"
+                >
+                  <FaFileWord />
                 </Button>
               </td>
             </tr>

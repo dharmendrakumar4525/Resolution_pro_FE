@@ -44,6 +44,7 @@ import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
 import NoticeEditor from "../pages/NoticeEditor";
 import MomEditor from "../pages/MomEditor";
 import AttendanceEditor from "../pages/AttendanceEditor";
+import ResolutionEditor from "../pages/ResolutionEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -225,6 +226,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<AttendanceEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/resolution-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ResolutionEditor />} />
           ) : (
             <Navigate to="/login" />
           )
