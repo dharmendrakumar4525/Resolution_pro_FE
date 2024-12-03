@@ -398,7 +398,7 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="alloted_manager">
-                <Form.Label>Manager</Form.Label>
+                <Form.Label>Client Manager</Form.Label>
                 <Form.Control
                   as="select"
                   value={formData.alloted_manager.id}
@@ -408,7 +408,7 @@ export default function CustomerMaintenanceForm() {
                     })
                   }
                 >
-                  <option value="">Select Manager</option>
+                  <option value="">Select Client Manager</option>
                   {managers.map((manager) => (
                     <option key={manager.id} value={manager.id}>
                       {manager.name}

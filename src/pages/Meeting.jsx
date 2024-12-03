@@ -32,6 +32,7 @@ export default function Meeting() {
   const [clientList, setClientList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
   const token = localStorage.getItem("refreshToken");
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
@@ -80,7 +81,7 @@ export default function Meeting() {
     };
 
     fetchData(page);
-  }, [page]);
+  }, [page, refresh]);
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -129,12 +130,10 @@ export default function Meeting() {
 
       if (!response.ok) {
         throw new Error("Failed to delete item");
+        return;
       }
 
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
-      if (rows.length === 1 && page > 1) {
-        setPage(page - 1);
-      }
+      setRefresh(!refresh);
       toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

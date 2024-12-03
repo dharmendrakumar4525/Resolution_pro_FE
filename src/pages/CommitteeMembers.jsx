@@ -198,11 +198,9 @@ export default function CommitteeMembers() {
             <h5>You do not have permission to view the data</h5>
           </div>
         ) : rows.length === 0 ? (
-          <tr>
-            <td colSpan={5} className="text-center">
-              No data available
-            </td>
-          </tr>
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
         ) : (
           <>
             <Table bordered hover className="Master-table mt-5">

@@ -161,7 +161,7 @@ export default function EditMeeting() {
     setEditingRow(row);
     setOpenAddModal(true);
     const participantIds = row.participants.map(
-      (participant) => participant.id
+      (participant) => participant?.director?.id
     );
     setFormData({
       title: row.title,
@@ -464,24 +464,62 @@ export default function EditMeeting() {
                   <Form.Label>Participants</Form.Label>
                   <Select
                     isMulti
-                    value={options.filter((option) =>
-                      formData.participants.includes(option.value)
-                    )}
-                    options={options}
+                    options={[
+                      { value: "selectAll", label: "Select All" },
+                      ...directorOptions,
+                    ]}
+                    value={
+                      formData.participants.length === directorOptions.length
+                        ? [
+                            { value: "selectAll", label: "Select All" },
+                            ...directorOptions,
+                          ]
+                        : directorOptions.filter((option) =>
+                            formData.participants.some(
+                              (participant) =>
+                                participant.director === option.value
+                            )
+                          )
+                    }
                     onChange={(selectedOptions) => {
-                      const selectedValues = selectedOptions.map(
-                        (option) => option.value
-                      );
-
-                      // Update formData with the new selected participants
-                      setFormData({
-                        ...formData,
-                        participants: selectedValues,
-                      });
+                      if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.participants.length !== directorOptions.length
+                      ) {
+                        // Select all participants
+                        setFormData({
+                          ...formData,
+                          participants: directorOptions.map((option) => ({
+                            director: option.value,
+                            isPresent: false,
+                          })),
+                        });
+                      } else if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.participants.length === directorOptions.length
+                      ) {
+                        setFormData({
+                          ...formData,
+                          participants: [],
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          participants: selectedOptions
+                            .filter((option) => option.value !== "selectAll")
+                            .map((option) => ({
+                              director: option.value,
+                              isPresent: false,
+                            })),
+                        });
+                      }
                     }}
-                    placeholder="Select participants"
-                    className="basic-multi-select"
-                    classNamePrefix="select"
+                    isClearable
+                    isSearchable
                   />
                 </Form.Group>
               </Col>

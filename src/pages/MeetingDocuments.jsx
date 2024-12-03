@@ -18,12 +18,13 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function MeetingDocuments() {
-  const [data, setData] = useState({});
   const [rows, setRows] = useState([]);
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
+  const [resolutions, setResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [participantAttendance, setParticipantAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState("agenda"); // Default tab
 
@@ -53,13 +54,11 @@ export default function MeetingDocuments() {
         const data = await response.json();
         setRows(data?.agendaItems || []);
         console.log(data, "agena");
-        // if (key === "attendance") {
-        //   setParticipants(data?.participants || []);
-        // }
-        setData(data);
+        setParticipants(data?.participants || []);
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
         setAttendance(data?.attendance || {});
+        setResolutions(data?.resolutions || []);
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
       } finally {
@@ -77,7 +76,7 @@ export default function MeetingDocuments() {
   };
   const handleView = (row) => {
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.fileName}` },
+      state: { fileUrl: `${row?.filedocx}` },
     });
   };
   const handleNoticeEditClick = (url, index) => {
@@ -116,7 +115,7 @@ export default function MeetingDocuments() {
     });
   };
   const handleAttendanceEditClick = (url, index) => {
-    navigate(`/doc-edit/${id}`, {
+    navigate(`/attendance-edit/${id}`, {
       state: {
         index,
         fileUrl: url,
@@ -134,10 +133,10 @@ export default function MeetingDocuments() {
   };
 
   const handleResolEditClick = (url, index) => {
-    navigate(`/doc-edit/${id}}`, {
+    navigate(`/resolution-edit/${id}`, {
       state: {
         index,
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+        fileUrl: url,
       },
     });
   };
@@ -145,18 +144,57 @@ export default function MeetingDocuments() {
   const handleResolView = (url) => {
     navigate(`/template-group-meeting-view/${id}`, {
       state: {
-        fileUrl: `https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx`,
+        fileUrl: url,
       },
     });
   };
   useEffect(
     () => {
       console.log(notice, minutes, attendance, "mat");
+      console.log(participants, "paerttg");
     },
     notice,
     minutes,
     attendance
   );
+  const handleCheckboxChange = (e, participant) => {
+    const isChecked = e.target.checked;
+
+    const updatedParticipants = participants.map((p) =>
+      p.director.id === participant.director.id
+        ? { ...p, isPresent: isChecked }
+        : p
+    );
+    setParticipants(updatedParticipants);
+  };
+
+  const patchAttendance = async () => {
+    try {
+      const url = `${apiURL}/meeting/${id}`;
+      const transformedParticipants = participants.map((participant) => ({
+        director: participant?.director?.id,
+        isPresent: participant?.isPresent,
+      }));
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ participants: transformedParticipants }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      toast.success("Attendance updated successfully:", data);
+    } catch (error) {
+      toast.error("Error updating attendance:", error);
+    }
+  };
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
@@ -199,10 +237,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -221,21 +260,32 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleNoticeView(notice?.fileName, 1)}
+                      onClick={() => handleNoticeView(notice?.filedocx, 1)}
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${notice?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${notice?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${notice?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -249,10 +299,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,21 +322,32 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.fileName, 11)}
+                      onClick={() => handleMOMView(minutes?.filedocx, 11)}
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${minutes?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${minutes?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${minutes?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -300,9 +362,41 @@ export default function MeetingDocuments() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
+                  <th>Present in the Meeting</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.map((participant, index) => (
+                  <tr key={index}>
+                    <td>{participant?.director?.name}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent}
+                        onChange={(e) => handleCheckboxChange(e, participant)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Button
+              className="mb-4 mt-2"
+              style={{ alignContent: "right" }}
+              onClick={patchAttendance}
+            >
+              Mark Attendance
+            </Button>
+            <br />
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
@@ -322,22 +416,34 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceView(attendance?.fileName, 1)
+                        handleAttendanceView(attendance?.filedocx, 1)
                       }
                     >
                       <FaFileWord />
                     </Button>
                   </td>
                   <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href={`${attendance?.fileName}`}
-                        download="customFileName.docx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </a>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${attendance?.fileName}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${attendance?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <FaFileWord />
                     </Button>
                   </td>
                 </tr>
@@ -351,44 +457,60 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th style={{ width: "30%" }}>Name</th>
                   <th>Edit</th>
                   <th>View</th>
-                  <th>Download</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Resolution Document</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleResolEditClick(1, 1)}
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleResolView(1)}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button variant="outline-primary">
-                      <a
-                        href="https://gamerji-dharmendra.s3.amazonaws.com/agendas/Resolution_1732190446816.docx"
+                {resolutions.map((row, index) => (
+                  <tr key={row?._id}>
+                    <td>{row?.templateName}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleResolEditClick(row?.templateFile, index)
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => handleResolView(row?.filedocx)}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={`${row?.fileName}`}
                         download="customFileName.docx"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <FaFileWord />
-                      </a>
-                    </Button>
-                  </td>
-                </tr>
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={`${row?.filedocx}`}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           </div>
@@ -423,10 +545,11 @@ function TableContent({ rows, handleEditClick, handleView }) {
       <Table bordered hover className="Master-table">
         <thead className="Master-Thead">
           <tr>
-            <th>Name</th>
+            <th style={{ width: "30%" }}>Name</th>
             <th>Edit</th>
             <th>View</th>
-            <th>Download</th>
+            <th>Download-as PDF</th>
+            <th>Download-as Docx</th>
           </tr>
         </thead>
         <tbody>
@@ -450,15 +573,26 @@ function TableContent({ rows, handleEditClick, handleView }) {
                 </Button>
               </td>
               <td>
-                <Button variant="outline-primary">
-                  <a
-                    href={`${row?.fileName}`}
-                    download="customFileName.docx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaFileWord />
-                  </a>
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.fileName}`}
+                  download="customFileName.docx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaFileWord />
+                </Button>
+              </td>
+              <td>
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.filedocx}`}
+                  download="customFileName.docx"
+                  rel="noopener noreferrer"
+                >
+                  <FaFileWord />
                 </Button>
               </td>
             </tr>

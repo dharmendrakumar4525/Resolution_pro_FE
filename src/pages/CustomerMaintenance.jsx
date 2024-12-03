@@ -211,7 +211,7 @@ export default function CustomerMaintenance() {
                   })
                 }
               >
-                <option value="">Select Manager</option>
+                <option value="">Select Client Manager</option>
                 {/* Replace with actual managers data */}
                 {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
@@ -247,7 +247,7 @@ export default function CustomerMaintenance() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th>Company Name</th>
                   <th>State</th>
                   <th>Country</th>
                   <th>CIN</th>
@@ -292,7 +292,7 @@ export default function CustomerMaintenance() {
                   </th>
 
                   <th>Revision</th> */}
-                  <th>Alloted Manager</th>
+                  <th>Client Manager</th>
                   <th>Secretary </th>
                   <th>Auditor</th>
                   <th>Directors</th>
