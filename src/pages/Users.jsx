@@ -287,11 +287,16 @@ export default function CustomerMaintenance() {
                   onChange={handleChange}
                 >
                   <option value="">Select Role</option>
-                  {roleList.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.role}
-                    </option>
-                  ))}
+                  {roleList?.map((role) => {
+                    if (role?.id === "674ec68ffa5589405df5dc84") {
+                      return null;
+                    }
+                    return (
+                      <option key={role.id} value={role.id}>
+                        {role.role}
+                      </option>
+                    );
+                  })}
                 </Form.Control>
               </Form.Group>
 
@@ -356,7 +361,11 @@ export default function CustomerMaintenance() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rows.map((row) => {
+                   if (row?.role?.id === '674ec68ffa5589405df5dc84') {
+                    return null; 
+                  }
+                  return(
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
                     <td>{row?.email}</td>
@@ -382,7 +391,8 @@ export default function CustomerMaintenance() {
                       )}
                     </td>
                   </tr>
-                ))}
+                   );
+                  })}
               </tbody>
             </Table>
             <Pagination className="mt-4 custom-pagination">

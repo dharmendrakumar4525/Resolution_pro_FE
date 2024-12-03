@@ -250,30 +250,36 @@ export default function RoleMaster() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row?.id}>
-                    <td>{row?.role}</td>
-                    <td>
-                      {hasPermission("edit") && (
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleEditClick(row)}
-                          className="me-2"
-                        >
-                          <FaEdit />
-                        </Button>
-                      )}
-                      {hasPermission("delete") && (
-                        <Button
-                          variant="outline-danger"
-                          onClick={() => handleDeleteClick(row)}
-                        >
-                          <FaTrash />
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((row) => {
+                  if (row?.id === "674ec68ffa5589405df5dc84") {
+                    return null; // Skip rendering this row
+                  }
+
+                  return (
+                    <tr key={row?.id}>
+                      <td>{row?.role}</td>
+                      <td>
+                        {hasPermission("edit") && (
+                          <Button
+                            variant="outline-primary"
+                            onClick={() => handleEditClick(row)}
+                            className="me-2"
+                          >
+                            <FaEdit />
+                          </Button>
+                        )}
+                        {hasPermission("delete") && (
+                          <Button
+                            variant="outline-danger"
+                            onClick={() => handleDeleteClick(row)}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </Table>
             <Pagination className="mt-4">
