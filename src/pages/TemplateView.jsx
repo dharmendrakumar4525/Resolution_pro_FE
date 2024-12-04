@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 
-import { getDocument } from "pdfjs-dist";
+// import { getDocument } from "pdfjs-dist";
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { Button, Form, Table, Container, Spinner } from "react-bootstrap";
@@ -128,11 +128,13 @@ const TemplateViewer = () => {
         const result = await mammoth.convertToHtml({ arrayBuffer });
         const htmlContent = result.value;
         setEditorContent(htmlContent);
-      } else if (fileType === "pdf") {
-        // Handle PDF file
-        const textContent = await extractPdfText(arrayBuffer);
-        setEditorContent(textContent);
-      } else {
+      } 
+      // else if (fileType === "pdf") {
+      //   // Handle PDF file
+      //   const textContent = await extractPdfText(arrayBuffer);
+      //   setEditorContent(textContent);
+      // } 
+      else {
         throw new Error(
           "Unsupported file format. Only DOCX and PDF are supported."
         );
@@ -142,20 +144,20 @@ const TemplateViewer = () => {
     }
   };
 
-  const extractPdfText = async (arrayBuffer) => {
-    const pdf = await getDocument({ data: arrayBuffer }).promise;
-    const numPages = pdf.numPages;
-    let text = "";
+  // const extractPdfText = async (arrayBuffer) => {
+  //   const pdf = await getDocument({ data: arrayBuffer }).promise;
+  //   const numPages = pdf.numPages;
+  //   let text = "";
 
-    for (let i = 1; i <= numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const pageText = content.items.map((item) => item.str).join(" ");
-      text += pageText + "\n";
-    }
+  //   for (let i = 1; i <= numPages; i++) {
+  //     const page = await pdf.getPage(i);
+  //     const content = await page.getTextContent();
+  //     const pageText = content.items.map((item) => item.str).join(" ");
+  //     text += pageText + "\n";
+  //   }
 
-    return text;
-  };
+  //   return text;
+  // };
 
   const createWordDocument = async () => {
     const parsedContent = parseHtmlToDocx(editorContent);

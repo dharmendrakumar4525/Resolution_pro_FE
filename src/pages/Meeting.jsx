@@ -191,6 +191,8 @@ export default function Meeting() {
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
+        <ToastContainer />
+
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Meeting</h4>
           {hasPermission("add") && (
@@ -295,8 +297,6 @@ export default function Meeting() {
           </>
         )}
       </Container>
-
-      <ToastContainer />
     </>
   );
 }
