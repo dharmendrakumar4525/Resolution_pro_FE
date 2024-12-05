@@ -10,17 +10,27 @@ export default function CustomerMaintenanceForm() {
   const navigate = useNavigate();
   const { customerId } = useParams();
   const [managers, setManagers] = useState([]);
+  const [consultants, setConsultants] = useState([]);
   const [validated, setValidated] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const token = localStorage.getItem("refreshToken");
   const [formData, setFormData] = useState({
-    name: "",
-    state: "",
-    country: "",
+    company_name: "",
+    date_of_incorporation: "",
+    registered_address: "",
     cin: "",
+    email_id: "",
+    date_of_last_agm: "",
+    registration_number: "",
+    authorised_capital_equity: "",
+    authorised_capital_preference_capital: "",
+    paid_up_capital_equity: "",
+    company_subcategory: "",
+    roc_code: "",
+    date_of_balance_sheet: "",
+    class_of_company: "",
     pan: "",
-    gstin: "",
-    revision: "",
     secretary_detail: {
       name: "",
       email: "",
@@ -29,26 +39,10 @@ export default function CustomerMaintenanceForm() {
       name: "",
       email: "",
     },
-    o: false,
-    c: false,
-    v: false,
-    ro: false,
-    alloted_manager: { name: "", id: "" },
-    locations: [
-      {
-        locationId: "",
-        locationName: "",
-        addressLine1: "",
-        addressLine2: "",
-        postalCode: "",
-        country: "",
-        state: "",
-        salesTaxType: "",
-        gst: "",
-        registeredOffice: false,
-      },
-    ],
+    alloted_consultant: "",
+    alloted_manager: "",
   });
+
   useEffect(() => {
     const fetchManagers = async () => {
       try {
@@ -69,6 +63,26 @@ export default function CustomerMaintenanceForm() {
     };
     fetchManagers();
   }, []);
+  useEffect(() => {
+    const fetchConsultants = async () => {
+      try {
+        const response = await fetch(
+          `${apiURL}/users?role=6728ae3b6177fee637232a73`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setConsultants(data.results);
+      } catch (error) {
+        console.error("Error fetching managers:", error);
+      }
+    };
+    fetchConsultants();
+  }, []);
   // Fetch customer data if editing
   useEffect(() => {
     if (customerId) {
@@ -84,18 +98,8 @@ export default function CustomerMaintenanceForm() {
             }
           );
           const data = await response.json();
-          const sanitizedData = removeIds(data);
-          setFormData((prevData) => ({
-            ...prevData,
-            ...sanitizedData,
-            alloted_manager: {
-              ...prevData.alloted_manager,
-              id: sanitizedData.alloted_manager?.role || "",
-              name: sanitizedData.alloted_manager?.name || "",
-            },
-          }));
-          console.log(sanitizedData, "logg");
-          console.log(formData, "loggy");
+          console.log(data, "unfilterred");
+          setFormData(data);
         } catch (error) {
           console.error("Error fetching customer data:", error);
           toast.error("Failed to load customer data");
@@ -104,18 +108,6 @@ export default function CustomerMaintenanceForm() {
       fetchCustomerData();
     }
   }, [customerId]);
-  const removeIds = (obj) => {
-    if (Array.isArray(obj)) {
-      return obj.map(removeIds);
-    } else if (obj !== null && typeof obj === "object") {
-      return Object.fromEntries(
-        Object.entries(obj)
-          .filter(([key]) => key !== "id" && key !== "_id")
-          .map(([key, value]) => [key, removeIds(value)])
-      );
-    }
-    return obj;
-  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -136,60 +128,6 @@ export default function CustomerMaintenanceForm() {
     }));
   };
 
-  const handleLocationChange = (index, field, value) => {
-    setFormData((prevData) => {
-      const updatedLocations = [...prevData.locations];
-      updatedLocations[index] = { ...updatedLocations[index], [field]: value };
-      return { ...prevData, locations: updatedLocations };
-    });
-  };
-
-  const handleLocationCheckboxChange = (index, field) => {
-    setFormData((prevData) => {
-      const updatedLocations = [...prevData.locations];
-      updatedLocations[index] = {
-        ...updatedLocations[index],
-        [field]: !updatedLocations[index][field],
-      };
-      return { ...prevData, locations: updatedLocations };
-    });
-  };
-  const handleCheckboxChange = (e) => {
-    const { id, checked } = e.target;
-    setFormData({ ...formData, [id]: checked });
-  };
-  const addLocation = () => {
-    setFormData((prevData) => ({
-      ...prevData,
-      locations: [
-        ...prevData.locations,
-        {
-          locationId: "",
-          locationName: "",
-          addressLine1: "",
-          addressLine2: "",
-          postalCode: "",
-          country: "",
-          state: "",
-          salesTaxType: "",
-          gst: "",
-          registeredOffice: false,
-        },
-      ],
-    }));
-  };
-
-  const removeLocation = (index) => {
-    if (formData.locations.length > 1) {
-      setFormData((prevData) => ({
-        ...prevData,
-        locations: prevData.locations.filter((_, i) => i !== index),
-      }));
-    } else {
-      toast.error("Please fill atleast 1 location");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonLoading(true);
@@ -197,10 +135,16 @@ export default function CustomerMaintenanceForm() {
     if (form.checkValidity() === false) {
       e.stopPropagation();
     } else {
+      const updatedFormData = {
+        ...formData,
+        alloted_manager: formData.alloted_manager?.id || null,
+        alloted_consultant: formData.alloted_consultant?.id || null,
+      };
       try {
-        const dataToSubmit = { ...formData };
+        const dataToSubmit = { ...updatedFormData };
         delete dataToSubmit.createdAt;
         delete dataToSubmit.updatedAt;
+        delete dataToSubmit.id;
 
         const token = localStorage.getItem("refreshToken");
         const method = customerId ? "PATCH" : "POST";
@@ -219,7 +163,7 @@ export default function CustomerMaintenanceForm() {
         if (customerId) {
           requestConfig.body = JSON.stringify(dataToSubmit);
         } else {
-          requestConfig.body = JSON.stringify(formData);
+          requestConfig.body = JSON.stringify(updatedFormData);
         }
         const response = await fetch(endpoint, requestConfig);
 
@@ -244,25 +188,51 @@ export default function CustomerMaintenanceForm() {
     }
     setValidated(true);
   };
-
+  console.log(formData, "ds");
   return (
     <Container>
       <div className="customer-form-container mt-4">
-        <h4>{customerId ? "Edit Customer" : "Add Customer"}</h4>
+        <h4>{customerId ? "Edit Client" : "Add Client"}</h4>
         <Form onSubmit={handleSubmit}>
           <Row className="mb-3">
             <Col>
-              <Form.Group controlId="name">
-                <Form.Label>Name</Form.Label>
+              <Form.Group controlId="company_name">
+                <Form.Label>Company Name</Form.Label>
                 <Form.Control
                   type="text"
-                  value={formData.name}
+                  value={formData.company_name}
                   onChange={handleChange}
-                  placeholder="Enter Name"
+                  placeholder="Enter Company Name"
                   required
                 />
               </Form.Group>
             </Col>
+            <Col>
+              <Form.Group controlId="email_id">
+                <Form.Label>Email Address</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={formData.email_id}
+                  onChange={handleChange}
+                  placeholder="Enter Email Address"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="registered_address">
+                <Form.Label>Registered Address</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.registered_address}
+                  onChange={handleChange}
+                  placeholder="Enter Registered Address"
+                  required
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
             <Col>
               <Form.Group controlId="cin">
                 <Form.Label>CIN</Form.Label>
@@ -271,11 +241,10 @@ export default function CustomerMaintenanceForm() {
                   value={formData.cin}
                   onChange={handleChange}
                   placeholder="Enter CIN"
+                  required
                 />
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mb-3">
             <Col>
               <Form.Group controlId="secretary_detail.name">
                 <Form.Label>Secretary Name</Form.Label>
@@ -287,6 +256,7 @@ export default function CustomerMaintenanceForm() {
                     handleSecretaryChange("name", e.target.value)
                   }
                   placeholder="Enter Secretary Name"
+                  required
                 />
               </Form.Group>
             </Col>
@@ -302,11 +272,37 @@ export default function CustomerMaintenanceForm() {
                     handleSecretaryChange("email", e.target.value)
                   }
                   placeholder="Enter Secretary Email"
+                  required
                 />
               </Form.Group>
             </Col>
           </Row>
           <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="alloted_manager">
+                <Form.Label>Client Manager</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={formData.alloted_manager?.id || ""}
+                  onChange={(e) => {
+                    const selectedManager = managers.find(
+                      (manager) => manager.id === e.target.value
+                    );
+                    setFormData((prevData) => ({
+                      ...prevData,
+                      alloted_manager: selectedManager,
+                    }));
+                  }}
+                >
+                  <option value="">Select Client Manager</option>
+                  {managers.map((manager) => (
+                    <option key={manager.id} value={manager.id}>
+                      {manager.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
             <Col>
               <Form.Group controlId="auditor_detail.name">
                 <Form.Label>Auditor Name</Form.Label>
@@ -316,6 +312,7 @@ export default function CustomerMaintenanceForm() {
                   value={formData.auditor_detail.name}
                   onChange={(e) => handleAuditorChange("name", e.target.value)}
                   placeholder="Enter Auditor Name"
+                  required
                 />
               </Form.Group>
             </Col>
@@ -329,38 +326,189 @@ export default function CustomerMaintenanceForm() {
                   value={formData.auditor_detail.email}
                   onChange={(e) => handleAuditorChange("email", e.target.value)}
                   placeholder="Enter Auditor Email"
+                  required
                 />
               </Form.Group>
             </Col>
           </Row>
           <Row className="mb-3">
             <Col>
-              <Form.Group controlId="state">
-                <Form.Label>State</Form.Label>
+              <Form.Group controlId="date_of_incorporation">
+                <Form.Label>Date of Incorporation</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={formData.state}
+                  type="date"
+                  value={formData.date_of_incorporation.split("T")[0]}
                   onChange={handleChange}
-                  placeholder="Enter State"
+                  placeholder="Enter Date of Incorporation"
                   required
                 />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="date_of_last_agm">
+                <Form.Label>Date of Last AGM</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={formData.date_of_last_agm.split("T")[0]}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="alloted_consultants">
+                <Form.Label>Client Consultant</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={formData.alloted_consultant?.id || ""}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        id: "alloted_consultant",
+                        value: {
+                          ...consultants.find(
+                            (consultant) => consultant.id === e.target.value
+                          ),
+                        },
+                      },
+                    })
+                  }
+                >
+                  <option value="">Select Client Consultant</option>
+                  {consultants.map((consultant) => (
+                    <option key={consultant.id} value={consultant.id}>
+                      {consultant.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="registration_number">
+                <Form.Label>Registration Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.registration_number}
+                  onChange={handleChange}
+                  placeholder="Enter Registration Number"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="roc_code">
+                <Form.Label>ROC Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.roc_code}
+                  onChange={handleChange}
+                  placeholder="Enter ROC Code"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="company_subcategory">
+                <Form.Label>Company Subcategory</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.company_subcategory}
+                  onChange={handleChange}
+                  placeholder="Enter Company Subcategory"
+                  isInvalid={!!errors.company_subcategory}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.company_subcategory}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="authorised_capital_equity">
+                <Form.Label>Authorised Capital (Equity)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.authorised_capital_equity}
+                  onChange={handleChange}
+                  placeholder="Enter Authorised Capital (Equity)"
+                  required
+                  isInvalid={!!errors.authorised_capital_equity}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.authorised_capital_equity}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
 
             <Col>
-              <Form.Group controlId="country">
-                <Form.Label>Country</Form.Label>
+              <Form.Group controlId="authorised_capital_preference_capital">
+                <Form.Label>Authorised Capital (Preference)</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={formData.country}
+                  type="number"
+                  value={formData.authorised_capital_preference_capital}
                   onChange={handleChange}
-                  placeholder="Enter Country"
+                  placeholder="Enter Authorised Capital (Preference)"
                   required
+                  isInvalid={!!errors.authorised_capital_preference_capital}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.authorised_capital_preference_capital}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="paid_up_capital_equity">
+                <Form.Label>Paid Up Capital (Equity)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.paid_up_capital_equity}
+                  onChange={handleChange}
+                  placeholder="Enter Paid Up Capital (Equity)"
+                  required
+                  isInvalid={!!errors.paid_up_capital_equity}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.paid_up_capital_equity}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
+
           <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="date_of_balance_sheet">
+                <Form.Label>Date of Balance Sheet</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={formData.date_of_balance_sheet.split("T")[0]}
+                  onChange={handleChange}
+                  // isInvalid={!!errors.date_of_balance_sheet}
+                />
+                {/* <Form.Control.Feedback type="invalid">
+                  {errors.date_of_balance_sheet}
+                </Form.Control.Feedback> */}
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="class_of_company">
+                <Form.Label>Class of Company</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.class_of_company}
+                  onChange={handleChange}
+                  placeholder="Enter Class of Company"
+                  // isInvalid={!!errors.class_of_company}
+                  required
+                />
+                {/* <Form.Control.Feedback type="invalid">
+                  {errors.class_of_company}
+                </Form.Control.Feedback> */}
+              </Form.Group>
+            </Col>
+
             <Col>
               <Form.Group controlId="pan">
                 <Form.Label>PAN</Form.Label>
@@ -369,287 +517,12 @@ export default function CustomerMaintenanceForm() {
                   value={formData.pan}
                   onChange={handleChange}
                   placeholder="Enter PAN"
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="gstin">
-                <Form.Label>GSTIN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.gstin}
-                  onChange={handleChange}
-                  placeholder="Enter GSTIN"
+                  required
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="revision">
-                <Form.Label>Revision</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.revision}
-                  onChange={handleChange}
-                  placeholder="Enter Revision"
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="alloted_manager">
-                <Form.Label>Client Manager</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={formData.alloted_manager.id}
-                  onChange={(e) =>
-                    handleChange({
-                      target: { id: "alloted_manager", value: e.target.value },
-                    })
-                  }
-                >
-                  <option value="">Select Client Manager</option>
-                  {managers.map((manager) => (
-                    <option key={manager.id} value={manager.id}>
-                      {manager.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-4" style={{ width: "80%" }}>
-            <Form.Group as={Col} controlId="o">
-              <Form.Check
-                type="checkbox"
-                label="O"
-                checked={formData.o}
-                onChange={handleCheckboxChange}
-              />
-            </Form.Group>
 
-            <Form.Group as={Col} controlId="c">
-              <Form.Check
-                type="checkbox"
-                label="C"
-                checked={formData.c}
-                onChange={handleCheckboxChange}
-              />
-            </Form.Group>
-
-            <Form.Group as={Col} controlId="v">
-              <Form.Check
-                type="checkbox"
-                label="V"
-                checked={formData.v}
-                onChange={handleCheckboxChange}
-              />
-            </Form.Group>
-
-            <Form.Group as={Col} controlId="ro">
-              <Form.Check
-                type="checkbox"
-                label="RO"
-                checked={formData.ro}
-                onChange={handleCheckboxChange}
-              />
-            </Form.Group>
-          </Row>
-
-          <h5 className="mt-4">Locations</h5>
-          {formData.locations.map((location, index) => (
-            <div key={index} className="location-block mb-4">
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId={`locationId-${index}`}>
-                    <Form.Label>Location ID</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="locationId"
-                      value={location.locationId}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "locationId",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Location Id"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`locationName-${index}`}>
-                    <Form.Label>Location Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="locationName"
-                      value={location.locationName}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "locationName",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Location Name"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`addressLine1-${index}`}>
-                    <Form.Label>Address Line 1</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="addressLine1"
-                      value={location.addressLine1}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "addressLine1",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Address Line 1"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId={`addressLine2-${index}`}>
-                    <Form.Label>Address Line 2</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="addressLine2"
-                      value={location.addressLine2}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "addressLine2",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Address Line 2"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`postalCode-${index}`}>
-                    <Form.Label>Postal Code</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="postalCode"
-                      value={location.postalCode}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "postalCode",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Postal Code"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`country-${index}`}>
-                    <Form.Label>Country</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="country"
-                      value={location.country}
-                      onChange={(e) =>
-                        handleLocationChange(index, "country", e.target.value)
-                      }
-                      placeholder="Enter Country"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId={`state-${index}`}>
-                    <Form.Label>State</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="state"
-                      value={location.state}
-                      onChange={(e) =>
-                        handleLocationChange(index, "state", e.target.value)
-                      }
-                      placeholder="Enter State"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`salesTaxType-${index}`}>
-                    <Form.Label>Sales Tax Type</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="salesTaxType"
-                      value={location.salesTaxType}
-                      onChange={(e) =>
-                        handleLocationChange(
-                          index,
-                          "salesTaxType",
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter Sales Tax Type"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId={`gst-${index}`}>
-                    <Form.Label>GST</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="gst"
-                      value={location.gst}
-                      onChange={(e) =>
-                        handleLocationChange(index, "gst", e.target.value)
-                      }
-                      placeholder="Enter GST"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group>
-                    <Form.Check
-                      type="checkbox"
-                      label="Registered Location"
-                      checked={location.registeredOffice}
-                      onChange={() =>
-                        handleLocationCheckboxChange(index, "registeredOffice")
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Button
-                className="d-flex align-items-center gap-2"
-                variant="outline-danger"
-                onClick={() => removeLocation(index)}
-              >
-                <FaTrash /> Location
-              </Button>
-            </div>
-          ))}
-          <Button
-            variant="primary"
-            onClick={addLocation}
-            className="d-flex align-items-center gap-2"
-          >
-            <FaPlus
-            // style={{ marginRight: "8px" }}
-            />
-            Location
-          </Button>
           <Button variant="success" type="submit" className="ms-3 float-end">
             {buttonLoading ? (
               <Spinner
@@ -664,8 +537,8 @@ export default function CustomerMaintenanceForm() {
             )}
           </Button>
         </Form>
+        <ToastContainer autoClose={3000} />
       </div>
-      <ToastContainer autoClose={3000} />
     </Container>
   );
 }

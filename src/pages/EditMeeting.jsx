@@ -32,7 +32,6 @@ export default function EditMeeting() {
   const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
-  console.log(user);
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -42,12 +41,7 @@ export default function EditMeeting() {
     startTime: "",
     organizer: user.id,
     participants: [],
-    other_participants: [
-      {
-        name: "",
-        email: "",
-      },
-    ],
+    other_participants: [],
     agendaItems: [
       {
         templateName: "",
@@ -70,7 +64,6 @@ export default function EditMeeting() {
         });
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
@@ -84,8 +77,15 @@ export default function EditMeeting() {
           },
         });
         const data = await response.json();
+        const idsToSkip = [
+          "673efb66ace56b4760e37c61",
+          "673f2063640f38762b0450c4",
+          "673f2072640f38762b0450ca",
+          "67515198aa5dd74676e405be",
+        ];
+
         const usableAgendas = data.results.filter(
-          (item) => item.status === "usable"
+          (item) => item.status === "usable" && !idsToSkip.includes(item.id)
         );
 
         setAgendaList(usableAgendas);
@@ -179,12 +179,7 @@ export default function EditMeeting() {
       })),
       other_participants: row.other_participants.length
         ? row.other_participants
-        : [
-            {
-              name: "",
-              email: "",
-            },
-          ],
+        : [],
       location: row.location,
     });
     if (row.client_name?.id) {
@@ -277,7 +272,7 @@ export default function EditMeeting() {
   };
 
   const removeAgendaItem = (index) => {
-    if (formData.agendaItems.length > 1) {
+    if (formData?.agendaItems.length > 1) {
       setFormData((prevData) => ({
         ...prevData,
         agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
@@ -301,7 +296,6 @@ export default function EditMeeting() {
     value: director.id,
     label: director.name,
   }));
-  console.log(formData.participants, "directOption");
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
 
@@ -352,7 +346,7 @@ export default function EditMeeting() {
       } else {
         const sanitizedFormData = {
           ...formData,
-          other_participants: formData.other_participants.map(
+          other_participants: formData?.other_participants.map(
             ({ _id, ...rest }) => rest
           ),
         };
@@ -404,7 +398,7 @@ export default function EditMeeting() {
                   <Form.Label>Title</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.title}
+                    value={formData?.title}
                     onChange={handleChange}
                     placeholder="Enter Title"
                   />
@@ -416,13 +410,13 @@ export default function EditMeeting() {
                   <Form.Control
                     as="select"
                     name="client_name"
-                    value={formData.client_name}
+                    value={formData?.client_name}
                     onChange={handleChange}
                   >
                     <option value="">Select Client</option>
                     {clientList.map((client) => (
                       <option key={client._id} value={client._id}>
-                        {client.name}
+                        {client.company_name}
                       </option>
                     ))}
                   </Form.Control>
@@ -436,7 +430,7 @@ export default function EditMeeting() {
                   <Form.Label className="f-label">Description</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.description}
+                    value={formData?.description}
                     onChange={handleChange}
                     placeholder="Enter Description"
                   />
@@ -445,17 +439,17 @@ export default function EditMeeting() {
             </Row>
 
             <Row className="mt-4 mb-3">
-              <h5>Meeting Documents</h5>
+              <Form.Label>Meeting Documents</Form.Label>
 
               <Form.Group controlId="agendaItems">
                 <Select
                   options={agendaOptions}
                   placeholder="Select Meeting Document"
                   value={
-                    formData.agendaItems.length > 0
+                    formData?.agendaItems.length > 0
                       ? {
-                          value: formData.agendaItems[0].templateName,
-                          label: formData.agendaItems[0].templateName,
+                          value: formData?.agendaItems[0].templateName,
+                          label: formData?.agendaItems[0].templateName,
                         }
                       : null
                   }
@@ -482,7 +476,7 @@ export default function EditMeeting() {
                   <Form.Label>Date</Form.Label>
                   <Form.Control
                     type="date"
-                    value={formData.date}
+                    value={formData?.date}
                     onChange={handleChange}
                     required
                   />
@@ -619,7 +613,7 @@ export default function EditMeeting() {
                   <Form.Label>Start Time</Form.Label>
                   <Form.Control
                     type="time"
-                    value={formData.startTime}
+                    value={formData?.startTime}
                     onChange={handleChange}
                     required
                   />
@@ -630,7 +624,7 @@ export default function EditMeeting() {
                   <Form.Label>Location</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.location}
+                    value={formData?.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
                   />

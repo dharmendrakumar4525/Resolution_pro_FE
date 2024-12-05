@@ -168,12 +168,18 @@ export default function AddMeeting() {
         });
         const data = await response.json();
         console.log("data", data);
+        const idsToSkip = [
+          "673efb66ace56b4760e37c61",
+          "673f2063640f38762b0450c4",
+          "673f2072640f38762b0450ca",
+          "67515198aa5dd74676e405be",
+        ];
+
         const usableAgendas = data.results.filter(
-          (item) => item.status === "usable"
+          (item) => item.status === "usable" && !idsToSkip.includes(item.id)
         );
 
         setAgendaList(usableAgendas);
-        console.log(data.results, "mll");
       } catch (error) {
         console.error("Error fetching Agenda:", error);
       }
@@ -271,11 +277,11 @@ export default function AddMeeting() {
       }));
       return;
     }
-  
+
     const agenda = agendaList.find(
       (item) => item.templateName === selectedOption.value
     );
-  
+
     setFormData((prevData) => ({
       ...prevData,
       agendaItems: [
@@ -287,7 +293,7 @@ export default function AddMeeting() {
       ],
     }));
   };
-  
+
   // const handleAgendaItemChange = (selectedOptions) => {
   //   const selectedAgendas = selectedOptions
   //     ? selectedOptions.map((option) => {
@@ -432,7 +438,7 @@ export default function AddMeeting() {
                     <option value="">Select Client</option>
                     {clientList?.map((client) => (
                       <option key={client._id} value={client._id}>
-                        {client.name}
+                        {client.company_name}
                       </option>
                     ))}
                   </Form.Control>
@@ -451,8 +457,8 @@ export default function AddMeeting() {
               </Col>
             </Row>
 
-            <Row className="mt-4">
-              <h5>Meeting Documents</h5>
+            <Row className="mt-2 mb-2">
+              <Form.Label>Meeting Documents</Form.Label>
 
               <Form.Group controlId="agendaItems">
                 <Select
@@ -494,7 +500,7 @@ export default function AddMeeting() {
                   <Form.Label>Date</Form.Label>
                   <Form.Control
                     type="date"
-                    value={formData.date}
+                    value={formData?.date}
                     onChange={handleChange}
                     required
                   />
@@ -652,7 +658,7 @@ export default function AddMeeting() {
               </Col>
             </Row>
 
-            <div className="mt-2">
+            <div className="mt-4">
               <Button
                 variant="primary"
                 onClick={handleCloseAddModal}
