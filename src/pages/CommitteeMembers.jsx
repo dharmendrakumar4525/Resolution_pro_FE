@@ -214,7 +214,7 @@ export default function CommitteeMembers() {
               <tbody>
                 {rows.map((row, index) => (
                   <tr key={row?.id}>
-                    <td>{row?.client_name?.name}</td>
+                    <td>{row?.client_name?.company_name}</td>
                     <td>{row?.committee.name}</td>
                     <td>
                       <button

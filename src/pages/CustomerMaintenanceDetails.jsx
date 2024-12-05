@@ -19,12 +19,16 @@ const CustomerMaintenanceDetail = () => {
   const navigate = useNavigate();
   return (
     <div className="details-container">
-      <h2>Details for {row?.name}</h2>
-      <div className="details-grid">
+      <h2>Details for {row?.company_name}</h2>
+      <div className="details-grid mt-4">
         <div>
           <strong>Client Manager:</strong>
         </div>
         <div>{row?.alloted_manager[0]?.name || "-"}</div>
+        <div>
+          <strong>Consultant:</strong>
+        </div>
+        <div>{row?.alloted_consultant[0]?.name || "-"}</div>
         <div>
           <strong>Secretary Name:</strong>
         </div>
@@ -42,54 +46,55 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.auditor_detail?.email || "-"}</div>
         <div>
-          <strong>State:</strong>
+          <strong>Registered Address:</strong>
         </div>
-        <div>{row?.state}</div>
-
+        <div>{row?.registered_address}</div>
         <div>
-          <strong>Country:</strong>
+          <strong>Authorised Capital Equity</strong>
         </div>
-        <div>{row?.country}</div>
+        <div>{row?.authorised_capital_equity}</div>
+        <div>
+          <strong>Authorised Capital Preference Capitals:</strong>
+        </div>
+        <div>{row?.authorised_capital_preference_capital}</div>
+        <div>
+          <strong>Class:</strong>
+        </div>
+        <div>{row?.class_of_company}</div>
+        <div>
+          <strong>Subcategory:</strong>
+        </div>
+        <div>{row?.company_subcategory}</div>
+        <div>
+          <strong>Registeration Number:</strong>
+        </div>
+        <div>{row?.registration_number}</div>
+        <div>
+          <strong>ROC Code:</strong>
+        </div>
+        <div>{row?.roc_code}</div>
 
         <div>
           <strong>CIN:</strong>
         </div>
         <div>{row?.cin}</div>
-
         <div>
-          <strong>GSTIN:</strong>
+          <strong>Date of Balance Sheet :</strong>
         </div>
-        <div>{row?.gstin}</div>
+        <div>{row?.date_of_balance_sheet.split("T")[0]}</div>
+        <div>
+          <strong>Date Of Incorporation:</strong>
+        </div>
+        <div>{row?.date_of_incorporation.split("T")[0]}</div>
+        <div>
+          <strong>Date Of Last Agm:</strong>
+        </div>
+        <div>{row?.date_of_last_agm.split("T")[0]}</div>
 
         <div>
           <strong>PAN:</strong>
         </div>
         <div>{row?.pan}</div>
-
-        {/* <div>
-          <strong>O:</strong>
-        </div>
-        <div>{row?.o ? "Yes" : "No"}</div>
-
-        <div>
-          <strong>C:</strong>
-        </div>
-        <div>{row?.c ? "Yes" : "No"}</div>
-
-        <div>
-          <strong>V:</strong>
-        </div>
-        <div>{row?.v ? "Yes" : "No"}</div>
-
-        <div>
-          <strong>RO:</strong>
-        </div>
-        <div>{row?.ro ? "Yes" : "No"}</div> */}
-
-        <div>
-          <strong>Revision:</strong>
-        </div>
-        <div>{row?.revision}</div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
@@ -111,65 +116,6 @@ const CustomerMaintenanceDetail = () => {
         )}
       </div>
       <div className="mt-5"></div>
-      <h3>Locations</h3>
-      <div className="card-section">
-        <Table borderless responsive>
-          <tbody className="card-section">
-            {row?.locations && row?.locations.length > 0 ? (
-              row?.locations.map((loc, index) => (
-                <div className="director-card" key={index}>
-                  <tr>
-                    <td style={{ width: "200px", fontWeight: "bold" }}>
-                      <strong>Location Name:</strong>
-                    </td>
-                    <td>{loc.locationName || "-"}</td>
-                  </tr>
-                  <tr>
-                    {" "}
-                    <td>
-                      <strong>Address Line 1:</strong>
-                    </td>
-                    <td>{loc.addressLine1 || "-"}</td>
-                  </tr>
-                  <tr>
-                    {" "}
-                    <td>
-                      <strong>Address Line 2:</strong>
-                    </td>
-                    <td>{loc.addressLine2 || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>State:</strong>
-                    </td>
-                    <td>{loc.state || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Country:</strong>
-                    </td>
-                    <td>{loc.country || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Postal Code:</strong>
-                    </td>
-                    <td>{loc.postalCode || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Registered Office:</strong>
-                    </td>
-                    <td>{loc.registeredOffice ? "Yes" : "No"}</td>
-                  </tr>
-                </div>
-              ))
-            ) : (
-              <p>No location details available.</p>
-            )}
-          </tbody>
-        </Table>
-      </div>
       <div className="mt-4"></div>
       <h3>Additional Participants</h3>
       <div className="card-section">

@@ -271,11 +271,11 @@ export default function AddMeeting() {
       }));
       return;
     }
-  
+
     const agenda = agendaList.find(
       (item) => item.templateName === selectedOption.value
     );
-  
+
     setFormData((prevData) => ({
       ...prevData,
       agendaItems: [
@@ -287,7 +287,7 @@ export default function AddMeeting() {
       ],
     }));
   };
-  
+
   // const handleAgendaItemChange = (selectedOptions) => {
   //   const selectedAgendas = selectedOptions
   //     ? selectedOptions.map((option) => {
@@ -432,7 +432,7 @@ export default function AddMeeting() {
                     <option value="">Select Client</option>
                     {clientList?.map((client) => (
                       <option key={client._id} value={client._id}>
-                        {client.name}
+                        {client.company_name}
                       </option>
                     ))}
                   </Form.Control>

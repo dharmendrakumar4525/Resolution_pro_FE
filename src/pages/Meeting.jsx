@@ -93,7 +93,6 @@ export default function Meeting() {
         });
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
@@ -217,11 +216,9 @@ export default function Meeting() {
             <h5>You do not have permission to view the data</h5>
           </div>
         ) : rows.length === 0 ? (
-          <tr>
-            <td colSpan={5} className="text-center">
-              No data available
-            </td>
-          </tr>
+          <div className="text-center mt-5">
+            <h5>No data available</h5>
+          </div>
         ) : (
           <>
             <Table bordered hover responsive className="Master-table mt-5">
@@ -244,7 +241,7 @@ export default function Meeting() {
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.title}</td>
-                      <td>{row?.client_name?.name}</td>
+                      <td>{row?.client_name?.company_name}</td>
                       <td>{row?.meetingType}</td>
                       <td style={{ textAlign: "center" }}>{row?.startTime}</td>
                       <td>{new Date(row?.date).toLocaleDateString()}</td>

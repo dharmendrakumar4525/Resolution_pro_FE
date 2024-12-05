@@ -271,7 +271,7 @@ const BoardResolution = () => {
                         <option value="">Select client name</option>
                         {companies.map((company) => (
                           <option key={company._id} value={company._id}>
-                            {company.name}
+                            {company.company_name}
                           </option>
                         ))}
                       </Form.Control>

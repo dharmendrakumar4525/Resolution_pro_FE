@@ -50,7 +50,6 @@ export default function EditCommitteeMember() {
         console.error("Error fetching committee data:", error);
       }
     };
-
     const fetchCommitteeMember = async (id) => {
       try {
         const response = await fetch(`${apiURL}/committee-member/${id}`, {
@@ -186,7 +185,7 @@ export default function EditCommitteeMember() {
       setButtonLoading(false);
     }
   };
-
+  console.log("object", formData.clientName);
   return (
     <div className="mt-4 ml-10" style={{ width: "50%", marginLeft: "15px" }}>
       <h2>Edit Committee Member</h2>
@@ -202,7 +201,7 @@ export default function EditCommitteeMember() {
             <option value="">Select Client</option>
             {clientList.map((client) => (
               <option key={client.id} value={client._id}>
-                {client.name}
+                {client.company_name}
               </option>
             ))}
           </Form.Control>

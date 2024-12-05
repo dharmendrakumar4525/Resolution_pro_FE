@@ -32,7 +32,6 @@ export default function EditMeeting() {
   const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
-  console.log(user);
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -42,12 +41,7 @@ export default function EditMeeting() {
     startTime: "",
     organizer: user.id,
     participants: [],
-    other_participants: [
-      {
-        name: "",
-        email: "",
-      },
-    ],
+    other_participants: [],
     agendaItems: [
       {
         templateName: "",
@@ -70,7 +64,6 @@ export default function EditMeeting() {
         });
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
@@ -179,12 +172,7 @@ export default function EditMeeting() {
       })),
       other_participants: row.other_participants.length
         ? row.other_participants
-        : [
-            {
-              name: "",
-              email: "",
-            },
-          ],
+        : [],
       location: row.location,
     });
     if (row.client_name?.id) {
@@ -301,7 +289,6 @@ export default function EditMeeting() {
     value: director.id,
     label: director.name,
   }));
-  console.log(formData.participants, "directOption");
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
 
@@ -422,7 +409,7 @@ export default function EditMeeting() {
                     <option value="">Select Client</option>
                     {clientList.map((client) => (
                       <option key={client._id} value={client._id}>
-                        {client.name}
+                        {client.company_name}
                       </option>
                     ))}
                   </Form.Control>

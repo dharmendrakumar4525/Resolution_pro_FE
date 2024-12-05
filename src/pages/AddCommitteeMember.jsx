@@ -185,8 +185,8 @@ export default function AddCommitteeMember({ onSave }) {
           >
             <option value="">Select Client</option>
             {clientList.map((client) => (
-              <option key={client.id} value={client._id}>
-                {client.name}
+              <option key={client._id} value={client._id}>
+                {client.company_name}
               </option>
             ))}
           </Form.Control>

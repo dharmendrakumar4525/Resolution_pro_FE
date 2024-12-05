@@ -248,50 +248,8 @@ export default function CustomerMaintenance() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Company Name</th>
-                  <th>State</th>
-                  <th>Country</th>
                   <th>CIN</th>
-                  {/* <th>PAN</th> */}
-                  <th>GSTIN</th>
-                  {/* <th>
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={<Tooltip id="tooltip-o">Ownership</Tooltip>}
-                    >
-                      <span>O?</span>
-                    </OverlayTrigger>
-                  </th>
 
-                  <th>
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={<Tooltip id="tooltip-c">Certified</Tooltip>}
-                    >
-                      <span>C?</span>
-                    </OverlayTrigger>
-                  </th>
-
-                  <th>
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={<Tooltip id="tooltip-v">Verified</Tooltip>}
-                    >
-                      <span>V?</span>
-                    </OverlayTrigger>
-                  </th>
-
-                  <th>
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={
-                        <Tooltip id="tooltip-ro">Registered Office</Tooltip>
-                      }
-                    >
-                      <span>RO?</span>
-                    </OverlayTrigger>
-                  </th>
-
-                  <th>Revision</th> */}
                   <th>Client Manager</th>
                   <th>Secretary </th>
                   <th>Auditor</th>
@@ -308,12 +266,9 @@ export default function CustomerMaintenance() {
                     overlay={<Tooltip>Click to view</Tooltip>}
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
-                      <td>{row?.name}</td>
-                      <td>{row?.state}</td>
-                      <td>{row?.country}</td>
+                      <td>{row?.company_name}</td>
                       <td>{row?.cin}</td>
 
-                      <td>{row?.gstin}</td>
                       <td className="">
                         {row?.alloted_manager[0]?.name || "-"}
                       </td>
