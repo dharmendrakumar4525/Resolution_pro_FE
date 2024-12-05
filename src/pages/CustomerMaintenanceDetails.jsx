@@ -81,15 +81,20 @@ const CustomerMaintenanceDetail = () => {
         <div>
           <strong>Date of Balance Sheet :</strong>
         </div>
-        <div>{row?.date_of_balance_sheet.split("T")[0]}</div>
+        <div>
+          {new Date(row?.date_of_balance_sheet).toLocaleDateString("en-GB")}
+        </div>
         <div>
           <strong>Date Of Incorporation:</strong>
         </div>
-        <div>{row?.date_of_incorporation.split("T")[0]}</div>
+
+        <div>
+          {new Date(row?.date_of_incorporation).toLocaleDateString("en-GB")}
+        </div>
         <div>
           <strong>Date Of Last Agm:</strong>
         </div>
-        <div>{row?.date_of_last_agm.split("T")[0]}</div>
+        <div>{new Date(row?.date_of_last_agm).toLocaleDateString("en-GB")}</div>
 
         <div>
           <strong>PAN:</strong>
