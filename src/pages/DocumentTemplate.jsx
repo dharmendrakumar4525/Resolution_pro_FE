@@ -119,6 +119,17 @@ export default function DocumentTemplate() {
   const handleCloseAddModal = () => setOpenAddModal(false);
 
   const handleDeleteClick = async (row) => {
+    const idsToSkip = [
+      "673efb66ace56b4760e37c61",
+      "673f2063640f38762b0450c4",
+      "673f2072640f38762b0450ca",
+      "67515198aa5dd74676e405be",
+    ];
+
+    if (idsToSkip.includes(row?.id)) {
+      toast.info("This template cannot be deleted.");
+      return;
+    }
     try {
       const response = await fetch(
         `${apiURL}/meeting-agenda-template/${row?.id}`,
