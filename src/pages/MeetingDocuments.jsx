@@ -265,7 +265,11 @@ export default function MeetingDocuments() {
               </thead>
               <tbody>
                 <tr>
-                  <td>Notice Document</td>
+                  <td>
+                    {notice.templateName === "Short Notice"
+                      ? "Short Notice"
+                      : "Notice"}
+                  </td>
                   <td>
                     <Button
                       variant="outline-primary"

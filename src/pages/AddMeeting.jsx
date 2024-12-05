@@ -77,15 +77,6 @@ export default function AddMeeting() {
           (item) => item.id === "673efb66ace56b4760e37c61"
         );
 
-        if (noticeTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            notes: {
-              ...prevFormData.notes,
-              templateFile: noticeTemplate.fileName,
-            },
-          }));
-        }
         const momTemplate = data?.results?.find(
           (item) => item.id === "673f2063640f38762b0450c4"
         );
@@ -112,6 +103,34 @@ export default function AddMeeting() {
             },
           }));
         }
+        const shortNoticeTemplate = data?.results?.find(
+          (item) => item.id === "67515198aa5dd74676e405be"
+        );
+        if (formData.date) {
+          const formDate = new Date(formData.date);
+          const currentDate = new Date();
+          const timeDifference = formDate - currentDate;
+          const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+          if (daysDifference < 10 && daysDifference >= 0) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: shortNoticeTemplate.fileName,
+                templateName: "Short Notice",
+              },
+            }));
+          } else {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -120,7 +139,7 @@ export default function AddMeeting() {
     };
 
     fetchData();
-  }, []);
+  }, [formData.date]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -407,7 +426,7 @@ export default function AddMeeting() {
       setLoading(false);
     }
   };
-
+  console.log(docxUrl, "noticeee");
   return (
     <>
       <div
@@ -647,6 +666,7 @@ export default function AddMeeting() {
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
+                    required
                   />
                 </Form.Group>
               </Col>
