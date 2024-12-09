@@ -26,6 +26,7 @@ export default function CustomerMaintenanceForm() {
     authorised_capital_equity: "",
     authorised_capital_preference_capital: "",
     paid_up_capital_equity: "",
+    paid_up_capital_preference_capital: "",
     company_subcategory: "",
     roc_code: "",
     date_of_balance_sheet: "",
@@ -137,8 +138,8 @@ export default function CustomerMaintenanceForm() {
     } else {
       const updatedFormData = {
         ...formData,
-        alloted_manager: formData.alloted_manager?.id || null,
-        alloted_consultant: formData.alloted_consultant?.id || null,
+        alloted_manager: formData?.alloted_manager?.id || null,
+        alloted_consultant: formData?.alloted_consultant?.id || null,
       };
       try {
         const dataToSubmit = { ...updatedFormData };
@@ -192,7 +193,7 @@ export default function CustomerMaintenanceForm() {
   return (
     <Container>
       <div className="customer-form-container mt-4">
-        <h4>{customerId ? "Edit Client" : "Add Client"}</h4>
+        <h2 className="mb-4">{customerId ? "Edit Client" : "Add Client"}</h2>
         <Form onSubmit={handleSubmit}>
           <Row className="mb-3">
             <Col>
@@ -200,7 +201,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Company Name</Form.Label>
                 <Form.Control
                   type="text"
-                  value={formData.company_name}
+                  value={formData?.company_name}
                   onChange={handleChange}
                   placeholder="Enter Company Name"
                   required
@@ -208,23 +209,24 @@ export default function CustomerMaintenanceForm() {
               </Form.Group>
             </Col>
             <Col>
-              <Form.Group controlId="email_id">
-                <Form.Label>Email Address</Form.Label>
+              <Form.Group controlId="pan">
+                <Form.Label>PAN</Form.Label>
                 <Form.Control
-                  type="email"
-                  value={formData.email_id}
+                  type="text"
+                  value={formData?.pan}
                   onChange={handleChange}
-                  placeholder="Enter Email Address"
+                  placeholder="Enter PAN"
                   required
                 />
               </Form.Group>
             </Col>
+
             <Col>
               <Form.Group controlId="registered_address">
                 <Form.Label>Registered Address</Form.Label>
                 <Form.Control
                   type="text"
-                  value={formData.registered_address}
+                  value={formData?.registered_address}
                   onChange={handleChange}
                   placeholder="Enter Registered Address"
                   required
@@ -234,11 +236,149 @@ export default function CustomerMaintenanceForm() {
           </Row>
           <Row className="mb-3">
             <Col>
+              <Form.Group controlId="registration_number">
+                <Form.Label>Registeration Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData?.registration_number}
+                  onChange={handleChange}
+                  placeholder="Enter Registeration Number"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="roc_code">
+                <Form.Label>ROC Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData?.roc_code}
+                  onChange={handleChange}
+                  placeholder="Enter ROC Code"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="company_subcategory">
+                <Form.Label>Company Subcategory</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData?.company_subcategory}
+                  onChange={handleChange}
+                  placeholder="Enter Company Subcategory"
+                  isInvalid={!!errors.company_subcategory}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.company_subcategory}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="authorised_capital_equity">
+                <Form.Label>Authorised Capital (Equity)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData?.authorised_capital_equity}
+                  onChange={handleChange}
+                  placeholder="Enter Authorised Capital (Equity)"
+                  required
+                  isInvalid={!!errors.authorised_capital_equity}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.authorised_capital_equity}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="authorised_capital_preference_capital">
+                <Form.Label>Authorised Capital (Preference)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData?.authorised_capital_preference_capital}
+                  onChange={handleChange}
+                  placeholder="Enter Authorised Capital (Preference)"
+                  required
+                  isInvalid={!!errors.authorised_capital_preference_capital}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.authorised_capital_preference_capital}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="paid_up_capital_equity">
+                <Form.Label>Paid Up Capital (Equity)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData?.paid_up_capital_equity}
+                  onChange={handleChange}
+                  placeholder="Enter Paid Up Capital (Equity)"
+                  required
+                  isInvalid={!!errors.paid_up_capital_equity}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.paid_up_capital_equity}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col>
+              <Form.Group controlId="paid_up_capital_preference_capital">
+                <Form.Label>Paid Up Capital (Preference)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData?.paid_up_capital_preference_capital}
+                  onChange={handleChange}
+                  placeholder="Enter Paid Up Capital (Preference)"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="date_of_balance_sheet">
+                <Form.Label>Date of Balance Sheet</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={formData?.date_of_balance_sheet.split("T")[0]}
+                  onChange={handleChange}
+                  // isInvalid={!!errors.date_of_balance_sheet}
+                />
+                {/* <Form.Control.Feedback type="invalid">
+                  {errors.date_of_balance_sheet}
+                </Form.Control.Feedback> */}
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="class_of_company">
+                <Form.Label>Class of Company</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData?.class_of_company}
+                  onChange={handleChange}
+                  placeholder="Enter Class of Company"
+                  // isInvalid={!!errors.class_of_company}
+                  required
+                />
+                {/* <Form.Control.Feedback type="invalid">
+                  {errors.class_of_company}
+                </Form.Control.Feedback> */}
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
               <Form.Group controlId="cin">
                 <Form.Label>CIN</Form.Label>
                 <Form.Control
                   type="text"
-                  value={formData.cin}
+                  value={formData?.cin}
                   onChange={handleChange}
                   placeholder="Enter CIN"
                   required
@@ -251,7 +391,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Control
                   type="text"
                   name="secretary_detail.name"
-                  value={formData.secretary_detail.name}
+                  value={formData?.secretary_detail.name}
                   onChange={(e) =>
                     handleSecretaryChange("name", e.target.value)
                   }
@@ -267,7 +407,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Control
                   type="email"
                   name="secretary_detail.email"
-                  value={formData.secretary_detail.email}
+                  value={formData?.secretary_detail.email}
                   onChange={(e) =>
                     handleSecretaryChange("email", e.target.value)
                   }
@@ -283,7 +423,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Client Manager</Form.Label>
                 <Form.Control
                   as="select"
-                  value={formData.alloted_manager?.id || ""}
+                  value={formData?.alloted_manager?.id || ""}
                   onChange={(e) => {
                     const selectedManager = managers.find(
                       (manager) => manager.id === e.target.value
@@ -309,7 +449,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Control
                   type="text"
                   name="auditor_detail.name"
-                  value={formData.auditor_detail.name}
+                  value={formData?.auditor_detail.name}
                   onChange={(e) => handleAuditorChange("name", e.target.value)}
                   placeholder="Enter Auditor Name"
                   required
@@ -323,7 +463,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Control
                   type="email"
                   name="auditor_detail.email"
-                  value={formData.auditor_detail.email}
+                  value={formData?.auditor_detail.email}
                   onChange={(e) => handleAuditorChange("email", e.target.value)}
                   placeholder="Enter Auditor Email"
                   required
@@ -337,7 +477,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Date of Incorporation</Form.Label>
                 <Form.Control
                   type="date"
-                  value={formData.date_of_incorporation.split("T")[0]}
+                  value={formData?.date_of_incorporation.split("T")[0]}
                   onChange={handleChange}
                   placeholder="Enter Date of Incorporation"
                   required
@@ -349,7 +489,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Date of Last AGM</Form.Label>
                 <Form.Control
                   type="date"
-                  value={formData.date_of_last_agm.split("T")[0]}
+                  value={formData?.date_of_last_agm.split("T")[0]}
                   onChange={handleChange}
                 />
               </Form.Group>
@@ -359,7 +499,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Client Consultant</Form.Label>
                 <Form.Control
                   as="select"
-                  value={formData.alloted_consultant?.id || ""}
+                  value={formData?.alloted_consultant?.id || ""}
                   onChange={(e) =>
                     handleChange({
                       target: {
@@ -383,140 +523,16 @@ export default function CustomerMaintenanceForm() {
               </Form.Group>
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="registration_number">
-                <Form.Label>Registration Number</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.registration_number}
-                  onChange={handleChange}
-                  placeholder="Enter Registration Number"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="roc_code">
-                <Form.Label>ROC Code</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.roc_code}
-                  onChange={handleChange}
-                  placeholder="Enter ROC Code"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="company_subcategory">
-                <Form.Label>Company Subcategory</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.company_subcategory}
-                  onChange={handleChange}
-                  placeholder="Enter Company Subcategory"
-                  isInvalid={!!errors.company_subcategory}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.company_subcategory}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="authorised_capital_equity">
-                <Form.Label>Authorised Capital (Equity)</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.authorised_capital_equity}
-                  onChange={handleChange}
-                  placeholder="Enter Authorised Capital (Equity)"
-                  required
-                  isInvalid={!!errors.authorised_capital_equity}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.authorised_capital_equity}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
 
+          <Row className="mb-3" style={{ width: "34%" }}>
             <Col>
-              <Form.Group controlId="authorised_capital_preference_capital">
-                <Form.Label>Authorised Capital (Preference)</Form.Label>
+              <Form.Group controlId="email_id">
+                <Form.Label>Email Address</Form.Label>
                 <Form.Control
-                  type="number"
-                  value={formData.authorised_capital_preference_capital}
+                  type="email"
+                  value={formData?.email_id}
                   onChange={handleChange}
-                  placeholder="Enter Authorised Capital (Preference)"
-                  required
-                  isInvalid={!!errors.authorised_capital_preference_capital}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.authorised_capital_preference_capital}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="paid_up_capital_equity">
-                <Form.Label>Paid Up Capital (Equity)</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.paid_up_capital_equity}
-                  onChange={handleChange}
-                  placeholder="Enter Paid Up Capital (Equity)"
-                  required
-                  isInvalid={!!errors.paid_up_capital_equity}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.paid_up_capital_equity}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="date_of_balance_sheet">
-                <Form.Label>Date of Balance Sheet</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formData.date_of_balance_sheet.split("T")[0]}
-                  onChange={handleChange}
-                  // isInvalid={!!errors.date_of_balance_sheet}
-                />
-                {/* <Form.Control.Feedback type="invalid">
-                  {errors.date_of_balance_sheet}
-                </Form.Control.Feedback> */}
-              </Form.Group>
-            </Col>
-
-            <Col>
-              <Form.Group controlId="class_of_company">
-                <Form.Label>Class of Company</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.class_of_company}
-                  onChange={handleChange}
-                  placeholder="Enter Class of Company"
-                  // isInvalid={!!errors.class_of_company}
-                  required
-                />
-                {/* <Form.Control.Feedback type="invalid">
-                  {errors.class_of_company}
-                </Form.Control.Feedback> */}
-              </Form.Group>
-            </Col>
-
-            <Col>
-              <Form.Group controlId="pan">
-                <Form.Label>PAN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.pan}
-                  onChange={handleChange}
-                  placeholder="Enter PAN"
+                  placeholder="Enter Email Address"
                   required
                 />
               </Form.Group>

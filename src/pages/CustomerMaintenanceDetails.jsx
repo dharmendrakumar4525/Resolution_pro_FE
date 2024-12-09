@@ -50,13 +50,21 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.registered_address}</div>
         <div>
-          <strong>Authorised Capital Equity</strong>
+          <strong>Authorised Capital (Equity)</strong>
         </div>
         <div>{row?.authorised_capital_equity}</div>
         <div>
-          <strong>Authorised Capital Preference Capitals:</strong>
+          <strong>Authorised Capital (Preference)</strong>
         </div>
         <div>{row?.authorised_capital_preference_capital}</div>
+        <div>
+          <strong>Paid up Capital (Equity)</strong>
+        </div>
+        <div>{row?.paid_up_capital_equity}</div>
+        <div>
+          <strong>Paid up Capital(Preference)</strong>
+        </div>
+        <div>{row?.paid_up_capital_preference_capital}</div>
         <div>
           <strong>Class:</strong>
         </div>
