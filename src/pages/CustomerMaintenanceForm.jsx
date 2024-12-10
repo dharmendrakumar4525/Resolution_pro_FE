@@ -549,7 +549,7 @@ export default function CustomerMaintenanceForm() {
                 aria-hidden="true"
               />
             ) : (
-              <>{customerId ? "Update Customer" : "Save"}</>
+              <>{customerId ? "Update Client" : "Save"}</>
             )}
           </Button>
         </Form>

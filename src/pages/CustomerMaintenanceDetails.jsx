@@ -22,31 +22,36 @@ const CustomerMaintenanceDetail = () => {
       <h2>Details for {row?.company_name}</h2>
       <div className="details-grid mt-4">
         <div>
-          <strong>Client Manager:</strong>
+          <strong>Client Manager</strong>
         </div>
         <div>{row?.alloted_manager[0]?.name || "-"}</div>
+
         <div>
-          <strong>Consultant:</strong>
+          <strong>Company Email</strong>
+        </div>
+        <div>{row?.email_id || "-"}</div>
+        <div>
+          <strong>Consultant</strong>
         </div>
         <div>{row?.alloted_consultant[0]?.name || "-"}</div>
         <div>
-          <strong>Secretary Name:</strong>
+          <strong>Secretary Name</strong>
         </div>
         <div>{row?.secretary_detail?.name || "-"}</div>
         <div>
-          <strong>Secretary Email:</strong>
+          <strong>Secretary Email</strong>
         </div>
         <div>{row?.secretary_detail?.email || "-"}</div>
         <div>
-          <strong>Auditor Name:</strong>
+          <strong>Auditor Name</strong>
         </div>
         <div>{row?.auditor_detail?.name || "-"}</div>
         <div>
-          <strong>Auditor Email:</strong>
+          <strong>Auditor Email</strong>
         </div>
         <div>{row?.auditor_detail?.email || "-"}</div>
         <div>
-          <strong>Registered Address:</strong>
+          <strong>Registered Address</strong>
         </div>
         <div>{row?.registered_address}</div>
         <div>
@@ -66,46 +71,46 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.paid_up_capital_preference_capital}</div>
         <div>
-          <strong>Class:</strong>
+          <strong>Class</strong>
         </div>
         <div>{row?.class_of_company}</div>
         <div>
-          <strong>Subcategory:</strong>
+          <strong>Subcategory</strong>
         </div>
         <div>{row?.company_subcategory}</div>
         <div>
-          <strong>Registeration Number:</strong>
+          <strong>Registeration Number</strong>
         </div>
         <div>{row?.registration_number}</div>
         <div>
-          <strong>ROC Code:</strong>
+          <strong>ROC Code</strong>
         </div>
         <div>{row?.roc_code}</div>
 
         <div>
-          <strong>CIN:</strong>
+          <strong>CIN</strong>
         </div>
         <div>{row?.cin}</div>
         <div>
-          <strong>Date of Balance Sheet :</strong>
+          <strong>Date of Balance Sheet</strong>
         </div>
         <div>
           {new Date(row?.date_of_balance_sheet).toLocaleDateString("en-GB")}
         </div>
         <div>
-          <strong>Date Of Incorporation:</strong>
+          <strong>Date Of Incorporation</strong>
         </div>
 
         <div>
           {new Date(row?.date_of_incorporation).toLocaleDateString("en-GB")}
         </div>
         <div>
-          <strong>Date Of Last Agm:</strong>
+          <strong>Date Of Last Agm</strong>
         </div>
         <div>{new Date(row?.date_of_last_agm).toLocaleDateString("en-GB")}</div>
 
         <div>
-          <strong>PAN:</strong>
+          <strong>PAN</strong>
         </div>
         <div>{row?.pan}</div>
       </div>
@@ -136,13 +141,23 @@ const CustomerMaintenanceDetail = () => {
         row?.otherparticipantsDetails.length > 0 ? (
           row?.otherparticipantsDetails.map((partcipant, index) => (
             <div key={index} className="director-card">
-              <div>
-                <strong>Participant Name:</strong> {partcipant.name || "-"}
-              </div>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Participant Name:</strong>
+                    </td>{" "}
+                    <td>{partcipant.name || "-"}</td>
+                  </tr>
 
-              <div>
-                <strong>Email:</strong> {partcipant.email || "-"}
-              </div>
+                  <tr>
+                    <td>
+                      <strong>Email:</strong>
+                    </td>{" "}
+                    <td>{partcipant.email || "-"}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           ))
         ) : (
