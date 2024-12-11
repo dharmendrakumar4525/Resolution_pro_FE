@@ -35,12 +35,15 @@ export default function Shareholders() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/shareholder-data`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${apiURL}/shareholder-data?company_id=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setRows(data.results);
         console.log(data.results);
@@ -235,8 +238,14 @@ export default function Shareholders() {
                   required
                 />
               </Form.Group>
-
-              <Button type="submit" variant="primary" className="me-2">
+              <Button
+                variant="primary"
+                onClick={() => setOpenAddModal(false)}
+                className="me-2"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="secondary" className="ml-2">
                 {buttonLoading ? (
                   <Spinner
                     as="span"
@@ -248,13 +257,6 @@ export default function Shareholders() {
                 ) : (
                   "Save"
                 )}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setOpenAddModal(false)}
-                className="ml-2"
-              >
-                Cancel
               </Button>
             </Form>
           </Modal.Body>
@@ -290,7 +292,9 @@ export default function Shareholders() {
                     <td>{row?.name}</td>
                     <td>{row?.email}</td>
                     <td>{row?.designation}</td>
-                    <td>{row?.begin_date}</td>
+                    <td>
+                      {new Date(row?.begin_date).toLocaleDateString("en-GB")}
+                    </td>
                     <td>{row["din/pan"]}</td>
                     <td>{row?.end_date || "-"}</td>
                     <td>
