@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -10,13 +11,37 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
+import { apiURL } from "../API/api";
 
 const CustomerMaintenanceDetail = () => {
+  const [shareholders, setShareholders] = useState([]);
   const { id } = useParams();
   const location = useLocation();
   const row = location.state.row;
-  console.log(row, "mukul");
   const navigate = useNavigate();
+  const token = localStorage.getItem("refreshToken");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `${apiURL}/shareholder-data?company_id=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setShareholders(data.results);
+        console.log("object", data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, [id, token]);
   return (
     <div className="details-container">
       <h2>Details for {row?.company_name}</h2>
@@ -120,17 +145,47 @@ const CustomerMaintenanceDetail = () => {
         {row?.directorDataDetails && row?.directorDataDetails.length > 0 ? (
           row?.directorDataDetails.map((director, index) => (
             <div key={index} className="director-card">
+              <tr>
+                <strong>Name:</strong> {director?.name || "-"}
+              </tr>
               <div>
-                <strong>Director Name:</strong> {director.name || "-"}
+                <strong>Designation:</strong> {director?.designation || "-"}
               </div>
-
               <div>
-                <strong>Email:</strong> {director.email || "-"}
+                <strong>Email:</strong> {director?.email || "-"}
+              </div>
+              <div>
+                <strong>DIN/PAN:</strong> {director?.["din/pan"] || "-"}
               </div>
             </div>
           ))
         ) : (
           <p>No director details available.</p>
+        )}
+      </div>
+      <div className="mt-4"></div>
+      <h3>Shareholders</h3>
+      <div className="card-section">
+        {shareholders.length > 0 ? (
+          shareholders?.map((shareholder, index) => (
+            <div key={index} className="director-card">
+              <div>
+                <strong>Name:</strong> {shareholder?.name || "-"}
+              </div>
+              <div>
+                <strong>Designation:</strong> {shareholder?.designation || "-"}
+              </div>
+
+              <div>
+                <strong>Email:</strong> {shareholder?.email || "-"}
+              </div>
+              <div>
+                <strong>DIN/PAN:</strong> {shareholder?.["din/pan"] || "-"}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No shareholder details available.</p>
         )}
       </div>
       <div className="mt-5"></div>
@@ -145,7 +200,7 @@ const CustomerMaintenanceDetail = () => {
                 <tbody>
                   <tr>
                     <td>
-                      <strong>Participant Name:</strong>
+                      <strong>Name:</strong>
                     </td>{" "}
                     <td>{partcipant.name || "-"}</td>
                   </tr>
