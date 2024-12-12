@@ -31,6 +31,8 @@ export default function AddMeeting() {
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -61,85 +63,7 @@ export default function AddMeeting() {
       templateFile: "",
     },
   });
-  const navigate = useNavigate();
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        setDocxUrl(data?.results);
-        const noticeTemplate = data?.results?.find(
-          (item) => item.id === "673efb66ace56b4760e37c61"
-        );
 
-        const momTemplate = data?.results?.find(
-          (item) => item.id === "673f2063640f38762b0450c4"
-        );
-
-        if (momTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            mom: {
-              ...prevFormData.mom,
-              templateFile: momTemplate.fileName,
-            },
-          }));
-        }
-        const attendanceTemplate = data?.results?.find(
-          (item) => item.id === "673f2072640f38762b0450ca"
-        );
-
-        if (attendanceTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            attendance: {
-              ...prevFormData.attendance,
-              templateFile: attendanceTemplate.fileName,
-            },
-          }));
-        }
-        const shortNoticeTemplate = data?.results?.find(
-          (item) => item.id === "67515198aa5dd74676e405be"
-        );
-        if (formData.date) {
-          const formDate = new Date(formData.date);
-          const currentDate = new Date();
-          const timeDifference = formDate - currentDate;
-          const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-          if (daysDifference < 10 && daysDifference >= 0) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              notes: {
-                ...prevFormData.notes,
-                templateFile: shortNoticeTemplate.fileName,
-                templateName: "Short Notice",
-              },
-            }));
-          } else {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              notes: {
-                ...prevFormData.notes,
-                templateFile: noticeTemplate.fileName,
-              },
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [formData.date]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -151,7 +75,7 @@ export default function AddMeeting() {
         });
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results, "sadass");
+        // console.log(data.results,"meetCli")
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -192,6 +116,9 @@ export default function AddMeeting() {
           "673f2063640f38762b0450c4",
           "673f2072640f38762b0450ca",
           "67515198aa5dd74676e405be",
+          "6756b022696ba6002745bbeb",
+          "6756ab53696ba6002745bbe5",
+          "6756aaaa696ba6002745bbd9",
         ];
 
         const usableAgendas = data.results.filter(
@@ -207,17 +134,16 @@ export default function AddMeeting() {
     fetchAgendaList();
   }, []);
   useEffect(() => {
-    if (formData.client_name && clientList.length > 0) {
+    if (formData?.client_name && clientList.length > 0) {
       const selectedCompany = clientList.find(
-        (company) => company._id === formData.client_name
+        (company) => company._id === formData?.client_name
       );
-      console.log("Selected Company ID:", selectedCompany);
 
       if (selectedCompany) {
         countPreviousMeetings(rows, selectedCompany._id);
       }
     }
-  }, [formData.client_name, clientList, rows]);
+  }, [formData?.client_name, clientList, rows]);
   function getOrdinalSuffix(number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const value = number % 100;
@@ -226,9 +152,11 @@ export default function AddMeeting() {
     );
   }
   const countPreviousMeetings = (meetData, selectedId) => {
+    console.log(meetData, "meetDataaa");
+
     const previousCount = meetData.filter(
       (meeting) =>
-        meeting.client_name.id === selectedId &&
+        meeting?.client_name?.id === selectedId &&
         new Date(meeting.createdAt) < new Date()
     ).length;
     let result = getOrdinalSuffix(previousCount + 1);
@@ -270,7 +198,7 @@ export default function AddMeeting() {
     }));
   };
   const handleParticipantChange = (index, field, value) => {
-    const updatedParticipants = formData.other_participants.map(
+    const updatedParticipants = formData?.other_participants.map(
       (participant, i) =>
         i === index ? { ...participant, [field]: value } : participant
     );
@@ -281,13 +209,13 @@ export default function AddMeeting() {
     }));
   };
 
-  const handleChange = (e) => {
-    const { id, name, value } = e.target;
-    setFormData({ ...formData, [id || name]: value });
-    if (name === "client_name" && value) {
-      fetchDirectors(value);
-    }
-  };
+  // const handleChange = (e) => {
+  //   const { id, name, value } = e.target;
+  //   setFormData({ ...formData, [id || name]: value });
+  //   if (name === "client_name" && value) {
+  //     fetchDirectors(value);
+  //   }
+  // };
   const handleAgendaItemChange = (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevData) => ({
@@ -312,34 +240,166 @@ export default function AddMeeting() {
       ],
     }));
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        console.log(data, "daada");
+        console.log(formData?.agendaItems[0], "selectedOption");
 
-  // const handleAgendaItemChange = (selectedOptions) => {
-  //   const selectedAgendas = selectedOptions
-  //     ? selectedOptions.map((option) => {
-  //         const agenda = agendaList.find(
-  //           (item) => item.templateName === option.value
-  //         );
-  //         return {
-  //           templateName: option.value,
-  //           meetingType: agenda?.meetingType || "",
-  //           templateFile: agenda?.fileName || "",
-  //         };
-  //       })
-  //     : [];
+        setDocxUrl(data?.results);
+        if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "673efb66ace56b4760e37c61"
+          );
 
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     agendaItems: selectedAgendas,
-  //   }));
-  // };
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "673f2063640f38762b0450c4"
+          );
 
-  const handleSelectChange = (selectedOptions) => {
-    // Extract only the selected values (IDs)
-    const selectedValues = selectedOptions
-      ? selectedOptions.map((option) => option.value)
-      : [];
-    setFormData({ ...formData, agendaItems: selectedValues });
-  };
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "673f2072640f38762b0450ca"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "67515198aa5dd74676e405be"
+          );
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
+        } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "6756aaaa696ba6002745bbd9"
+          );
+
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "6756ab53696ba6002745bbe5"
+          );
+
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "673f2072640f38762b0450ca"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "6756b022696ba6002745bbeb"
+          );
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [formData?.agendaItems[0]]);
 
   const agendaOptions = agendaList.map((agenda) => ({
     value: agenda.templateName,
@@ -432,7 +492,28 @@ export default function AddMeeting() {
       setLoading(false);
     }
   };
-  console.log(docxUrl, "noticeee");
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
+  const handleChange = (e) => {
+    const { id, name, value } = e.target;
+    console.log(id, name, value, "target");
+
+    setFormData({ ...formData, [id || name]: value });
+    // if (name === "client_name" && value) {
+    //   fetchDirectors(value);
+    // }
+  };
+
+  const handleClientChange = (selectedOption) => {
+    console.log(selectedOption, "selected");
+    setFormData({ ...formData, client_name: selectedOption?.value || "" });
+    // if (name === "client_name" && value) {
+    fetchDirectors(selectedOption?.value);
+    // }
+  };
+
   return (
     <>
       <div
@@ -440,6 +521,8 @@ export default function AddMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
+        <ToastContainer autoClose={3000} />
+
         <h2 className="mb-3 mt-5">{editingRow ? "Edit" : "Add"} Meeting</h2>
 
         <Modal.Body>
@@ -448,11 +531,29 @@ export default function AddMeeting() {
               <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
-                  <Form.Control
+                  <Select
+                    id="client-name-select"
+                    options={clientOptions}
+                    placeholder="Select Client"
+                    value={clientOptions.find(
+                      (option) => option.value === formData?.client_name
+                    )}
+                    onChange={handleClientChange}
+                    isClearable
+                  />
+                  {/* <Form.Control
                     as="select"
                     name="client_name"
                     value={formData.client_name}
                     onChange={handleChange}
+                    style={{
+                      height: "50px", // Taller dropdown
+                      width: "300px", // Wider dropdown
+                      position: "absolute", // Positioned absolutely within its parent
+                      top: "20px", // Distance from the top
+                      left: "10px", // Distance from the left
+                      padding: "10px", // More padding for better appearance
+                    }}
                   >
                     <option value="">Select Client</option>
                     {clientList?.map((client) => (
@@ -460,7 +561,7 @@ export default function AddMeeting() {
                         {client.company_name}
                       </option>
                     ))}
-                  </Form.Control>
+                  </Form.Control> */}
                 </Form.Group>
               </Col>
               <Col>
@@ -672,7 +773,6 @@ export default function AddMeeting() {
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
-                    required
                   />
                 </Form.Group>
               </Col>
@@ -703,7 +803,7 @@ export default function AddMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={3000} />
     </>
   );
 }
+
