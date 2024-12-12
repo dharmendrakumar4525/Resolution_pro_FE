@@ -68,10 +68,9 @@ export default function CustomerMaintenance() {
 
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
   const userManagerName = JSON.parse(localStorage.getItem("user"))?.name;
-  const userRoleId = JSON.parse(localStorage.getItem("user"))?.id;
+  const userManagerId = JSON.parse(localStorage.getItem("user"))?.id;
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
-
   useEffect(() => {
     const fetchData = async (pageNo) => {
       setLoading(true);
