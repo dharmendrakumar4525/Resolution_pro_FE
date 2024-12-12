@@ -521,6 +521,8 @@ export default function AddMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
+        <ToastContainer autoClose={3000} />
+
         <h2 className="mb-3 mt-5">{editingRow ? "Edit" : "Add"} Meeting</h2>
 
         <Modal.Body>
@@ -801,7 +803,6 @@ export default function AddMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={3000} />
     </>
   );
 }
