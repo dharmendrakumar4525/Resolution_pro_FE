@@ -124,6 +124,9 @@ export default function DocumentTemplate() {
       "673f2063640f38762b0450c4",
       "673f2072640f38762b0450ca",
       "67515198aa5dd74676e405be",
+      "6756b022696ba6002745bbeb",
+      "6756ab53696ba6002745bbe5",
+      "6756aaaa696ba6002745bbd9",
     ];
 
     if (idsToSkip.includes(row?.id)) {

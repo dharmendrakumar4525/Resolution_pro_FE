@@ -31,6 +31,8 @@ export default function AddMeeting() {
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -61,66 +63,7 @@ export default function AddMeeting() {
       templateFile: "",
     },
   });
-  const navigate = useNavigate();
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        setDocxUrl(data?.results);
-        const noticeTemplate = data?.results?.find(
-          (item) => item.id === "673efb66ace56b4760e37c61"
-        );
 
-        if (noticeTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            notes: {
-              ...prevFormData.notes,
-              templateFile: noticeTemplate.fileName,
-            },
-          }));
-        }
-        const momTemplate = data?.results?.find(
-          (item) => item.id === "673f2063640f38762b0450c4"
-        );
-
-        if (momTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            mom: {
-              ...prevFormData.mom,
-              templateFile: momTemplate.fileName,
-            },
-          }));
-        }
-        const attendanceTemplate = data?.results?.find(
-          (item) => item.id === "673f2072640f38762b0450ca"
-        );
-
-        if (attendanceTemplate) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            attendance: {
-              ...prevFormData.attendance,
-              templateFile: attendanceTemplate.fileName,
-            },
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -132,7 +75,6 @@ export default function AddMeeting() {
         });
         const data = await response.json();
         setRows(data.results);
-        console.log(data.results, "sadass");
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -173,6 +115,9 @@ export default function AddMeeting() {
           "673f2063640f38762b0450c4",
           "673f2072640f38762b0450ca",
           "67515198aa5dd74676e405be",
+          "6756b022696ba6002745bbeb",
+          "6756ab53696ba6002745bbe5",
+          "6756aaaa696ba6002745bbd9",
         ];
 
         const usableAgendas = data.results.filter(
@@ -192,7 +137,6 @@ export default function AddMeeting() {
       const selectedCompany = clientList.find(
         (company) => company._id === formData.client_name
       );
-      console.log("Selected Company ID:", selectedCompany);
 
       if (selectedCompany) {
         countPreviousMeetings(rows, selectedCompany._id);
@@ -293,34 +237,166 @@ export default function AddMeeting() {
       ],
     }));
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        console.log(data, "daada");
+        console.log(formData?.agendaItems[0], "selectedOption");
 
-  // const handleAgendaItemChange = (selectedOptions) => {
-  //   const selectedAgendas = selectedOptions
-  //     ? selectedOptions.map((option) => {
-  //         const agenda = agendaList.find(
-  //           (item) => item.templateName === option.value
-  //         );
-  //         return {
-  //           templateName: option.value,
-  //           meetingType: agenda?.meetingType || "",
-  //           templateFile: agenda?.fileName || "",
-  //         };
-  //       })
-  //     : [];
+        setDocxUrl(data?.results);
+        if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "673efb66ace56b4760e37c61"
+          );
 
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     agendaItems: selectedAgendas,
-  //   }));
-  // };
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "673f2063640f38762b0450c4"
+          );
 
-  const handleSelectChange = (selectedOptions) => {
-    // Extract only the selected values (IDs)
-    const selectedValues = selectedOptions
-      ? selectedOptions.map((option) => option.value)
-      : [];
-    setFormData({ ...formData, agendaItems: selectedValues });
-  };
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "673f2072640f38762b0450ca"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "67515198aa5dd74676e405be"
+          );
+          if (formData.date) {
+            const formDate = new Date(formData.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
+        } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "6756aaaa696ba6002745bbd9"
+          );
+
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "6756ab53696ba6002745bbe5"
+          );
+
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "673f2072640f38762b0450ca"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "6756b022696ba6002745bbeb"
+          );
+          if (formData.date) {
+            const formDate = new Date(formData.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [formData?.agendaItems[0]]);
 
   const agendaOptions = agendaList.map((agenda) => ({
     value: agenda.templateName,
