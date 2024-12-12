@@ -45,6 +45,8 @@ import NoticeEditor from "../pages/NoticeEditor";
 import MomEditor from "../pages/MomEditor";
 import AttendanceEditor from "../pages/AttendanceEditor";
 import ResolutionEditor from "../pages/ResolutionEditor";
+import ApprovalDocs from "../pages/ApprovalDocs";
+import ReviseDocs from "../pages/ReviseDocs";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -316,6 +318,36 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<EditMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/approval"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ApprovalDocs />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/approval-docs"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ApprovalDocs />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/revise-docs"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ReviseDocs />} />
           ) : (
             <Navigate to="/login" />
           )

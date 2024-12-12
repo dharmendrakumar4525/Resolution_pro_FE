@@ -16,6 +16,7 @@ import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+const token = localStorage.getItem("refreshToken");
 
 export default function MeetingDocuments() {
   const [rows, setRows] = useState([]);
@@ -214,6 +215,7 @@ export default function MeetingDocuments() {
       toast.error("Error updating attendance:", error);
     }
   };
+
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
@@ -228,9 +230,9 @@ export default function MeetingDocuments() {
               k === "mom" ||
               k === "attendance" ||
               k == "resolution") &&
-            !rows.some((row) => row?.fileName)
+            (!rows || !rows.some((row) => row?.approval_status === "approved"))
           ) {
-            toast.warning("Please save meeting agenda document first.");
+            toast.warning("Documents are available only after approval.");
           } else {
             setKey(k);
           }
@@ -265,7 +267,11 @@ export default function MeetingDocuments() {
               </thead>
               <tbody>
                 <tr>
-                  <td>Notice Document</td>
+                  <td>
+                    {notice.templateName === "Short Notice"
+                      ? "Short Notice"
+                      : "Notice"}
+                  </td>
                   <td>
                     <Button
                       variant="outline-primary"
@@ -605,6 +611,7 @@ function TableContent({ rows, handleEditClick, handleView }) {
             <th>View</th>
             <th>Download-as PDF</th>
             <th>Download-as Docx</th>
+            <th>Send for approval</th>
           </tr>
         </thead>
         <tbody>
@@ -613,6 +620,7 @@ function TableContent({ rows, handleEditClick, handleView }) {
               <td>{row?.templateName}</td>
               <td>
                 <Button
+                disabled={row.approval_status !== "draft"}
                   variant="outline-primary"
                   onClick={() => handleEditClick(row, index)}
                 >
@@ -628,36 +636,38 @@ function TableContent({ rows, handleEditClick, handleView }) {
                 </Button>
               </td>
               <td>
-                {row?.fileName && row?.fileName !== "" ? (
-                  <Button
-                    variant="outline-primary"
-                    as="a"
-                    href={`${row?.fileName}`}
-                    download="customFileName.docx"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <FaFileWord />
-                  </Button>
-                ) : (
-                  <span>No file available</span>
-                )}
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.fileName}`}
+                  download="customFileName.docx"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  disabled={!row.is_active == true}
+                >
+                  <FaFileWord />
+                </Button>
               </td>
 
               <td>
-                {row?.filedocx && row?.filedocx !== "" ? (
-                  <Button
-                    variant="outline-primary"
-                    as="a"
-                    href={`${row?.filedocx}`}
-                    download="customFileName.docx"
-                    rel="noopener noreferrer"
-                  >
-                    <FaFileWord />
-                  </Button>
-                ) : (
-                  <span>No file available</span>
-                )}
+                <Button
+                  variant="outline-primary"
+                  as="a"
+                  href={`${row?.filedocx}`}
+                  download="customFileName.docx"
+                  rel="noopener noreferrer"
+                  disabled={!row.is_active == true}
+                >
+                  <FaFileWord />
+                </Button>
+              </td>
+              <td>
+                <Button
+                  disabled={!row.is_active == true}
+                  onClick={() => sendApproval(row)}
+                >
+                  Send
+                </Button>
               </td>
             </tr>
           ))}
@@ -666,3 +676,36 @@ function TableContent({ rows, handleEditClick, handleView }) {
     </div>
   );
 }
+const sendApproval = async (row) => {
+  const formData = {
+    meeting_id: row?.id,
+    meeting_type: row?.meetingType,
+    company_id: row?.client_name.id,
+  };
+
+  try {
+    const response = await fetch(`${apiURL}/meeting-approval`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: formData,
+    });
+    const patchResponse = await fetch(`${apiURL}/meeting/${row.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ is_approved: false ,approval_status:"review"}), 
+    });
+    if (response.ok) {
+      toast.success("Document send for approval");
+    } else {
+      console.log("Failed to save the document.");
+    }
+  } catch (error) {
+    toast.error("Error occurred while saving the document.");
+  }
+};

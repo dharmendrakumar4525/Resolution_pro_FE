@@ -340,6 +340,7 @@ const DocumentEditor = () => {
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       setEditorContent(result.value);
+      console.log("object", result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -407,13 +408,6 @@ const DocumentEditor = () => {
     processPlaceholders(selectedData);
   }, [selectedData]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
-
-  // Load content on file URL change
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
@@ -615,6 +609,7 @@ const DocumentEditor = () => {
     formData.append("file", docBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
+    formData.append("is_approved", true);
     console.log(JSON.stringify(placeVar));
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
@@ -627,7 +622,9 @@ const DocumentEditor = () => {
 
       if (response.ok) {
         saveResolutions();
+
         toast.success("Document saved successfully");
+
       } else {
         console.log("Failed to save the document.");
       }

@@ -28,6 +28,7 @@ const TemplateViewer = () => {
 
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page;
   useEffect(() => {
     handleFileLoad(fileUrl);
   }, [fileUrl]);
@@ -46,7 +47,26 @@ const TemplateViewer = () => {
 
     setInputFields(fields);
   };
+  const [formData, setFormData] = useState({
+    decision: "",
+    remarks: "",
+  });
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form Data:", formData);
+
+    // Add your form submission logic here
+    alert(`Decision: ${formData.decision}\nRemarks: ${formData.remarks}`);
+  };
   // Handle input changes for each placeholder
   const handleInputChange = (placeholder, value) => {
     setInputFields((prevState) => ({
@@ -128,12 +148,12 @@ const TemplateViewer = () => {
         const result = await mammoth.convertToHtml({ arrayBuffer });
         const htmlContent = result.value;
         setEditorContent(htmlContent);
-      } 
+      }
       // else if (fileType === "pdf") {
       //   // Handle PDF file
       //   const textContent = await extractPdfText(arrayBuffer);
       //   setEditorContent(textContent);
-      // } 
+      // }
       else {
         throw new Error(
           "Unsupported file format. Only DOCX and PDF are supported."
@@ -265,108 +285,48 @@ const TemplateViewer = () => {
             }}
           />
         </div>
-        <div className="rightContainerHidden">
-          {/* Detected Placeholder Input Fields */}
-          <div className="dynamic-inputs mt-4">
-            <h3>Detected Placeholders:</h3>
-            {Object.keys(inputFields).length > 0 ? (
-              Object.keys(inputFields).map((placeholder) => (
-                <div key={placeholder}>
-                  <label>{placeholder}:</label>
-                  <input
-                    type="text"
-                    value={inputFields[placeholder]}
-                    onChange={(e) =>
-                      handleInputChange(placeholder, e.target.value)
-                    }
-                    placeholder={`Enter ${placeholder}`}
-                    disabled={confirmedFields[placeholder]} // Disable if confirmed
-                  />
-                  <Button
-                    variant="secondary"
-                    className="ms-2"
-                    onClick={() => handleConfirm(placeholder)}
-                    disabled={confirmedFields[placeholder]} // Disable if already confirmed
-                  >
-                    Confirm
-                  </Button>
-                </div>
-              ))
-            ) : (
-              <p>All placeholders with ${"{example}"} are filled</p>
-            )}
-          </div>
-
-          {/* Download and Save Actions */}
-          <div className="download-options mt-5">
-            <Button
-              // onClick={createWordDocument}
-              onClick={saveDocument}
-              disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
-            >
-              {buttonLoading ? (
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />
-              ) : (
-                "Save Meeting Document"
-              )}
-            </Button>
-            {hasUnconfirmedPlaceholders && (
-              <p style={{ color: "red" }}>
-                Some placeholders are unconfirmed. Please confirm all before
-                downloading the Word file.
-              </p>
-            )}
-          </div>
-
-          {/* Saved documents removed */}
-          {/* {documents.length > 0 && (
-            <div className="mt-5">
-              <h3>Saved Documents</h3>
-              <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                  <tr>
-                    <th>#</th>
-                    <th>Document Name</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((doc, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{doc.name}</td>
-                      <td>
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setEditorContent(doc.content);
-                            setCurrentDocName(doc.name);
-                            setIsEditing(true);
-                          }}
-                          className="me-2"
-                        >
-                          Open
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={createWordDocument}
-                        >
-                          Download as .docx
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+        {page == "approval" && (
+          <form onSubmit={handleSubmit} className="mt-4">
+            {/* Select Field */}
+            <div className="mb-3">
+              <label htmlFor="decision" className="form-label">
+                Decision
+              </label>
+              <select
+                id="decision"
+                name="decision"
+                className="form-select"
+                value={formData.decision}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select</option>
+                <option value="accept">Accept</option>
+                <option value="reject">Review</option>
+              </select>
             </div>
-          )} */}
-        </div>
+
+            <div className="mb-3">
+              <label htmlFor="remarks" className="form-label">
+                Remarks
+              </label>
+              <textarea
+                id="remarks"
+                name="remarks"
+                className="form-control"
+                rows="4"
+                placeholder="Enter remarks here..."
+                value={formData.remarks}
+                onChange={handleChange}
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" className="btn btn-primary">
+              Submit
+            </button>
+          </form>
+        )}
       </div>
     </Container>
   );

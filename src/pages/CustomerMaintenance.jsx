@@ -68,7 +68,7 @@ export default function CustomerMaintenance() {
 
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
   const userManagerName = JSON.parse(localStorage.getItem("user"))?.name;
-  const userManagerId = JSON.parse(localStorage.getItem("user"))?.id;
+  const userRoleId = JSON.parse(localStorage.getItem("user"))?.id;
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
 
@@ -78,8 +78,10 @@ export default function CustomerMaintenance() {
       try {
         const url =
           userRole === "672c47cb38903b464c9d2923"
+
             ? `${apiURL}/customer-maintenance?alloted_manager=${userManagerId}&page=${pageNo}&limit=10`
             : `${apiURL}/customer-maintenance?page=${pageNo}&limit=10`;
+
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
