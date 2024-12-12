@@ -124,6 +124,9 @@ export default function DocumentTemplate() {
       "673f2063640f38762b0450c4",
       "673f2072640f38762b0450ca",
       "67515198aa5dd74676e405be",
+      "6756b022696ba6002745bbeb",
+      "6756ab53696ba6002745bbe5",
+      "6756aaaa696ba6002745bbd9",
     ];
 
     if (idsToSkip.includes(row?.id)) {
@@ -178,7 +181,11 @@ export default function DocumentTemplate() {
     }
   };
   const handleEditClick = (row) => {
-    console.log(row, "muk");
+    const idsToSkipTemplateNameEdit = [
+      "674869ef2be3f7ca95d98465",
+      "6756aac6696ba6002745bbdf",
+    ];
+
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({
@@ -187,6 +194,7 @@ export default function DocumentTemplate() {
       fileName: row?.fileName,
       status: row?.status,
       by: row?.by?.id,
+      isTemplateNameEditable: !idsToSkipTemplateNameEdit.includes(row?.id),
     });
   };
 
@@ -333,6 +341,7 @@ export default function DocumentTemplate() {
                       value={formData.templateName}
                       onChange={handleChange}
                       placeholder="Enter Template Name"
+                      disabled={!formData.isTemplateNameEditable}
                     />
                   </Form.Group>
                 </Col>
@@ -493,14 +502,14 @@ export default function DocumentTemplate() {
                           <FaEdit />
                         </Button>
                       )}
-                      {hasPermission("delete") && (
+                      {/* {hasPermission("delete") && (
                         <Button
                           variant="outline-danger"
                           onClick={() => handleDeleteClick(row)}
                         >
                           <FaTrash />
                         </Button>
-                      )}
+                      )} */}
                     </td>
                   </tr>
                 ))}

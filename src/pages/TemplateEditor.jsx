@@ -622,7 +622,9 @@ const DocumentEditor = () => {
 
       if (response.ok) {
         saveResolutions();
-        toast.success("Document saved suceessfully");
+
+        toast.success("Document saved successfully");
+
       } else {
         console.log("Failed to save the document.");
       }
