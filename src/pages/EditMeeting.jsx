@@ -82,6 +82,9 @@ export default function EditMeeting() {
           "673f2063640f38762b0450c4",
           "673f2072640f38762b0450ca",
           "67515198aa5dd74676e405be",
+          "6756b022696ba6002745bbeb",
+          "6756ab53696ba6002745bbe5",
+          "6756aaaa696ba6002745bbd9",
         ];
 
         const usableAgendas = data.results.filter(
@@ -136,13 +139,6 @@ export default function EditMeeting() {
     }
   };
 
-  const handleChange = (e) => {
-    const { id, name, value } = e.target;
-    setFormData({ ...formData, [id || name]: value });
-    if (name === "client_name" && value) {
-      fetchDirectors(value);
-    }
-  };
   const handleDirectorSelection = (e) => {
     const selectedDirectorId = e.target.value;
     const selectedDirector = directorList.find(
@@ -381,6 +377,22 @@ export default function EditMeeting() {
     value: director?.id,
     label: director?.name,
   }));
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
+  const handleChange = (e) => {
+    const { id, name, value } = e.target;
+    console.log(id, name, value, "target");
+
+    setFormData({ ...formData, [id || name]: value });
+  };
+
+  const handleClientChange = (selectedOption) => {
+    setFormData({ ...formData, client_name: selectedOption?.value || "" });
+
+    fetchDirectors(selectedOption?.value);
+  };
   return (
     <>
       <div
@@ -407,19 +419,16 @@ export default function EditMeeting() {
               <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="client_name"
-                    value={formData?.client_name}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Client</option>
-                    {clientList.map((client) => (
-                      <option key={client._id} value={client._id}>
-                        {client.company_name}
-                      </option>
-                    ))}
-                  </Form.Control>
+                  <Select
+                    id="client-name-select"
+                    options={clientOptions}
+                    placeholder="Select Client"
+                    value={clientOptions.find(
+                      (option) => option.value === formData.client_name
+                    )}
+                    onChange={handleClientChange}
+                    isClearable
+                  />
                 </Form.Group>
               </Col>
             </Row>

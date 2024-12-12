@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -10,94 +11,131 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
+import { apiURL } from "../API/api";
 
 const CustomerMaintenanceDetail = () => {
+  const [shareholders, setShareholders] = useState([]);
   const { id } = useParams();
   const location = useLocation();
   const row = location.state.row;
-  console.log(row, "mukul");
   const navigate = useNavigate();
+  const token = localStorage.getItem("refreshToken");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `${apiURL}/shareholder-data?company_id=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setShareholders(data.results);
+        console.log("object", data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, [id, token]);
   return (
     <div className="details-container">
       <h2>Details for {row?.company_name}</h2>
       <div className="details-grid mt-4">
         <div>
-          <strong>Client Manager:</strong>
+          <strong>Client Manager</strong>
         </div>
         <div>{row?.alloted_manager[0]?.name || "-"}</div>
+
         <div>
-          <strong>Consultant:</strong>
+          <strong>Company Email</strong>
+        </div>
+        <div>{row?.email_id || "-"}</div>
+        <div>
+          <strong>Consultant</strong>
         </div>
         <div>{row?.alloted_consultant[0]?.name || "-"}</div>
         <div>
-          <strong>Secretary Name:</strong>
+          <strong>Secretary Name</strong>
         </div>
         <div>{row?.secretary_detail?.name || "-"}</div>
         <div>
-          <strong>Secretary Email:</strong>
+          <strong>Secretary Email</strong>
         </div>
         <div>{row?.secretary_detail?.email || "-"}</div>
         <div>
-          <strong>Auditor Name:</strong>
+          <strong>Auditor Name</strong>
         </div>
         <div>{row?.auditor_detail?.name || "-"}</div>
         <div>
-          <strong>Auditor Email:</strong>
+          <strong>Auditor Email</strong>
         </div>
         <div>{row?.auditor_detail?.email || "-"}</div>
         <div>
-          <strong>Registered Address:</strong>
+          <strong>Registered Address</strong>
         </div>
         <div>{row?.registered_address}</div>
         <div>
-          <strong>Authorised Capital Equity</strong>
+          <strong>Authorised Capital (Equity)</strong>
         </div>
         <div>{row?.authorised_capital_equity}</div>
         <div>
-          <strong>Authorised Capital Preference Capitals:</strong>
+          <strong>Authorised Capital (Preference)</strong>
         </div>
         <div>{row?.authorised_capital_preference_capital}</div>
         <div>
-          <strong>Class:</strong>
+          <strong>Paid up Capital (Equity)</strong>
+        </div>
+        <div>{row?.paid_up_capital_equity}</div>
+        <div>
+          <strong>Paid up Capital(Preference)</strong>
+        </div>
+        <div>{row?.paid_up_capital_preference_capital}</div>
+        <div>
+          <strong>Class</strong>
         </div>
         <div>{row?.class_of_company}</div>
         <div>
-          <strong>Subcategory:</strong>
+          <strong>Subcategory</strong>
         </div>
         <div>{row?.company_subcategory}</div>
         <div>
-          <strong>Registeration Number:</strong>
+          <strong>Registeration Number</strong>
         </div>
         <div>{row?.registration_number}</div>
         <div>
-          <strong>ROC Code:</strong>
+          <strong>ROC Code</strong>
         </div>
         <div>{row?.roc_code}</div>
 
         <div>
-          <strong>CIN:</strong>
+          <strong>CIN</strong>
         </div>
         <div>{row?.cin}</div>
         <div>
-          <strong>Date of Balance Sheet :</strong>
+          <strong>Date of Balance Sheet</strong>
         </div>
         <div>
           {new Date(row?.date_of_balance_sheet).toLocaleDateString("en-GB")}
         </div>
         <div>
-          <strong>Date Of Incorporation:</strong>
+          <strong>Date Of Incorporation</strong>
         </div>
 
         <div>
           {new Date(row?.date_of_incorporation).toLocaleDateString("en-GB")}
         </div>
         <div>
-          <strong>Date Of Last Agm:</strong>
+          <strong>Date Of Last Agm</strong>
         </div>
         <div>{new Date(row?.date_of_last_agm).toLocaleDateString("en-GB")}</div>
 
         <div>
-          <strong>PAN:</strong>
+          <strong>PAN</strong>
         </div>
         <div>{row?.pan}</div>
       </div>
@@ -107,17 +145,47 @@ const CustomerMaintenanceDetail = () => {
         {row?.directorDataDetails && row?.directorDataDetails.length > 0 ? (
           row?.directorDataDetails.map((director, index) => (
             <div key={index} className="director-card">
+              <tr>
+                <strong>Name:</strong> {director?.name || "-"}
+              </tr>
               <div>
-                <strong>Director Name:</strong> {director.name || "-"}
+                <strong>Designation:</strong> {director?.designation || "-"}
               </div>
-
               <div>
-                <strong>Email:</strong> {director.email || "-"}
+                <strong>Email:</strong> {director?.email || "-"}
+              </div>
+              <div>
+                <strong>DIN/PAN:</strong> {director?.["din/pan"] || "-"}
               </div>
             </div>
           ))
         ) : (
           <p>No director details available.</p>
+        )}
+      </div>
+      <div className="mt-4"></div>
+      <h3>Shareholders</h3>
+      <div className="card-section">
+        {shareholders.length > 0 ? (
+          shareholders?.map((shareholder, index) => (
+            <div key={index} className="director-card">
+              <div>
+                <strong>Name:</strong> {shareholder?.name || "-"}
+              </div>
+              <div>
+                <strong>Designation:</strong> {shareholder?.designation || "-"}
+              </div>
+
+              <div>
+                <strong>Email:</strong> {shareholder?.email || "-"}
+              </div>
+              <div>
+                <strong>DIN/PAN:</strong> {shareholder?.["din/pan"] || "-"}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No shareholder details available.</p>
         )}
       </div>
       <div className="mt-5"></div>
@@ -128,13 +196,23 @@ const CustomerMaintenanceDetail = () => {
         row?.otherparticipantsDetails.length > 0 ? (
           row?.otherparticipantsDetails.map((partcipant, index) => (
             <div key={index} className="director-card">
-              <div>
-                <strong>Participant Name:</strong> {partcipant.name || "-"}
-              </div>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Name:</strong>
+                    </td>{" "}
+                    <td>{partcipant.name || "-"}</td>
+                  </tr>
 
-              <div>
-                <strong>Email:</strong> {partcipant.email || "-"}
-              </div>
+                  <tr>
+                    <td>
+                      <strong>Email:</strong>
+                    </td>{" "}
+                    <td>{partcipant.email || "-"}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           ))
         ) : (
