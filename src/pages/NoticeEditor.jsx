@@ -137,7 +137,7 @@ const NoticeEditor = () => {
         });
         const data = await response.json();
 
-        setVariable(data.variables);
+        setVariable(data?.variables);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -308,13 +308,6 @@ const NoticeEditor = () => {
     processPlaceholders(selectedData);
   }, [selectedData]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
-
-  // Load content on file URL change
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);

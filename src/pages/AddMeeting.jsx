@@ -75,6 +75,7 @@ export default function AddMeeting() {
         });
         const data = await response.json();
         setRows(data.results);
+        // console.log(data.results,"meetCli")
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -133,16 +134,16 @@ export default function AddMeeting() {
     fetchAgendaList();
   }, []);
   useEffect(() => {
-    if (formData.client_name && clientList.length > 0) {
+    if (formData?.client_name && clientList.length > 0) {
       const selectedCompany = clientList.find(
-        (company) => company._id === formData.client_name
+        (company) => company._id === formData?.client_name
       );
 
       if (selectedCompany) {
         countPreviousMeetings(rows, selectedCompany._id);
       }
     }
-  }, [formData.client_name, clientList, rows]);
+  }, [formData?.client_name, clientList, rows]);
   function getOrdinalSuffix(number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const value = number % 100;
@@ -151,9 +152,11 @@ export default function AddMeeting() {
     );
   }
   const countPreviousMeetings = (meetData, selectedId) => {
+    console.log(meetData, "meetDataaa");
+
     const previousCount = meetData.filter(
       (meeting) =>
-        meeting.client_name.id === selectedId &&
+        meeting?.client_name?.id === selectedId &&
         new Date(meeting.createdAt) < new Date()
     ).length;
     let result = getOrdinalSuffix(previousCount + 1);
@@ -195,7 +198,7 @@ export default function AddMeeting() {
     }));
   };
   const handleParticipantChange = (index, field, value) => {
-    const updatedParticipants = formData.other_participants.map(
+    const updatedParticipants = formData?.other_participants.map(
       (participant, i) =>
         i === index ? { ...participant, [field]: value } : participant
     );
@@ -206,13 +209,13 @@ export default function AddMeeting() {
     }));
   };
 
-  const handleChange = (e) => {
-    const { id, name, value } = e.target;
-    setFormData({ ...formData, [id || name]: value });
-    if (name === "client_name" && value) {
-      fetchDirectors(value);
-    }
-  };
+  // const handleChange = (e) => {
+  //   const { id, name, value } = e.target;
+  //   setFormData({ ...formData, [id || name]: value });
+  //   if (name === "client_name" && value) {
+  //     fetchDirectors(value);
+  //   }
+  // };
   const handleAgendaItemChange = (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevData) => ({
@@ -294,8 +297,8 @@ export default function AddMeeting() {
           const shortNoticeTemplate = data?.results?.find(
             (item) => item.id === "67515198aa5dd74676e405be"
           );
-          if (formData.date) {
-            const formDate = new Date(formData.date);
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
             const currentDate = new Date();
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
@@ -362,8 +365,8 @@ export default function AddMeeting() {
           const shortNoticeTemplate = data?.results?.find(
             (item) => item.id === "6756b022696ba6002745bbeb"
           );
-          if (formData.date) {
-            const formDate = new Date(formData.date);
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
             const currentDate = new Date();
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
@@ -489,6 +492,27 @@ export default function AddMeeting() {
       setLoading(false);
     }
   };
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
+  const handleChange = (e) => {
+    const { id, name, value } = e.target;
+    console.log(id, name, value, "target");
+
+    setFormData({ ...formData, [id || name]: value });
+    // if (name === "client_name" && value) {
+    //   fetchDirectors(value);
+    // }
+  };
+
+  const handleClientChange = (selectedOption) => {
+    console.log(selectedOption, "selected");
+    setFormData({ ...formData, client_name: selectedOption?.value || "" });
+    // if (name === "client_name" && value) {
+    fetchDirectors(selectedOption?.value);
+    // }
+  };
 
   return (
     <>
@@ -505,11 +529,29 @@ export default function AddMeeting() {
               <Col>
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
-                  <Form.Control
+                  <Select
+                    id="client-name-select"
+                    options={clientOptions}
+                    placeholder="Select Client"
+                    value={clientOptions.find(
+                      (option) => option.value === formData?.client_name
+                    )}
+                    onChange={handleClientChange}
+                    isClearable
+                  />
+                  {/* <Form.Control
                     as="select"
                     name="client_name"
                     value={formData.client_name}
                     onChange={handleChange}
+                    style={{
+                      height: "50px", // Taller dropdown
+                      width: "300px", // Wider dropdown
+                      position: "absolute", // Positioned absolutely within its parent
+                      top: "20px", // Distance from the top
+                      left: "10px", // Distance from the left
+                      padding: "10px", // More padding for better appearance
+                    }}
                   >
                     <option value="">Select Client</option>
                     {clientList?.map((client) => (
@@ -517,7 +559,7 @@ export default function AddMeeting() {
                         {client.company_name}
                       </option>
                     ))}
-                  </Form.Control>
+                  </Form.Control> */}
                 </Form.Group>
               </Col>
               <Col>
