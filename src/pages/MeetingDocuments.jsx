@@ -20,6 +20,7 @@ const token = localStorage.getItem("refreshToken");
 
 export default function MeetingDocuments() {
   const [rows, setRows] = useState([]);
+  const [meetData, setMeetData] = useState([]);
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
@@ -54,6 +55,7 @@ export default function MeetingDocuments() {
         });
         const data = await response.json();
         setRows(data?.agendaItems || []);
+        setMeetData(data);
         console.log(data, "agena");
         setParticipants(data?.participants || []);
         setNotice(data?.notes || {});
@@ -83,6 +85,42 @@ export default function MeetingDocuments() {
     navigate(`/template-group-meeting-view/${id}`, {
       state: { fileUrl: `${row?.filedocx}` },
     });
+  };
+  const sendApproval = async (meetData) => {
+    const formData = {
+      meeting_id: meetData?.id,
+      meeting_type: meetData?.meetingType,
+      company_id: meetData?.client_name.id,
+    };
+    try {
+      const response = await fetch(`${apiURL}/meeting-approval`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ is_approved: false, approval_status: "review" }),
+      });
+      if (response.ok && patchResponse.ok) {
+        setMeetData((prevData) => ({
+          ...prevData,
+          is_approved: false,
+        }));
+        toast.success("Document send for approval");
+      } else {
+        console.log("Failed to save the document.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while saving the document.");
+    }
   };
   const handleNoticeEditClick = (url, index) => {
     navigate(`/notice-edit/${id}`, {
@@ -230,7 +268,7 @@ export default function MeetingDocuments() {
               k === "mom" ||
               k === "attendance" ||
               k == "resolution") &&
-            (!rows || !rows.some((row) => row?.approval_status === "approved"))
+            meetData?.approval_status !== "approved"
           ) {
             toast.warning("Documents are available only after approval.");
           } else {
@@ -247,8 +285,10 @@ export default function MeetingDocuments() {
           ) : (
             <TableContent
               rows={rows}
+              meetData={meetData}
               handleEditClick={handleEditClick}
               handleView={handleView}
+              sendApproval={sendApproval}
             />
           )}
         </Tab>
@@ -600,7 +640,14 @@ function NoDataContent() {
   );
 }
 
-function TableContent({ rows, handleEditClick, handleView }) {
+function TableContent({
+  meetData,
+  rows,
+  handleEditClick,
+  handleView,
+  sendApproval,
+}) {
+  console.log(meetData)
   return (
     <div className="table-responsive mt-5">
       <Table bordered hover className="Master-table">
@@ -620,7 +667,7 @@ function TableContent({ rows, handleEditClick, handleView }) {
               <td>{row?.templateName}</td>
               <td>
                 <Button
-                disabled={row.approval_status !== "draft"}
+                  disabled={meetData?.approval_status == "approved"}
                   variant="outline-primary"
                   onClick={() => handleEditClick(row, index)}
                 >
@@ -663,8 +710,8 @@ function TableContent({ rows, handleEditClick, handleView }) {
               </td>
               <td>
                 <Button
-                  disabled={!row.is_active == true}
-                  onClick={() => sendApproval(row)}
+                  disabled={meetData?.is_approved == false}
+                  onClick={() => sendApproval(meetData)}
                 >
                   Send
                 </Button>
@@ -676,36 +723,3 @@ function TableContent({ rows, handleEditClick, handleView }) {
     </div>
   );
 }
-const sendApproval = async (row) => {
-  const formData = {
-    meeting_id: row?.id,
-    meeting_type: row?.meetingType,
-    company_id: row?.client_name.id,
-  };
-
-  try {
-    const response = await fetch(`${apiURL}/meeting-approval`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: formData,
-    });
-    const patchResponse = await fetch(`${apiURL}/meeting/${row.id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ is_approved: false ,approval_status:"review"}), 
-    });
-    if (response.ok) {
-      toast.success("Document send for approval");
-    } else {
-      console.log("Failed to save the document.");
-    }
-  } catch (error) {
-    toast.error("Error occurred while saving the document.");
-  }
-};

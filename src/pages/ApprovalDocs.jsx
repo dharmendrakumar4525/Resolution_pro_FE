@@ -53,12 +53,18 @@ export default function ApprovalDocs() {
     });
   };
   const handleView = (row) => {
-    if (`${row?.filedocx}` == null) {
+    // console.log(`${row?.meeting_id}`,"ghjk")
+    // return
+    if (`${row?.meeting_id?.agendaItems[0]?.filedocx}` == null) {
       toast.warn("Please save the related document first");
       return;
     }
-    navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filedocx}`, page: "approval" },
+    navigate(`/template-group-meeting-view/${row.id}`, {
+      state: {
+        fileUrl: `${row?.meeting_id?.agendaItems[0]?.filedocx}`,
+        page: "approval",
+        meetData: row,
+      },
     });
   };
   console.log(rows, "rowsss");
@@ -78,7 +84,7 @@ export default function ApprovalDocs() {
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={row?._id}>
+            <tr key={row?.id}>
               <td>{row?.company_id?.company_name}</td>
               <td>{row?.meeting_id?.title}</td>
               <td>{row?.meeting_type}</td>

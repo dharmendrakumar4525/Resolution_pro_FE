@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 // import { getDocument } from "pdfjs-dist";
 import { saveAs } from "file-saver";
@@ -25,10 +25,15 @@ const TemplateViewer = () => {
   const { id } = useParams();
   const token = localStorage.getItem("refreshToken");
   const [buttonLoading, setButtonLoading] = useState(false);
-
+  const navigate = useNavigate();
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const page = location.state?.page;
+  const approvalData = location.state?.meetData;
+  const meetData = approvalData?.meeting_id;
+  console.log(approvalData, "approved");
+  console.log(fileUrl, "approved");
+  console.log(meetData, "meetData");
   useEffect(() => {
     handleFileLoad(fileUrl);
   }, [fileUrl]);
@@ -60,13 +65,98 @@ const TemplateViewer = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    console.log(formData);
     e.preventDefault();
-    console.log("Form Data:", formData);
-
-    // Add your form submission logic here
-    alert(`Decision: ${formData.decision}\nRemarks: ${formData.remarks}`);
+    if (formData.decision == "revise" && formData.remarks == "") {
+      toast.info("Please add a reason before sending for Revision");
+      return;
+    } else if (formData.decision == "revise") {
+      const RefusalData = {
+        meeting_id: meetData?.id,
+        meeting_type: meetData?.meetingType,
+        company_id: meetData?.client_name,
+        reason: formData?.remarks,
+      };
+      try {
+        const response = await fetch(`${apiURL}/meeting-revise`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(RefusalData),
+        });
+        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            approval_status: "draft",
+          }),
+        });
+        const patchApprovalResponse = await fetch(
+          `${apiURL}/meeting-approval/${approvalData.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              is_active: false,
+            }),
+          }
+        );
+        if (response.ok && patchResponse.ok && patchApprovalResponse.ok) {
+          toast.success("This Document is sent for revision");
+          navigate("/approval-docs");
+        } else {
+          toast.error("Error making request");
+        }
+      } catch (error) {
+        toast.error("Error occurred while saving the document.");
+      }
+    } else if (formData.decision == "accept") {
+      try {
+        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_approved: false,
+            approval_status: "approved",
+          }),
+        });
+        const patchApprovalResponse = await fetch(
+          `${apiURL}/meeting-approval/${approvalData.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              is_active: false,
+            }),
+          }
+        );
+        if (patchResponse.ok && patchApprovalResponse) {
+          toast.success("The document is approved now");
+          navigate("/approval-docs");
+        } else {
+          toast.error("Error making request");
+        }
+      } catch (error) {
+        toast.error("Error occurred while saving the document.");
+      }
+    }
   };
+
   // Handle input changes for each placeholder
   const handleInputChange = (placeholder, value) => {
     setInputFields((prevState) => ({
@@ -269,6 +359,7 @@ const TemplateViewer = () => {
 
   return (
     <Container className="mt-5">
+      <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer" style={{ width: "70%" }}>
           <h1 className="mb-4">Document Viewer</h1>
@@ -286,7 +377,7 @@ const TemplateViewer = () => {
           />
         </div>
         {page == "approval" && (
-          <form onSubmit={handleSubmit} className="mt-4">
+          <form onSubmit={(e) => handleSubmit(e)} className="mt-4">
             {/* Select Field */}
             <div className="mb-3">
               <label htmlFor="decision" className="form-label">
@@ -302,7 +393,7 @@ const TemplateViewer = () => {
               >
                 <option value="">Select</option>
                 <option value="accept">Accept</option>
-                <option value="reject">Review</option>
+                <option value="revise">Revise</option>
               </select>
             </div>
 
@@ -318,7 +409,6 @@ const TemplateViewer = () => {
                 placeholder="Enter remarks here..."
                 value={formData.remarks}
                 onChange={handleChange}
-                required
               ></textarea>
             </div>
 
