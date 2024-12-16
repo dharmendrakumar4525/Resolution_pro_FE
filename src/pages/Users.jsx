@@ -34,6 +34,7 @@ export default function CustomerMaintenance() {
   });
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
+  const [refresh, setRefresh] = useState(false);
   const token = localStorage.getItem("refreshToken");
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function CustomerMaintenance() {
       }
     };
     fetchData();
-  }, [page]);
+  }, [page, refresh]);
 
   const handleOpenAddModal = () => {
     setFormData({
@@ -113,15 +114,12 @@ export default function CustomerMaintenance() {
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
+      if (response.ok) {
+        toast.success("Item deleted successfully");
+        setRefresh(!refresh);
+      } else {
+        toast.error("System is unable to delete record");
       }
-
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row?.id));
-      if (rows.length === 1 && page > 1) {
-        setPage(page - 1);
-      }
-      toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
       toast.error("Failed to delete item. Please try again.");
@@ -134,7 +132,7 @@ export default function CustomerMaintenance() {
     setButtonLoading(true);
     try {
       if (editingRow) {
-        await fetch(`${apiURL}/users/${editingRow.id}`, {
+        const response = await fetch(`${apiURL}/users/${editingRow.id}`, {
           method: "PATCH",
 
           headers: {
@@ -145,13 +143,19 @@ export default function CustomerMaintenance() {
           body: JSON.stringify(formData),
         });
 
-        const response = await fetch(`${apiURL}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
+        if (response.ok) {
+          toast.success("User edited successfully");
+          setRefresh(!refresh);
+          setOpenAddModal(false);
+
+          const localStorageUser = JSON.parse(localStorage.getItem("user"));
+          if (localStorageUser && localStorageUser.id === editingRow.id) {
+            const updatedUser = { ...localStorageUser, ...formData };
+
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          }
+          return;
+        } else {
           const errorMessage = await response
             .json()
             .then(
@@ -161,18 +165,6 @@ export default function CustomerMaintenance() {
           toast.error(errorMessage);
           return;
         }
-        const data = await response.json();
-        setRows(data.results);
-
-        // Update localStorage user data if the edited user is the logged-in user
-        const localStorageUser = JSON.parse(localStorage.getItem("user"));
-        if (localStorageUser && localStorageUser.id === editingRow.id) {
-          const updatedUser = { ...localStorageUser, ...formData };
-
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        }
-
-        toast.success("User edited successfully");
       } else {
         const response = await fetch(`${apiURL}/users`, {
           method: "POST",
@@ -185,7 +177,11 @@ export default function CustomerMaintenance() {
           body: JSON.stringify(formData),
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          setRefresh(!refresh);
+          setOpenAddModal(false);
+          toast.success("User added successfully");
+        } else {
           const errorMessage = await response
             .json()
             .then(
@@ -194,19 +190,7 @@ export default function CustomerMaintenance() {
           toast.error(errorMessage);
           return;
         }
-        const newResponse = await fetch(`${apiURL}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await newResponse.json();
-        setRows(data.results);
-
-        toast.success("User added successfully");
       }
-
-      handleCloseAddModal();
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -226,12 +210,11 @@ export default function CustomerMaintenance() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
-    console.log(formData,"formData")
+  console.log(formData, "formData");
   return (
     <>
-
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
-      <ToastContainer />
+        <ToastContainer />
 
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Users</h4>
@@ -363,37 +346,37 @@ export default function CustomerMaintenance() {
               </thead>
               <tbody>
                 {rows.map((row) => {
-                   if (row?.role?.id === '674ec68ffa5589405df5dc84') {
-                    return null; 
+                  if (row?.role?.id === "674ec68ffa5589405df5dc84") {
+                    return null;
                   }
-                  return(
-                  <tr key={row?.id}>
-                    <td>{row?.name}</td>
-                    <td>{row?.email}</td>
-                    {/* <td>{row?.isEmailVerified ? "Yes" : "No"}</td> */}
-                    <td>{row?.role?.role}</td>
-                    <td>
-                      {hasPermission("edit") && (
-                        <Button
-                          variant="outline-primary"
-                          onClick={() => handleEditClick(row)}
-                          className="me-2"
-                        >
-                          <FaEdit />
-                        </Button>
-                      )}
-                      {hasPermission("delete") && (
-                        <Button
-                          variant="outline-danger"
-                          onClick={() => handleDeleteClick(row)}
-                        >
-                          <FaTrash />
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                   );
-                  })}
+                  return (
+                    <tr key={row?.id}>
+                      <td>{row?.name}</td>
+                      <td>{row?.email}</td>
+                      {/* <td>{row?.isEmailVerified ? "Yes" : "No"}</td> */}
+                      <td>{row?.role?.role}</td>
+                      <td>
+                        {hasPermission("edit") && (
+                          <Button
+                            variant="outline-primary"
+                            onClick={() => handleEditClick(row)}
+                            className="me-2"
+                          >
+                            <FaEdit />
+                          </Button>
+                        )}
+                        {hasPermission("delete") && (
+                          <Button
+                            variant="outline-danger"
+                            onClick={() => handleDeleteClick(row)}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </Table>
             <Pagination className="mt-4 custom-pagination">
