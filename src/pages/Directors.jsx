@@ -237,8 +237,14 @@ export default function Directors() {
                   required
                 />
               </Form.Group>
-
-              <Button type="submit" variant="primary" className="me-2">
+              <Button
+                variant="primary"
+                onClick={() => setOpenAddModal(false)}
+                className="me-2"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="secondary" className="ml-2">
                 {buttonLoading ? (
                   <Spinner
                     as="span"
@@ -250,13 +256,6 @@ export default function Directors() {
                 ) : (
                   "Save"
                 )}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setOpenAddModal(false)}
-                className="ml-2"
-              >
-                Cancel
               </Button>
             </Form>
           </Modal.Body>

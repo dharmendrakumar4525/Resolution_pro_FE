@@ -373,15 +373,21 @@ const DocumentEditor = () => {
 
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
+      console.log(urls, "urls");
+      let count = 7; // Start count from 7
       try {
-        // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
+        let combinedContent = "";
 
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
-          const processedContent = [];
+        for (const url of urls) {
+          if (url?.title) {
+            const title = url?.title || "Untitled";
+            if (title === "For #{company_name}") {
+              combinedContent += `<p>${title}</p>\n`;
+              continue;
+            }
+            combinedContent += `<p>${count}. ${title}</p>\n`;
+            count++;
+          }
 
           if (url?.templateFile) {
             console.log("Processing templateFile:", url.templateFile);
@@ -391,7 +397,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
+            combinedContent += `<div>${result.value}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -399,6 +405,7 @@ const DocumentEditor = () => {
             );
           }
 
+          // Add resolution file content if available
           if (url?.resolutionFile) {
             console.log("Processing resolutionFile:", url.resolutionFile);
             const response = await fetch(url.resolutionFile);
@@ -409,19 +416,15 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
+            combinedContent += `<div>${result.value}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
               url
             );
           }
+        }
 
-          return processedContent.join("\n");
-        });
-
-        const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
         setEditorContent(initializedContent + combinedContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
@@ -764,25 +767,28 @@ const DocumentEditor = () => {
                 isClearable
               />
             </Form.Group>
-            {Object.keys(variable).length > 0 ?(
-            <div className="mb-5">
-              <h4 className="h4-heading-style">
-                Previously Filled Placeholders
-              </h4>
+            {Object.keys(variable).length > 0 ? (
+              <div className="mb-5">
+                <h4 className="h4-heading-style">
+                  Previously Filled Placeholders
+                </h4>
 
-              <div className="mt-3">
-                <table className="Master-table">
-                  <tbody>
-                    {Object.entries(variable).map(([key, value], index) => (
-                      <tr key={index}>
-                        <td>{key}</td>
-                        <td>{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="mt-3">
+                  <table className="Master-table">
+                    <tbody>
+                      {Object.entries(variable).map(([key, value], index) => (
+                        <tr key={index}>
+                          <td>{key}</td>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>):(" ")}
+            ) : (
+              " "
+            )}
 
             <h3>Detected Placeholders:</h3>
             {Object.keys(inputFields).length > 0 ? (

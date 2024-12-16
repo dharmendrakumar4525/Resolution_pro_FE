@@ -156,9 +156,6 @@ export default function EditMeeting() {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
-    const participantIds = row.participants.map(
-      (participant) => participant?.director?.id
-    );
     setFormData({
       title: row?.title,
       client_name: row.client_name?.id || "",
@@ -167,7 +164,7 @@ export default function EditMeeting() {
       date: row.date.split("T")[0],
       startTime: row?.startTime,
       organizer: row.organizer?.role,
-      participants: participantIds,
+      participants: row?.participants,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
@@ -420,6 +417,7 @@ export default function EditMeeting() {
                 <Form.Group controlId="client_name">
                   <Form.Label>Client Name</Form.Label>
                   <Select
+                    isDisabled={true}
                     id="client-name-select"
                     options={clientOptions}
                     placeholder="Select Client"
@@ -508,7 +506,8 @@ export default function EditMeeting() {
                           ]
                         : directorOptions.filter((option) =>
                             formData.participants.some(
-                              (participant) => participant == option.value
+                              (participant) =>
+                                participant?.director?.id == option.value
                             )
                           )
                     }
@@ -519,9 +518,10 @@ export default function EditMeeting() {
                         ) &&
                         formData.participants.length !== directorOptions.length
                       ) {
+                        // Select all participants
                         setFormData({
                           ...formData,
-                          participants: directorOptions?.map((option) => ({
+                          participants: directorOptions.map((option) => ({
                             director: option.value,
                             isPresent: false,
                           })),
