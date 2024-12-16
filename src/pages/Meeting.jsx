@@ -248,6 +248,7 @@ export default function Meeting() {
 
                       <td>
                         <Button
+                          disabled={row?.approval_status == "approved"}
                           variant="outline-secondary"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -258,6 +259,7 @@ export default function Meeting() {
                           <FaEdit />
                         </Button>
                         <Button
+                          disabled={row?.approval_status == "approved"}
                           variant="outline-danger"
                           onClick={(e) => {
                             e.stopPropagation();
