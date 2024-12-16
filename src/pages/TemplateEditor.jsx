@@ -24,6 +24,9 @@ import Select from "react-select";
 const DocumentEditor = () => {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
+  const [xresolution, setXResolutions] = useState([]);
+  const [variable, setVariable] = useState([]);
+  const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
@@ -57,6 +60,7 @@ const DocumentEditor = () => {
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
           setMeetInfo(specificMeetInfo); // Set the filtered object
+          setClientInfo(specificMeetInfo?.client_name);
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -67,28 +71,30 @@ const DocumentEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
-  useEffect(() => {
-    const fetchData = async (clientID) => {
-      try {
-        const response = await fetch(
-          `${apiURL}/customer-maintenance/${clientID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
+  //   useEffect(() => {
+  //     const fetchData = async (clientID) => {
+  //       try {
+  //         const response = await fetch(
+  //           `${apiURL}/customer-maintenance/${clientID}`,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //               "Content-Type": "application/json",
+  //             },
+  //           }
+  //         );
+  //         const data = await response.json();
 
-        setClientInfo(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  //         setClientInfo(data);
+  //       } catch (error) {
+  //         console.error("Error fetching data:", error);
+  //       }
+  //     };
+  // setTimeout(()=>{
+  //   fetchData(meetInfo?.client_name?.id);
 
-    fetchData(meetInfo?.client_name?.id);
-  }, [meetInfo.client_name?.id, token]);
+  // },2000)
+  //   }, [meetInfo?.client_name?.id, token]);
   console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +113,24 @@ const DocumentEditor = () => {
         console.error("Error fetching data:", error);
       }
     };
+    const fetchVariables = async () => {
+      try {
+        const response = await fetch(`${apiURL}/meeting/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        setXResolutions(data?.resolutions);
+        setVariable(data?.variables);
+        // processStoredPlaceholders();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchVariables();
 
     fetchData();
   }, [token]);
@@ -559,9 +583,60 @@ const DocumentEditor = () => {
     const blob = await Packer.toBlob(doc);
     return blob;
   };
-  const resolOptions = resolutionList.map((resol) => ({
-    value: resol.templateName,
-    label: resol.templateName,
+  useEffect(() => {
+    const selectedAgendas = xresolution
+      ? xresolution.map((option) => {
+          console.log(option, resolutionList, "match");
+          const agenda = resolutionList?.find((item) => {
+            if (item.title == option.templateName) {
+              return item;
+            }
+          });
+          return {
+            title: agenda?.title || "",
+            templateFile: agenda?.fileName || "",
+            resolutionFile: agenda?.resolutionUrl || "",
+          };
+        })
+      : [];
+    let match = {};
+    const selectedOptions = xresolution
+      .map((res) => {
+        match = resolutionList.find(
+          (option) => option.title === res?.templateName
+        );
+
+        return {
+          title: match?.title || "",
+          templateFile: match?.fileName || "",
+          resolutionFile: match?.resolutionUrl || "",
+        };
+      })
+      .filter(Boolean);
+    const selectedResolOptions = resolutionList
+      .map((res) => {
+        // console.log(res,"tilejjjjj")
+        const matchLabels = resolOptions.find(
+          (option) => option.label === "Authorisation MCA Compliances"
+        );
+        return matchLabels || null;
+      })
+      .filter(Boolean);
+
+    console.log("fge", selectedResolOptions);
+    // console.log("dds", selectedOptions);
+    let newSelect = [
+      { label: match?.templateName, value: match?.templateName },
+    ];
+    setTimeout(() => {
+      setSelectedData(selectedOptions);
+      setPrevoiusSelectedOptions(newSelect);
+      // handleAgendaItemChange()
+    }, 5000);
+  }, [resolutionList, xresolution]);
+  const resolOptions = resolutionList?.map((resol) => ({
+    value: resol?.templateName,
+    label: resol?.templateName,
   }));
 
   const saveResolutions = async () => {
@@ -624,7 +699,6 @@ const DocumentEditor = () => {
         saveResolutions();
 
         toast.success("Document saved successfully");
-
       } else {
         console.log("Failed to save the document.");
       }
@@ -652,6 +726,7 @@ const DocumentEditor = () => {
       : [];
     console.log("dds", selectedAgendas);
     setSelectedData(selectedAgendas);
+    setPrevoiusSelectedOptions(selectedOptions || []);
     // setFormData((prevData) => ({
     //   ...prevData,
     //   agendaItems: selectedAgendas,
@@ -660,7 +735,7 @@ const DocumentEditor = () => {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-
+  console.log(variable, "variable");
   return (
     <Container className="mt-5">
       <h1>Document Editor</h1>
@@ -683,11 +758,32 @@ const DocumentEditor = () => {
               <Select
                 options={resolOptions}
                 placeholder="Select Agenda Documents"
+                value={previousSelectedOptions}
                 isMulti
                 onChange={handleAgendaItemChange}
-                // isClearable
+                isClearable
               />
             </Form.Group>
+            {Object.keys(variable).length > 0 ?(
+            <div className="mb-5">
+              <h4 className="h4-heading-style">
+                Previously Filled Placeholders
+              </h4>
+
+              <div className="mt-3">
+                <table className="Master-table">
+                  <tbody>
+                    {Object.entries(variable).map(([key, value], index) => (
+                      <tr key={index}>
+                        <td>{key}</td>
+                        <td>{value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>):(" ")}
+
             <h3>Detected Placeholders:</h3>
             {Object.keys(inputFields).length > 0 ? (
               Object.keys(inputFields).map((placeholder) => {

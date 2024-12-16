@@ -206,15 +206,7 @@ export default function MeetingDocuments() {
       },
     });
   };
-  useEffect(
-    () => {
-      console.log(notice, minutes, attendance, "mat");
-      console.log(participants, "paerttg");
-    },
-    notice,
-    minutes,
-    attendance
-  );
+
   const handleCheckboxChange = (e, participant) => {
     const isChecked = e.target.checked;
 
@@ -647,7 +639,7 @@ function TableContent({
   handleView,
   sendApproval,
 }) {
-  console.log(meetData)
+  console.log(meetData);
   return (
     <div className="table-responsive mt-5">
       <Table bordered hover className="Master-table">
