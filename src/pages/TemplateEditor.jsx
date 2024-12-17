@@ -30,7 +30,7 @@ const DocumentEditor = () => {
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
-  const [placeVar, setPlaceVar] = useState({});
+  const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
@@ -43,16 +43,28 @@ const DocumentEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page || "";
+  console.log(page, "123345");
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        let response;
+        if (page == "committee") {
+          response = await fetch(`${apiURL}/committee-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } else {
+          response = await fetch(`${apiURL}/meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        }
         const data = await response.json();
         setMeetData(data.results);
         const specificMeetInfo = data.results.find((item) => item.id === id);
@@ -71,30 +83,6 @@ const DocumentEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
-  //   useEffect(() => {
-  //     const fetchData = async (clientID) => {
-  //       try {
-  //         const response = await fetch(
-  //           `${apiURL}/customer-maintenance/${clientID}`,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //               "Content-Type": "application/json",
-  //             },
-  //           }
-  //         );
-  //         const data = await response.json();
-
-  //         setClientInfo(data);
-  //       } catch (error) {
-  //         console.error("Error fetching data:", error);
-  //       }
-  //     };
-  // setTimeout(()=>{
-  //   fetchData(meetInfo?.client_name?.id);
-
-  // },2000)
-  //   }, [meetInfo?.client_name?.id, token]);
   console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
@@ -115,12 +103,21 @@ const DocumentEditor = () => {
     };
     const fetchVariables = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        let response;
+        if (page == "committee") {
+          response = await fetch(`${apiURL}/committee-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } else {
+        response = await fetch(`${apiURL}/meeting/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        });
+        })}
         const data = await response.json();
 
         setXResolutions(data?.resolutions);
@@ -200,7 +197,7 @@ const DocumentEditor = () => {
       const placeholder = match[1] || match[2];
 
       // Check if it's a system variable
-      const systemVariable = rows.find((row) => row.name === placeholder);
+      const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
@@ -603,8 +600,7 @@ const DocumentEditor = () => {
         })
       : [];
     let match = {};
-    const selectedOptions = xresolution
-      .map((res) => {
+    const selectedOptions = xresolution?.map((res) => {
         match = resolutionList.find(
           (option) => option.title === res?.templateName
         );
@@ -616,8 +612,7 @@ const DocumentEditor = () => {
         };
       })
       .filter(Boolean);
-    const selectedResolOptions = resolutionList
-      .map((res) => {
+    const selectedResolOptions = resolutionList?.map((res) => {
         // console.log(res,"tilejjjjj")
         const matchLabels = resolOptions.find(
           (option) => option.label === "Authorisation MCA Compliances"
@@ -645,11 +640,11 @@ const DocumentEditor = () => {
   const saveResolutions = async () => {
     try {
       if (selectedData) {
-        const filteredData = selectedData.filter(
+        const filteredData = selectedData?.filter(
           (item) => item.title !== "For #{company_name}"
         );
 
-        const resolutions = filteredData.map((item) => ({
+        const resolutions = filteredData?.map((item) => ({
           templateName: item.title || "",
           templateFile: item.resolutionFile || "",
           meetingType: "board_meeting",
@@ -714,7 +709,7 @@ const DocumentEditor = () => {
   const handleAgendaItemChange = (selectedOptions) => {
     console.log(resolutionList, "resol-lis");
     const selectedAgendas = selectedOptions
-      ? selectedOptions.map((option) => {
+      ? selectedOptions?.map((option) => {
           const agenda = resolutionList.find(
             (item) => item.templateName === option.value
           );
@@ -757,7 +752,7 @@ const DocumentEditor = () => {
         </div>
         <div className="rightContainer">
           <div>
-            <Form.Group controlId="agendaItems" className="mb-5">
+          <Form.Group controlId="agendaItems" className="mb-5"> 
               <Select
                 options={resolOptions}
                 placeholder="Select Agenda Documents"
@@ -765,9 +760,9 @@ const DocumentEditor = () => {
                 isMulti
                 onChange={handleAgendaItemChange}
                 isClearable
-              />
+              /> 
             </Form.Group>
-            {Object.keys(variable).length > 0 ? (
+         {/* {Object.keys(variable)?.length > 0 ? (
               <div className="mb-5">
                 <h4 className="h4-heading-style">
                   Previously Filled Placeholders
@@ -776,7 +771,7 @@ const DocumentEditor = () => {
                 <div className="mt-3">
                   <table className="Master-table">
                     <tbody>
-                      {Object.entries(variable).map(([key, value], index) => (
+                      {Object.entries(variable)?.map(([key, value], index) => (
                         <tr key={index}>
                           <td>{key}</td>
                           <td>{value}</td>
@@ -788,11 +783,12 @@ const DocumentEditor = () => {
               </div>
             ) : (
               " "
-            )}
+            )}  */}
 
             <h3>Detected Placeholders:</h3>
-            {Object.keys(inputFields).length > 0 ? (
-              Object.keys(inputFields).map((placeholder) => {
+            {
+            Object.keys(inputFields)?.length > 0 ? (
+              Object.keys(inputFields)?.map((placeholder) => {
                 const pascalCasePlaceholder = placeholder
                   .replace(/_/g, " ")
                   .replace(
@@ -819,7 +815,8 @@ const DocumentEditor = () => {
                   </div>
                 );
               })
-            ) : (
+            ) :
+             (
               <p>All placeholders are filled</p>
             )}
           </div>

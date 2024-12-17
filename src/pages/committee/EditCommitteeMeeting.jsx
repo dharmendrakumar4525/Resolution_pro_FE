@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import {
   Table,
   Button,
@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from "react-router-dom";
 import Select from "react-select";
 
-export default function EditMeeting() {
+export default function EditCommitteeMeeting() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
@@ -40,6 +40,7 @@ export default function EditMeeting() {
     date: "",
     startTime: "",
     organizer: user.id,
+    committee_id:"",
     participants: [],
     other_participants: [],
     agendaItems: [
