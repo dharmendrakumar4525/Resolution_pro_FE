@@ -47,6 +47,7 @@ export default function AddMeeting() {
     other_participants: [],
     agendaItems: [],
     variables: {},
+    location: "",
     notes: {
       templateName: "Notice",
       meetingType: "board_meeting",
@@ -144,6 +145,23 @@ export default function AddMeeting() {
       }
     }
   }, [formData?.client_name, clientList, rows]);
+  const fetchRegisteredAddress = async (cid) => {
+    try {
+      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setFormData((prevData) => ({
+        ...prevData,
+        location: data.registered_address,
+      }));
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
   function getOrdinalSuffix(number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const value = number % 100;
@@ -509,9 +527,8 @@ export default function AddMeeting() {
   const handleClientChange = (selectedOption) => {
     console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
-    // if (name === "client_name" && value) {
     fetchDirectors(selectedOption?.value);
-    // }
+    fetchRegisteredAddress(selectedOption?.value);
   };
 
   return (

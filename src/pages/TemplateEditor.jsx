@@ -173,16 +173,18 @@ const DocumentEditor = () => {
     const fields = {};
 
     while ((match = regex.exec(content)) !== null) {
-      const placeholder = match[1] || match[2];
+      const placeholder = match[2];
+      const placeholder2 = match[1] || match[2];
 
       // Check if it's a system variable
       const systemVariable = rows.find((row) => row.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
+        let formulaRes = systemVariable.formula;
         let value;
         function getOrdinalSuffix(number) {
-          const suffixes = ["th", "st", "nd", "rd"];
+          const suffixes = ["TH", "ST", "ND", "RD"];
           const value = number % 100;
           return (
             number +
@@ -272,6 +274,34 @@ const DocumentEditor = () => {
             ...prevData, // Spread the existing state
             [systemVariable.name]: value, // Add the new key-value pair
           }));
+        } else if (formulaRes == "date") {
+          console.log(res, "response1234");
+          function getFormattedDate(dateString) {
+            const dateObj = new Date(dateString);
+
+            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+            const year = dateObj.getFullYear();
+
+            return `${day}/${month}/${year}`; // Format as dd/mm/yyyy
+          }
+
+          let result = getFormattedDate(clientInfo[res]);
+          value = result;
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+
+          // Mark as confirmed
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
         } else if (res in clientInfo) {
           console.log(clientInfo, "clientid");
           value = clientInfo[res];
@@ -311,7 +341,7 @@ const DocumentEditor = () => {
         // const value = systemVariable.mca_name; // System variable value
       } else {
         // Initialize inputFields for non-system placeholders
-        fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+        fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
       }
     }
 
