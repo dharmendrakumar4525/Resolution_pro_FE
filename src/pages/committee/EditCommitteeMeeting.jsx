@@ -25,6 +25,8 @@ export default function EditCommitteeMeeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
+
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -35,12 +37,11 @@ export default function EditCommitteeMeeting() {
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
     meetingType: "",
     date: "",
     startTime: "",
     organizer: user.id,
-    committee_id:"",
+    committee_id: "",
     participants: [],
     other_participants: [],
     agendaItems: [
@@ -100,6 +101,23 @@ export default function EditCommitteeMeeting() {
     fetchClientList();
     fetchAgendaList();
   }, []);
+  const fetchCommitteeList = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/committee-member?client_name=${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setCommitteeList(data.results);
+    } catch (error) {
+      console.error("Error fetching Agenda:", error);
+    }
+  };
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -171,6 +189,7 @@ export default function EditCommitteeMeeting() {
         templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
       })),
+      committee_id: row?.committee_id,
       other_participants: row.other_participants.length
         ? row.other_participants
         : [],
@@ -181,7 +200,10 @@ export default function EditCommitteeMeeting() {
     }
   };
   useEffect(() => {
+
     handleEditClick(row);
+    fetchCommitteeList(formData?.client_name);
+
   }, [row]);
   const handleAddParticipant = () => {
     setFormData((prevState) => ({
@@ -281,14 +303,13 @@ export default function EditCommitteeMeeting() {
     label: agenda.templateName,
   }));
 
-  const agendaFileOptions = agendaList.map((agenda) => ({
-    value: agenda.fileName,
-    label: agenda.fileName,
-  }));
-
   const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
+  }));
+  const CommitteeOptions = committeeList?.map((committee) => ({
+    value: committee.committee.id,
+    label: committee.committee.name,
   }));
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
@@ -398,7 +419,7 @@ export default function EditCommitteeMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <h2 className="mb-3 mt-5">Edit Meeting</h2>
+        <h2 className="mb-3 mt-5">Edit Commitee Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
@@ -432,19 +453,7 @@ export default function EditCommitteeMeeting() {
               </Col>
             </Row>
 
-            <Row>
-              <Col>
-                <Form.Group controlId="description">
-                  <Form.Label className="f-label">Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData?.description}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Row></Row>
 
             <Row className="mt-4 mb-3">
               <Form.Label>Meeting Documents</Form.Label>
@@ -490,6 +499,36 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Group controlId="committee" className="mt-2">
+                  <Form.Label>Committee</Form.Label>
+                  <Select
+                    options={CommitteeOptions}
+                    onChange={(selectedOption) => {
+                      const selectedCommittee = committeeList.find(
+                        (committee) =>
+                          committee.committee.id === selectedOption.value
+                      );
+
+                      const members =
+                        selectedCommittee?.committee_members.map((member) => ({
+                          director: member.name.id,
+                          isPresent: false,
+                        })) || [];
+
+                      setFormData({
+                        ...formData,
+                        committee_id: selectedOption.value,
+                        participants: members,
+                      });
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
@@ -538,7 +577,7 @@ export default function EditCommitteeMeeting() {
                           participants: [],
                         });
                       } else {
-                        console.log(formData.participants,"d-1")
+                        console.log(formData.participants, "d-1");
                         setFormData({
                           ...formData,
                           participants: selectedOptions
@@ -548,8 +587,7 @@ export default function EditCommitteeMeeting() {
                               isPresent: false,
                             })),
                         });
-                        console.log(formData.participants,"d-2")
-
+                        console.log(formData.participants, "d-2");
                       }
                     }}
                     isClearable

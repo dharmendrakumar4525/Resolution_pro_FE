@@ -25,6 +25,7 @@ export default function AddCommitteeMeeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -36,12 +37,11 @@ export default function AddCommitteeMeeting() {
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
-    meetingType: "board_meeting",
+    meetingType: "committee_meeting",
     date: "",
-    description: "To disburse Salary",
     startTime: "",
     organizer: user.id,
+    committee_id: "",
     participants: [],
     status: "scheduled",
     other_participants: [],
@@ -67,7 +67,7 @@ export default function AddCommitteeMeeting() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
+        const response = await fetch(`${apiURL}/committee-meeting`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -130,6 +130,7 @@ export default function AddCommitteeMeeting() {
         console.error("Error fetching Agenda:", error);
       }
     };
+
     fetchClientList();
     fetchAgendaList();
   }, []);
@@ -160,9 +161,28 @@ export default function AddCommitteeMeeting() {
         new Date(meeting.createdAt) < new Date()
     ).length;
     let result = getOrdinalSuffix(previousCount + 1);
-    setFormData((prev) => ({ ...prev, title: result + " " + "Committee Meeting" }));
+    setFormData((prev) => ({
+      ...prev,
+      title: result + " " + "Committee Meeting",
+    }));
   };
-
+  const fetchCommitteeList = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/committee-member?client_name=${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setCommitteeList(data.results);
+    } catch (error) {
+      console.error("Error fetching Agenda:", error);
+    }
+  };
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -234,7 +254,7 @@ export default function AddCommitteeMeeting() {
       agendaItems: [
         {
           templateName: selectedOption.value,
-          meetingType: agenda?.meetingType || "",
+          meetingType: "committee_meeting",
           templateFile: agenda?.fileName || "",
         },
       ],
@@ -250,8 +270,6 @@ export default function AddCommitteeMeeting() {
           },
         });
         const data = await response.json();
-        console.log(data, "daada");
-        console.log(formData?.agendaItems[0], "selectedOption");
 
         setDocxUrl(data?.results);
         if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
@@ -401,25 +419,23 @@ export default function AddCommitteeMeeting() {
     fetchData();
   }, [formData?.agendaItems[0]]);
 
-  const agendaOptions = agendaList.map((agenda) => ({
+  const agendaOptions = agendaList?.map((agenda) => ({
     value: agenda.templateName,
     label: agenda.templateName,
   }));
 
-  const agendaFileOptions = agendaList.map((agenda) => ({
-    value: agenda.fileName,
-    label: agenda.fileName,
-  }));
-  const directorOptions = directorList.map((director) => ({
+  const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
   }));
-
+  const CommitteeOptions = committeeList?.map((committee) => ({
+    value: committee.committee.id,
+    label: committee.committee.name,
+  }));
   const validateForm = () => {
     const {
       title,
       client_name,
-      description,
       meetingType,
       date,
       startTime,
@@ -430,7 +446,6 @@ export default function AddCommitteeMeeting() {
     if (
       !title ||
       !client_name ||
-      !description ||
       !date ||
       !startTime ||
       !organizer ||
@@ -455,7 +470,7 @@ export default function AddCommitteeMeeting() {
     try {
       let response;
 
-      response = await fetch(`${apiURL}/committe-meeting`, {
+      response = await fetch(`${apiURL}/committee-meeting`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -497,6 +512,7 @@ export default function AddCommitteeMeeting() {
     console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
     // if (name === "client_name" && value) {
+    fetchCommitteeList(selectedOption?.value);
     fetchDirectors(selectedOption?.value);
     // }
   };
@@ -614,9 +630,40 @@ export default function AddCommitteeMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="committee" className="mt-2">
+                  <Form.Label>Committee</Form.Label>
+                  <Select
+                    options={CommitteeOptions}
+                    onChange={(selectedOption) => {
+                      const selectedCommittee = committeeList.find(
+                        (committee) =>
+                          committee.committee.id === selectedOption.value
+                      );
+
+                      const members =
+                        selectedCommittee?.committee_members.map((member) => ({
+                          director: member.name.id,
+                          isPresent: false,
+                        })) || [];
+
+                      setFormData({
+                        ...formData,
+                        committee_id: selectedOption.value,
+                        participants: members,
+                      });
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
                   <Select
+                    isDisabled
                     isMulti
                     options={[
                       { value: "selectAll", label: "Select All" },
@@ -678,68 +725,69 @@ export default function AddCommitteeMeeting() {
                 </Form.Group>
               </Col>
             </Row>
-            <Col>
-              <Form.Group className="mt-2" controlId="other-participants">
-                <Form.Label>Other Participants</Form.Label>
-                {formData.other_participants.map((participant, index) => (
-                  <div key={index} className="participant-inputs">
-                    <Row className="mt-2">
-                      <Col>
-                        <Form.Control
-                          type="text"
-                          value={participant.name || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "name",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Name"
-                        />
-                      </Col>
-                      <Col>
-                        <Form.Control
-                          type="email"
-                          value={participant.email || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "email",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Email"
-                        />
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      <Col>
-                        <Button
-                          className="mt-2"
-                          type="button"
-                          variant="danger"
-                          onClick={() => handleRemoveParticipant(index)}
-                        >
-                          Remove
-                        </Button>
-                      </Col>
-                    </Row>
-                  </div>
-                ))}
-              </Form.Group>
-            </Col>
             <Row>
-              <Button
-                className="mt-2"
-                style={{ width: "300px", marginBottom: "30px" }}
-                type="button"
-                onClick={handleAddParticipant}
-              >
-                Click to add more Participant
-              </Button>
+              <Col>
+                <Form.Group className="mt-2" controlId="other-participants">
+                  <Form.Label>Other Participants</Form.Label>
+                  {formData.other_participants.map((participant, index) => (
+                    <div key={index} className="participant-inputs">
+                      <Row className="mt-2">
+                        <Col>
+                          <Form.Control
+                            type="text"
+                            value={participant.name || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Name"
+                          />
+                        </Col>
+                        <Col>
+                          <Form.Control
+                            type="email"
+                            value={participant.email || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "email",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Email"
+                          />
+                        </Col>
+                      </Row>
+
+                      <Row>
+                        <Col>
+                          <Button
+                            className="mt-2"
+                            type="button"
+                            variant="danger"
+                            onClick={() => handleRemoveParticipant(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
+                  ))}
+                </Form.Group>
+                <Button
+                  className="mt-2"
+                  style={{ width: "300px", marginBottom: "30px" }}
+                  type="button"
+                  onClick={handleAddParticipant}
+                >
+                  Click to add more Participant
+                </Button>
+              </Col>
             </Row>
+            <Row></Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
