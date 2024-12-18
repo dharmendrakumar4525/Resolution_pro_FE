@@ -112,12 +112,13 @@ const DocumentEditor = () => {
             },
           });
         } else {
-        response = await fetch(`${apiURL}/meeting/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })}
+          response = await fetch(`${apiURL}/meeting/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        }
         const data = await response.json();
 
         setXResolutions(data?.resolutions);
@@ -194,16 +195,18 @@ const DocumentEditor = () => {
     const fields = {};
 
     while ((match = regex.exec(content)) !== null) {
-      const placeholder = match[1] || match[2];
+      const placeholder = match[2];
+      const placeholder2 = match[1] || match[2];
 
       // Check if it's a system variable
       const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
+        let formulaRes = systemVariable.formula;
         let value;
         function getOrdinalSuffix(number) {
-          const suffixes = ["th", "st", "nd", "rd"];
+          const suffixes = ["TH", "ST", "ND", "RD"];
           const value = number % 100;
           return (
             number +
@@ -283,7 +286,29 @@ const DocumentEditor = () => {
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
           );
-
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else if (formulaRes == "date") {
+          console.log(res, "response1234");
+          function getFormattedDate(dateString) {
+            const dateObj = new Date(dateString);
+            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+            const year = dateObj.getFullYear();
+            return `${day}/${month}/${year}`; // Format as dd/mm/yyyy
+          }
+          let result = getFormattedDate(clientInfo[res]);
+          value = result;
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
           // Mark as confirmed
           setConfirmedFields((prevState) => ({
             ...prevState,
@@ -332,7 +357,7 @@ const DocumentEditor = () => {
         // const value = systemVariable.mca_name; // System variable value
       } else {
         // Initialize inputFields for non-system placeholders
-        fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+        fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
       }
     }
 
@@ -371,7 +396,7 @@ const DocumentEditor = () => {
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
       console.log(urls, "urls");
-      let count = 7; // Start count from 7
+      let count = 5; // Start count from 7
       try {
         let combinedContent = "";
 
@@ -600,7 +625,8 @@ const DocumentEditor = () => {
         })
       : [];
     let match = {};
-    const selectedOptions = xresolution?.map((res) => {
+    const selectedOptions = xresolution
+      ?.map((res) => {
         match = resolutionList.find(
           (option) => option.title === res?.templateName
         );
@@ -612,7 +638,8 @@ const DocumentEditor = () => {
         };
       })
       .filter(Boolean);
-    const selectedResolOptions = resolutionList?.map((res) => {
+    const selectedResolOptions = resolutionList
+      ?.map((res) => {
         // console.log(res,"tilejjjjj")
         const matchLabels = resolOptions.find(
           (option) => option.label === "Authorisation MCA Compliances"
@@ -752,7 +779,7 @@ const DocumentEditor = () => {
         </div>
         <div className="rightContainer">
           <div>
-          <Form.Group controlId="agendaItems" className="mb-5"> 
+            <Form.Group controlId="agendaItems" className="mb-5">
               <Select
                 options={resolOptions}
                 placeholder="Select Agenda Documents"
@@ -760,9 +787,9 @@ const DocumentEditor = () => {
                 isMulti
                 onChange={handleAgendaItemChange}
                 isClearable
-              /> 
+              />
             </Form.Group>
-         {/* {Object.keys(variable)?.length > 0 ? (
+            {/* {Object.keys(variable)?.length > 0 ? (
               <div className="mb-5">
                 <h4 className="h4-heading-style">
                   Previously Filled Placeholders
@@ -786,8 +813,7 @@ const DocumentEditor = () => {
             )}  */}
 
             <h3>Detected Placeholders:</h3>
-            {
-            Object.keys(inputFields)?.length > 0 ? (
+            {Object.keys(inputFields)?.length > 0 ? (
               Object.keys(inputFields)?.map((placeholder) => {
                 const pascalCasePlaceholder = placeholder
                   .replace(/_/g, " ")
@@ -815,8 +841,7 @@ const DocumentEditor = () => {
                   </div>
                 );
               })
-            ) :
-             (
+            ) : (
               <p>All placeholders are filled</p>
             )}
           </div>

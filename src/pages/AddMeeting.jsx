@@ -47,6 +47,7 @@ export default function AddMeeting() {
     other_participants: [],
     agendaItems: [],
     variables: {},
+    location: "",
     notes: {
       templateName: "Notice",
       meetingType: "board_meeting",
@@ -63,6 +64,27 @@ export default function AddMeeting() {
       templateFile: "",
     },
   });
+  const fetchRegisteredAddress = async (cid) => {
+    try {
+      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      setFormData((prevData) => ({
+        ...prevData,
+
+        location: data.registered_address,
+      }));
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -501,17 +523,14 @@ export default function AddMeeting() {
     console.log(id, name, value, "target");
 
     setFormData({ ...formData, [id || name]: value });
-    // if (name === "client_name" && value) {
-    //   fetchDirectors(value);
-    // }
   };
 
   const handleClientChange = (selectedOption) => {
     console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
-    // if (name === "client_name" && value) {
+
     fetchDirectors(selectedOption?.value);
-    // }
+    fetchRegisteredAddress(selectedOption?.value);
   };
 
   return (
@@ -806,4 +825,3 @@ export default function AddMeeting() {
     </>
   );
 }
-

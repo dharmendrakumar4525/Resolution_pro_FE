@@ -21,7 +21,7 @@ export default function CustomerMaintenanceForm() {
     registered_address: "",
     cin: "",
     email_id: "",
-    date_of_last_agm: "",
+    date_of_last_agm: null,
     registration_number: "",
     authorised_capital_equity: "",
     authorised_capital_preference_capital: "",
@@ -29,16 +29,16 @@ export default function CustomerMaintenanceForm() {
     paid_up_capital_preference_capital: "",
     company_subcategory: "",
     roc_code: "",
-    date_of_balance_sheet: "",
+    date_of_balance_sheet: null,
     class_of_company: "",
     pan: "",
     secretary_detail: {
-      name: "",
-      email: "",
+      name: null,
+      email: null,
     },
     auditor_detail: {
-      name: "",
-      email: "",
+      name: null,
+      email: null,
     },
     alloted_consultant: "",
     alloted_manager: "",
@@ -116,6 +116,9 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleAuditorChange = (field, value) => {
+    if (value == "") {
+      value = null;
+    }
     setFormData((prevData) => ({
       ...prevData,
       auditor_detail: { ...prevData.auditor_detail, [field]: value },
@@ -123,6 +126,9 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleSecretaryChange = (field, value) => {
+    if (value == "") {
+      value = null;
+    }
     setFormData((prevData) => ({
       ...prevData,
       secretary_detail: { ...prevData.secretary_detail, [field]: value },
@@ -132,6 +138,41 @@ export default function CustomerMaintenanceForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonLoading(true);
+    const incorporationDate = new Date(formData?.date_of_incorporation);
+    const lastAGMDate = new Date(formData?.date_of_last_agm);
+    const bsDate = new Date(formData?.date_of_balance_sheet);
+    if (
+      parseFloat(formData.paid_up_capital_equity) >
+      parseFloat(formData.authorised_capital_equity)
+    ) {
+      toast.error(
+        "Paid-up capital (Equity) cannot be more than the Authorized capital (Equity) of the Company."
+      );
+      setButtonLoading(false);
+      return;
+    }
+    if (
+      parseFloat(formData.paid_up_capital_preference_capital) >
+      parseFloat(formData.authorised_capital_preference_capital)
+    ) {
+      toast.error(
+        "Paid-up capital (Preference) cannot be more than the Authorized capital (Preference) of the Company."
+      );
+      setButtonLoading(false);
+      return;
+    }
+    if (lastAGMDate <= incorporationDate) {
+      toast.error("Date of Last AGM must be after the Date of Incorporation.");
+      setButtonLoading(false);
+      return;
+    }
+    if (bsDate <= incorporationDate) {
+      toast.error(
+        "Balance Sheet Date must be after the Date of Incorporation."
+      );
+      setButtonLoading(false);
+      return;
+    }
     const form = e.currentTarget;
     if (form.checkValidity() === false) {
       e.stopPropagation();
@@ -345,7 +386,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Date of Balance Sheet</Form.Label>
                 <Form.Control
                   type="date"
-                  value={formData?.date_of_balance_sheet.split("T")[0]}
+                  value={formData?.date_of_balance_sheet?.split("T")[0]}
                   onChange={handleChange}
                   // isInvalid={!!errors.date_of_balance_sheet}
                 />
@@ -396,7 +437,6 @@ export default function CustomerMaintenanceForm() {
                     handleSecretaryChange("name", e.target.value)
                   }
                   placeholder="Enter Secretary Name"
-                  required
                 />
               </Form.Group>
             </Col>
@@ -412,7 +452,6 @@ export default function CustomerMaintenanceForm() {
                     handleSecretaryChange("email", e.target.value)
                   }
                   placeholder="Enter Secretary Email"
-                  required
                 />
               </Form.Group>
             </Col>
@@ -452,7 +491,6 @@ export default function CustomerMaintenanceForm() {
                   value={formData?.auditor_detail.name}
                   onChange={(e) => handleAuditorChange("name", e.target.value)}
                   placeholder="Enter Auditor Name"
-                  required
                 />
               </Form.Group>
             </Col>
@@ -466,7 +504,6 @@ export default function CustomerMaintenanceForm() {
                   value={formData?.auditor_detail.email}
                   onChange={(e) => handleAuditorChange("email", e.target.value)}
                   placeholder="Enter Auditor Email"
-                  required
                 />
               </Form.Group>
             </Col>
@@ -489,7 +526,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Date of Last AGM</Form.Label>
                 <Form.Control
                   type="date"
-                  value={formData?.date_of_last_agm.split("T")[0]}
+                  value={formData?.date_of_last_agm?.split("T")[0]}
                   onChange={handleChange}
                 />
               </Form.Group>
@@ -499,6 +536,7 @@ export default function CustomerMaintenanceForm() {
                 <Form.Label>Client Consultant</Form.Label>
                 <Form.Control
                   as="select"
+                  required
                   value={formData?.alloted_consultant?.id || ""}
                   onChange={(e) =>
                     handleChange({
@@ -553,7 +591,7 @@ export default function CustomerMaintenanceForm() {
             )}
           </Button>
         </Form>
-        <ToastContainer autoClose={3000} />
+        <ToastContainer />
       </div>
     </Container>
   );
