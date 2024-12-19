@@ -24,6 +24,7 @@ import Select from "react-select";
 const DocumentEditor = () => {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
+  const [directorList, setDirectorList] = useState([]);
   const [xresolution, setXResolutions] = useState([]);
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
@@ -123,7 +124,8 @@ const DocumentEditor = () => {
 
         setXResolutions(data?.resolutions);
         setVariable(data?.variables);
-        // processStoredPlaceholders();
+        setDirectorList(data?.participants);
+        console.log(data, "directorss");
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -405,10 +407,10 @@ const DocumentEditor = () => {
             const title = url?.title || "Untitled";
             if (title === "For #{company_name}") {
               combinedContent += `<p>${title}</p>\n`;
-              continue;
+            } else {
+              combinedContent += `<p>${count}. ${title}</p>\n`;
+              count++;
             }
-            combinedContent += `<p>${count}. ${title}</p>\n`;
-            count++;
           }
 
           if (url?.templateFile) {
@@ -657,11 +659,15 @@ const DocumentEditor = () => {
       setSelectedData(selectedOptions);
       setPrevoiusSelectedOptions(newSelect);
       // handleAgendaItemChange()
-    }, 5000);
+    }, 3000);
   }, [resolutionList, xresolution]);
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
+  }));
+  const directorOptions = directorList?.map((director) => ({
+    value: director?.director?.id,
+    label: director?.director?.name,
   }));
 
   const saveResolutions = async () => {
@@ -757,6 +763,28 @@ const DocumentEditor = () => {
     //   agendaItems: selectedAgendas,
     // }));
   };
+  const handleSignatoryChange = (selectedOptions) => {
+    const values = directorList.find(
+      (i) => i.director.id == selectedOptions.value
+    );
+
+    const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
+    let match;
+    let updatedContent = editorContent;
+    while ((match = regex.exec(editorContent)) !== null) {
+      const placeholder2 = match[1];
+      console.log(values, "valewww", placeholder2);
+
+      const value = values?.director?.name || placeholder2;
+      const value2 = values?.director?.["din/pan"] || placeholder2;
+
+      setInputFields((prevData) => ({
+        ...prevData, // Spread the existing state
+        ["name"]: value,
+        ["din_pan"]: value2,
+      }));
+    }
+  };
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
@@ -786,6 +814,14 @@ const DocumentEditor = () => {
                 value={previousSelectedOptions}
                 isMulti
                 onChange={handleAgendaItemChange}
+                isClearable
+              />
+            </Form.Group>
+            <Form.Group controlId="directorList" className="mb-5">
+              <Select
+                options={directorOptions}
+                placeholder="Select Signatory Director"
+                onChange={handleSignatoryChange}
                 isClearable
               />
             </Form.Group>

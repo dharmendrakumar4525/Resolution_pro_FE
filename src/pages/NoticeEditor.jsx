@@ -27,6 +27,7 @@ const NoticeEditor = () => {
   const [resolutionList, setResolutionList] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
+  const [dynamicResolution, setDynamicResolution] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState({});
   const [selectedData, setSelectedData] = useState([]);
@@ -35,6 +36,7 @@ const NoticeEditor = () => {
   const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [titleToggle, setTitleToggle] = useState(false);
 
   const location = useLocation();
   const { id } = useParams();
@@ -57,7 +59,8 @@ const NoticeEditor = () => {
 
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo); // Set the filtered object
+          setMeetInfo(specificMeetInfo);
+          setDynamicResolution(specificMeetInfo.resolutions);
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -243,31 +246,24 @@ const NoticeEditor = () => {
       const result = await mammoth.convertToHtml({ arrayBuffer });
       setEditorContent(result.value);
       setInitializedContent(result.value);
+      setTitleToggle(!titleToggle);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
   useEffect(() => {
-    const handleMultipleFilesAddOn = async (urls) => {
+    handleFileLoad(fileUrl);
+  }, [fileUrl]);
+  useEffect(() => {
+    const handleMultipleFilesAddOn = async (dynamicResolution) => {
       try {
-        // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
-
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
+        let count = 5;
+        const fetchPromises = dynamicResolution.map(async (url) => {
           const processedContent = [];
 
-          if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
+          if (url?.templateName) {
+            processedContent.push(count + ". " + url.templateName);
+            count++;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -275,44 +271,27 @@ const NoticeEditor = () => {
             );
           }
 
-          if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
-          }
-
           return processedContent.join("\n");
         });
-
         const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
-        setEditorContent(initializedContent + combinedContent);
+        const combinedContent = results.join("\n");
+        let footerContent = `<p>For #{company_name}
+
+<br/>
+     Name: ${"name"}<br/>
+     Director<br/>
+     DIN: ${"din_pan"}<br/>
+     </p>`;
+        setEditorContent(initializedContent + combinedContent + footerContent);
       } catch (error) {
-        console.error("Error fetching or converting one or more files:", error);
+        console.error("Error combining content:", error);
       }
     };
-
-    handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
-  }, [selectedData]);
-
-  useEffect(() => {
     setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
+      handleMultipleFilesAddOn(dynamicResolution);
+    }, 2000);
+    processPlaceholders(dynamicResolution);
+  }, [dynamicResolution?.length]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -338,19 +317,6 @@ const NoticeEditor = () => {
     );
 
     setEditorContent(updatedContent);
-  };
-
-  const handleConfirm = (placeholder) => {
-    const value = inputFields[placeholder] || placeholder;
-    const updatedContent = editorContent.replace(
-      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-      value
-    );
-    setEditorContent(updatedContent);
-    setConfirmedFields((prevState) => ({
-      ...prevState,
-      [placeholder]: true,
-    }));
   };
 
   const handleInputChange = (placeholder, value) => {
@@ -524,7 +490,7 @@ const NoticeEditor = () => {
                   );
 
                 return (
-                  <div key={placeholder}>
+                  <tbody key={placeholder}>
                     <td>
                       <label>{pascalCasePlaceholder} :</label>
                     </td>
@@ -538,7 +504,7 @@ const NoticeEditor = () => {
                       }
                       disabled={confirmedFields[placeholder]}
                     />
-                  </div>
+                  </tbody>
                 );
               })
             ) : (
