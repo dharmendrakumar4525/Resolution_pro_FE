@@ -10,7 +10,10 @@ import {
   TableCell,
   TableRow,
   WidthType,
+  VerticalAlign,
+  AlignmentType,
 } from "docx";
+
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -259,7 +262,7 @@ const AttendanceEditor = () => {
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
-              <td>${participant?.isPresent ? "Present" : "Absent"}</td>
+              <td>${participant?.isPresent ? "" : "Absent"}</td>
             </tr>
           `
             )
@@ -404,7 +407,10 @@ const AttendanceEditor = () => {
     const content = parser.parseFromString(htmlContent, "text/html");
     const elements = content.body.childNodes;
 
+    console.log(content, "cont-elements");
+    console.log(htmlContent, "elements");
     const children = Array.from(elements).map((element) => {
+      console.log(element.tagName, "tagname");
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -462,13 +468,18 @@ const AttendanceEditor = () => {
               children: [
                 new Paragraph({ children: [new TextRun(cell.textContent)] }),
               ],
-              width: { size: 1000, type: WidthType.AUTO },
+              margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
+              // verticalAlign: VerticalAlign.CENTER, // Center text vertically
+              width: { size: 1000 }, // Adjust width dynamically
             });
           });
           return new TableRow({ children: cells });
         });
         return new Table({
           rows: rows,
+          width: { size: 100, type: WidthType.PERCENTAGE }, // Make table width responsive
+          // alignment: AlignmentType.CENTER, // Center the table horizontally
+          margins: { top: 0, bottom: 0 }, // Reduce gaps above and below the table
         });
       } else {
         return new Paragraph({
@@ -481,8 +492,8 @@ const AttendanceEditor = () => {
   };
 
   const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
+    // const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
       sections: [
@@ -503,7 +514,8 @@ const AttendanceEditor = () => {
     setButtonLoading(true);
 
     const docBlob = await createWordDocument();
-
+    // saveAs(docBlob)
+    // return
     const formData = new FormData();
     formData.append("attendance_file", docBlob);
     try {

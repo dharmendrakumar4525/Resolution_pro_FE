@@ -147,11 +147,12 @@ export default function MeetingDocuments() {
     });
   };
 
-  const handleResolEditClick = (url, index) => {
+  const handleResolEditClick = (row, index) => {
     navigate(`/resolution-edit/${id}`, {
       state: {
         index,
-        fileUrl: url,
+        fileUrl: row?.templateFile,
+        resolTitle: row?.templateName,
       },
     });
   };
@@ -516,9 +517,7 @@ export default function MeetingDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() =>
-                          handleResolEditClick(row?.templateFile, index)
-                        }
+                        onClick={() => handleResolEditClick(row, index)}
                       >
                         <FaEdit />
                       </Button>

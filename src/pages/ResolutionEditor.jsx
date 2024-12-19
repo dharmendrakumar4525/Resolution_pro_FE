@@ -39,6 +39,8 @@ const ResolutionEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const resolTitle = location.state?.resolTitle;
+
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -246,7 +248,7 @@ const ResolutionEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
+      // setEditorContent(result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -258,17 +260,20 @@ const ResolutionEditor = () => {
         // Add title at the top
         const title =
           "CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF #{company_name} AT THEIR MEETING HELD ON #{day_date}. ";
-        let titleContent = `<h3>${title}</h3>\n`;
+        let titleContent = `<h3>${title}</h3>\n<br/>`;
+        let subTitle = `<h3>${resolTitle}</h3>`;
 
-        let footerContent = `<p>For #{company_name}
+        let footerContent = `<br/><p>For #{company_name}</p>
 
 <br/>
-     Name: ${"name"}<br/>
-     Director<br/>
-     DIN: ${"din_pan"}<br/>
-     </p>`;
-
-        setEditorContent(titleContent + initializedContent + footerContent);
+<p>
+  Name: \${name}</p>
+ <p> Director</p>
+ <p> DIN: \${din_pan}</p>
+`;
+        setEditorContent(
+          titleContent + subTitle + initializedContent + footerContent
+        );
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }

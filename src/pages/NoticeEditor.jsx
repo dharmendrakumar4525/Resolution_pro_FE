@@ -244,7 +244,7 @@ const NoticeEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
+      // setEditorContent(result.value);
       setInitializedContent(result.value);
       setTitleToggle(!titleToggle);
     } catch (error) {
@@ -258,12 +258,11 @@ const NoticeEditor = () => {
     const handleMultipleFilesAddOn = async (dynamicResolution) => {
       try {
         let count = 5;
-        const fetchPromises = dynamicResolution.map(async (url) => {
-          const processedContent = [];
-
+        const fetchPromises = await dynamicResolution.map(async (url) => {
           if (url?.templateName) {
-            processedContent.push(count + ". " + url.templateName);
+            const content = `<p>${count}. ${url.templateName}</p>`;
             count++;
+            return content;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -271,27 +270,31 @@ const NoticeEditor = () => {
             );
           }
 
-          return processedContent.join("\n");
+          return "";
         });
         const results = await Promise.all(fetchPromises);
-        const combinedContent = results.join("\n");
-        let footerContent = `<p>For #{company_name}
+        const combinedContent = results.join("");
+        let footerContent = `<br/><p>For #{company_name}</p>
 
 <br/>
-     Name: ${"name"}<br/>
-     Director<br/>
-     DIN: ${"din_pan"}<br/>
-     </p>`;
+<h6>
+  Name: \${name}</h6>
+ <h6> Director</h6>
+ <h6> DIN: \${din_pan}</h6>
+`;
+
+        console.log(initializedContent, "hjkl");
         setEditorContent(initializedContent + combinedContent + footerContent);
       } catch (error) {
         console.error("Error combining content:", error);
       }
     };
-    setTimeout(() => {
-      handleMultipleFilesAddOn(dynamicResolution);
-    }, 2000);
-    processPlaceholders(dynamicResolution);
-  }, [dynamicResolution?.length]);
+    // processPlaceholders(dynamicResolution);
+
+    handleMultipleFilesAddOn(dynamicResolution);
+
+    console.log("useEffect=ret");
+  }, [initializedContent, dynamicResolution]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables

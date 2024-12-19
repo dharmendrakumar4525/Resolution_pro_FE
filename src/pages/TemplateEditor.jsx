@@ -715,7 +715,7 @@ const DocumentEditor = () => {
     formData.append("file", docBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
-    formData.append("is_approved", true);
+    // formData.append("is_approved", true);
     console.log(JSON.stringify(placeVar));
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
