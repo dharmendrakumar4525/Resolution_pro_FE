@@ -24,10 +24,14 @@ import Select from "react-select";
 const DocumentEditor = () => {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
+  const [directorList, setDirectorList] = useState([]);
+  const [xresolution, setXResolutions] = useState([]);
+  const [variable, setVariable] = useState([]);
+  const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
-  const [placeVar, setPlaceVar] = useState({});
+  const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
@@ -40,16 +44,28 @@ const DocumentEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page || "";
+  console.log(page, "123345");
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        let response;
+        if (page == "committee") {
+          response = await fetch(`${apiURL}/committee-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } else {
+          response = await fetch(`${apiURL}/meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        }
         const data = await response.json();
         setMeetData(data.results);
         const specificMeetInfo = data.results.find((item) => item.id === id);
@@ -57,6 +73,7 @@ const DocumentEditor = () => {
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
           setMeetInfo(specificMeetInfo); // Set the filtered object
+          setClientInfo(specificMeetInfo?.client_name);
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -67,28 +84,6 @@ const DocumentEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
-  useEffect(() => {
-    const fetchData = async (clientID) => {
-      try {
-        const response = await fetch(
-          `${apiURL}/customer-maintenance/${clientID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-
-        setClientInfo(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData(meetInfo?.client_name?.id);
-  }, [meetInfo.client_name?.id, token]);
   console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +102,35 @@ const DocumentEditor = () => {
         console.error("Error fetching data:", error);
       }
     };
+    const fetchVariables = async () => {
+      try {
+        let response;
+        if (page == "committee") {
+          response = await fetch(`${apiURL}/committee-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } else {
+          response = await fetch(`${apiURL}/meeting/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        }
+        const data = await response.json();
+
+        setXResolutions(data?.resolutions);
+        setVariable(data?.variables);
+        setDirectorList(data?.participants);
+        console.log(data, "directorss");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchVariables();
 
     fetchData();
   }, [token]);
@@ -177,7 +201,7 @@ const DocumentEditor = () => {
       const placeholder2 = match[1] || match[2];
 
       // Check if it's a system variable
-      const systemVariable = rows.find((row) => row.name === placeholder);
+      const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
@@ -264,8 +288,6 @@ const DocumentEditor = () => {
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
           );
-
-          // Mark as confirmed
           setConfirmedFields((prevState) => ({
             ...prevState,
             [placeholder]: true,
@@ -278,21 +300,17 @@ const DocumentEditor = () => {
           console.log(res, "response1234");
           function getFormattedDate(dateString) {
             const dateObj = new Date(dateString);
-
             const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
             const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
             const year = dateObj.getFullYear();
-
             return `${day}/${month}/${year}`; // Format as dd/mm/yyyy
           }
-
           let result = getFormattedDate(clientInfo[res]);
           value = result;
           updatedContent = updatedContent.replace(
             new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
             value
           );
-
           // Mark as confirmed
           setConfirmedFields((prevState) => ({
             ...prevState,
@@ -370,6 +388,7 @@ const DocumentEditor = () => {
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       setEditorContent(result.value);
+      console.log("object", result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -378,15 +397,21 @@ const DocumentEditor = () => {
 
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
+      console.log(urls, "urls");
+      let count = 5; // Start count from 7
       try {
-        // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
+        let combinedContent = "";
 
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
-          const processedContent = [];
+        for (const url of urls) {
+          if (url?.title) {
+            const title = url?.title || "Untitled";
+            if (title === "For #{company_name}") {
+              combinedContent += `<p>${title}</p>\n`;
+            } else {
+              combinedContent += `<p>${count}. ${title}</p>\n`;
+              count++;
+            }
+          }
 
           if (url?.templateFile) {
             console.log("Processing templateFile:", url.templateFile);
@@ -396,7 +421,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
+            combinedContent += `<div>${result.value}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -404,6 +429,7 @@ const DocumentEditor = () => {
             );
           }
 
+          // Add resolution file content if available
           if (url?.resolutionFile) {
             console.log("Processing resolutionFile:", url.resolutionFile);
             const response = await fetch(url.resolutionFile);
@@ -414,19 +440,15 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
+            combinedContent += `<div>${result.value}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
               url
             );
           }
+        }
 
-          return processedContent.join("\n");
-        });
-
-        const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
         setEditorContent(initializedContent + combinedContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
@@ -437,13 +459,6 @@ const DocumentEditor = () => {
     processPlaceholders(selectedData);
   }, [selectedData]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
-
-  // Load content on file URL change
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
@@ -595,19 +610,74 @@ const DocumentEditor = () => {
     const blob = await Packer.toBlob(doc);
     return blob;
   };
-  const resolOptions = resolutionList.map((resol) => ({
-    value: resol.templateName,
-    label: resol.templateName,
+  useEffect(() => {
+    const selectedAgendas = xresolution
+      ? xresolution.map((option) => {
+          console.log(option, resolutionList, "match");
+          const agenda = resolutionList?.find((item) => {
+            if (item.title == option.templateName) {
+              return item;
+            }
+          });
+          return {
+            title: agenda?.title || "",
+            templateFile: agenda?.fileName || "",
+            resolutionFile: agenda?.resolutionUrl || "",
+          };
+        })
+      : [];
+    let match = {};
+    const selectedOptions = xresolution
+      ?.map((res) => {
+        match = resolutionList.find(
+          (option) => option.title === res?.templateName
+        );
+
+        return {
+          title: match?.title || "",
+          templateFile: match?.fileName || "",
+          resolutionFile: match?.resolutionUrl || "",
+        };
+      })
+      .filter(Boolean);
+    const selectedResolOptions = resolutionList
+      ?.map((res) => {
+        // console.log(res,"tilejjjjj")
+        const matchLabels = resolOptions.find(
+          (option) => option.label === "Authorisation MCA Compliances"
+        );
+        return matchLabels || null;
+      })
+      .filter(Boolean);
+
+    console.log("fge", selectedResolOptions);
+    // console.log("dds", selectedOptions);
+    let newSelect = [
+      { label: match?.templateName, value: match?.templateName },
+    ];
+    setTimeout(() => {
+      setSelectedData(selectedOptions);
+      setPrevoiusSelectedOptions(newSelect);
+      // handleAgendaItemChange()
+    }, 3000);
+  }, [resolutionList, xresolution]);
+  const resolOptions = resolutionList?.map((resol) => ({
+    value: resol?.templateName,
+    label: resol?.templateName,
+  }));
+  const directorOptions = directorList?.map((director) => ({
+    value: director?.director?.id,
+    label: director?.director?.name,
   }));
 
   const saveResolutions = async () => {
     try {
       if (selectedData) {
-        const filteredData = selectedData.filter(
+        const filteredData = selectedData?.filter(
           (item) => item.title !== "For #{company_name}"
         );
 
-        const resolutions = filteredData.map((item) => ({
+        const resolutions = filteredData?.map((item) => ({
           templateName: item.title || "",
           templateFile: item.resolutionFile || "",
           meetingType: "board_meeting",
@@ -645,6 +715,7 @@ const DocumentEditor = () => {
     formData.append("file", docBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
+    formData.append("is_approved", true);
     console.log(JSON.stringify(placeVar));
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
@@ -657,6 +728,7 @@ const DocumentEditor = () => {
 
       if (response.ok) {
         saveResolutions();
+
         toast.success("Document saved successfully");
       } else {
         console.log("Failed to save the document.");
@@ -670,7 +742,7 @@ const DocumentEditor = () => {
   const handleAgendaItemChange = (selectedOptions) => {
     console.log(resolutionList, "resol-lis");
     const selectedAgendas = selectedOptions
-      ? selectedOptions.map((option) => {
+      ? selectedOptions?.map((option) => {
           const agenda = resolutionList.find(
             (item) => item.templateName === option.value
           );
@@ -685,15 +757,38 @@ const DocumentEditor = () => {
       : [];
     console.log("dds", selectedAgendas);
     setSelectedData(selectedAgendas);
+    setPrevoiusSelectedOptions(selectedOptions || []);
     // setFormData((prevData) => ({
     //   ...prevData,
     //   agendaItems: selectedAgendas,
     // }));
   };
+  const handleSignatoryChange = (selectedOptions) => {
+    const values = directorList.find(
+      (i) => i.director.id == selectedOptions.value
+    );
+
+    const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
+    let match;
+    let updatedContent = editorContent;
+    while ((match = regex.exec(editorContent)) !== null) {
+      const placeholder2 = match[1];
+      console.log(values, "valewww", placeholder2);
+
+      const value = values?.director?.name || placeholder2;
+      const value2 = values?.director?.["din/pan"] || placeholder2;
+
+      setInputFields((prevData) => ({
+        ...prevData, // Spread the existing state
+        ["name"]: value,
+        ["din_pan"]: value2,
+      }));
+    }
+  };
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-
+  console.log(variable, "variable");
   return (
     <Container className="mt-5">
       <h1>Document Editor</h1>
@@ -716,14 +811,46 @@ const DocumentEditor = () => {
               <Select
                 options={resolOptions}
                 placeholder="Select Agenda Documents"
+                value={previousSelectedOptions}
                 isMulti
                 onChange={handleAgendaItemChange}
-                // isClearable
+                isClearable
               />
             </Form.Group>
+            <Form.Group controlId="directorList" className="mb-5">
+              <Select
+                options={directorOptions}
+                placeholder="Select Signatory Director"
+                onChange={handleSignatoryChange}
+                isClearable
+              />
+            </Form.Group>
+            {/* {Object.keys(variable)?.length > 0 ? (
+              <div className="mb-5">
+                <h4 className="h4-heading-style">
+                  Previously Filled Placeholders
+                </h4>
+
+                <div className="mt-3">
+                  <table className="Master-table">
+                    <tbody>
+                      {Object.entries(variable)?.map(([key, value], index) => (
+                        <tr key={index}>
+                          <td>{key}</td>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              " "
+            )}  */}
+
             <h3>Detected Placeholders:</h3>
-            {Object.keys(inputFields).length > 0 ? (
-              Object.keys(inputFields).map((placeholder) => {
+            {Object.keys(inputFields)?.length > 0 ? (
+              Object.keys(inputFields)?.map((placeholder) => {
                 const pascalCasePlaceholder = placeholder
                   .replace(/_/g, " ")
                   .replace(
