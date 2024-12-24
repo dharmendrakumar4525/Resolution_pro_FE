@@ -10,11 +10,8 @@ import {
   TableCell,
   TableRow,
   WidthType,
-  VerticalAlign,
-  AlignmentType,
   HeightRule,
 } from "docx";
-
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -25,12 +22,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 import Select from "react-select";
 
-const AttendanceEditor = () => {
+const AcknowledgementEditor = () => {
   const [rows, setRows] = useState([]);
   const [variable, setVariable] = useState({});
-  const [participants, setParticipants] = useState([]);
-
   const [resolutionList, setResolutionList] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
@@ -46,7 +42,6 @@ const AttendanceEditor = () => {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const [buttonLoading, setButtonLoading] = useState(false);
-
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -64,10 +59,7 @@ const AttendanceEditor = () => {
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
           setMeetInfo(specificMeetInfo);
-          setClientInfo(specificMeetInfo.client_name);
-
           setParticipants(specificMeetInfo.participants);
-          console.log(specificMeetInfo, "specific-data");
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -230,19 +222,20 @@ const AttendanceEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      console.log(meetInfo, clientInfo, "venue dhund");
-      let venue;
-      if (meetInfo?.variables?.venue == clientInfo?.registered_address) {
-        venue = `THE REGISTERED OFFICE OF THE COMPANY AT ${clientInfo?.registered_address}`;
-      } else {
-        venue = `${meetInfo?.variables?.venue}`;
-      }
       const tableHTML = `
+  </style>
       <table class="table table-bordered table-hover Master-table">
         <thead class="Master-Thead">
           <tr>
-            <th>Director</th>
+            <th rowspan="2">Director</th>
+            <th colspan="2">Acknowledgement towards receipt<br/> of Notice,Agenda Notes</th>
+            <th colspan="2">Acknowledgement towards receipt<br/> of Draft Minutes</th>
+          </tr>
+          <tr>
             <th>Signature</th>
+            <th>Date of Receipt</th>
+            <th>Signature</th>
+            <th>Date of Receipt</th>
           </tr>
         </thead>
         <tbody>
@@ -251,19 +244,23 @@ const AttendanceEditor = () => {
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
-              <td>${participant?.isPresent ? "" : "Absent"}</td>
+              <td>${participant?.acknowledgementNotice?.signature || ""}</td>
+              <td>${participant?.acknowledgementNotice?.date || ""}</td>
+              <td>${participant?.draftMinutes?.signature || ""}</td>
+              <td>${participant?.draftMinutes?.date || ""}</td>
             </tr>
           `
             )
             .join("")}
         </tbody>
       </table>
-<br/>
-<br/>
-<h5>Chairman</h5>
-
+      <br/>
+      <br/>
+      <h5>Chairman</h5>
     `;
-      setEditorContent(result.value + venue + tableHTML);
+
+      setEditorContent(result.value + tableHTML);
+      setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -272,7 +269,7 @@ const AttendanceEditor = () => {
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    }, 1000);
   }, [fileUrl, participants]);
 
   const autofillPlaceholders = () => {
@@ -329,10 +326,7 @@ const AttendanceEditor = () => {
     const content = parser.parseFromString(htmlContent, "text/html");
     const elements = content.body.childNodes;
 
-    console.log(content, "cont-elements");
-    console.log(htmlContent, "elements");
     const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagname");
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -385,33 +379,45 @@ const AttendanceEditor = () => {
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
         const rows = Array.from(element.rows).map((row, rowIndex) => {
-          const cells = Array.from(row.cells).map((cell, cellIndex) => {
-            return new TableCell({
+          const cells = Array.from(row.cells).map((cell) => {
+            const cellOptions = {
               children: [
                 new Paragraph({
                   children: [new TextRun(cell.textContent)],
                   alignment: "center",
                 }),
               ],
-              margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
+              margins: { top: 0, bottom: 0, left: 0, right: 0 },
               verticalAlign: "center",
-              width: { size: 1000 }, // Adjust width dynamically
-            });
+              width: { size: 1000, type: WidthType.AUTO },
+            };
+
+            // Handle colspan
+            if (cell.colSpan > 1) {
+              cellOptions.columnSpan = cell.colSpan;
+            }
+
+            // Handle rowspan
+            if (cell.rowSpan > 1) {
+              cellOptions.rowSpan = cell.rowSpan;
+            }
+
+            return new TableCell(cellOptions);
           });
+
           return new TableRow({
             children: cells,
             height:
               rowIndex === 0
                 ? undefined
-                : { value: 1500, rule: HeightRule.EXACT }, // Skip height for the first row
+                : { value: 1500, rule: HeightRule.EXACT },
           });
         });
+
         return new Table({
           rows: rows,
           width: { size: 100, type: WidthType.PERCENTAGE },
-          // Make table width responsive
-          // alignment: AlignmentType.CENTER, // Center the table horizontally
-          margins: { top: 0, bottom: 0 }, // Reduce gaps above and below the table
+          margins: { top: 0, bottom: 0 },
         });
       } else {
         return new Paragraph({
@@ -424,7 +430,7 @@ const AttendanceEditor = () => {
   };
 
   const createWordDocument = async () => {
-    // const formattedContent = editorContent.replace(/\n/g, "<br>");
+    // const formattedContent = editorContent.replace(/\n/g, " ");
     const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
@@ -446,10 +452,9 @@ const AttendanceEditor = () => {
     setButtonLoading(true);
 
     const docBlob = await createWordDocument();
-    // saveAs(docBlob)
-    // return
+
     const formData = new FormData();
-    formData.append("attendance_file", docBlob);
+    formData.append("acknowledgement_file", docBlob);
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
@@ -476,7 +481,7 @@ const AttendanceEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Attendance Document</h1>
+      <h1>Acknowledgement Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -543,7 +548,7 @@ const AttendanceEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Attendance"
+                "Save Acknowledgement"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -560,4 +565,4 @@ const AttendanceEditor = () => {
   );
 };
 
-export default AttendanceEditor;
+export default AcknowledgementEditor;

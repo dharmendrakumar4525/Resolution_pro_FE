@@ -10,11 +10,7 @@ import {
   TableCell,
   TableRow,
   WidthType,
-  VerticalAlign,
-  AlignmentType,
-  HeightRule,
 } from "docx";
-
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -25,11 +21,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 import Select from "react-select";
 
-const AttendanceEditor = () => {
+const LeaveEditor = () => {
   const [rows, setRows] = useState([]);
   const [variable, setVariable] = useState({});
-  const [participants, setParticipants] = useState([]);
-
   const [resolutionList, setResolutionList] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
@@ -45,8 +39,8 @@ const AttendanceEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const information = location.state?.leaveInfo;
   const [buttonLoading, setButtonLoading] = useState(false);
-
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -63,11 +57,7 @@ const AttendanceEditor = () => {
 
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo);
-          setClientInfo(specificMeetInfo.client_name);
-
-          setParticipants(specificMeetInfo.participants);
-          console.log(specificMeetInfo, "specific-data");
+          setMeetInfo(specificMeetInfo); // Set the filtered object
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -78,7 +68,28 @@ const AttendanceEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
+  useEffect(() => {
+    const fetchData = async (clientID) => {
+      try {
+        const response = await fetch(
+          `${apiURL}/customer-maintenance/${clientID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
 
+        setClientInfo(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData(meetInfo.client_name?.id);
+  }, [meetInfo.client_name?.id, token]);
   console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
@@ -180,12 +191,29 @@ const AttendanceEditor = () => {
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[1] || match[2];
 
-      // Check if it's a system variable
       const systemVariable = variable[placeholder];
-      // const systemVariable = rows.find((row) => row.name === placeholder);
+      if (placeholder == "absent_director_name") {
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          information?.director?.name
+        );
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
+      if (placeholder == "absent_director_din") {
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          information?.director["din/pan"]
+        );
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
       if (systemVariable) {
         console.log(systemVariable, "system-var");
-        // let res = systemVariable.mca_name;
         let value;
         value = systemVariable;
         updatedContent = updatedContent.replace(
@@ -198,11 +226,8 @@ const AttendanceEditor = () => {
           ...prevState,
           [placeholder]: true,
         }));
-
-        // const value = systemVariable.mca_name; // System variable value
       } else {
-        // Initialize inputFields for non-system placeholders
-        fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+        fields[placeholder] = inputFields[placeholder] || "";
       }
     }
 
@@ -230,50 +255,79 @@ const AttendanceEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      console.log(meetInfo, clientInfo, "venue dhund");
-      let venue;
-      if (meetInfo?.variables?.venue == clientInfo?.registered_address) {
-        venue = `THE REGISTERED OFFICE OF THE COMPANY AT ${clientInfo?.registered_address}`;
-      } else {
-        venue = `${meetInfo?.variables?.venue}`;
-      }
-      const tableHTML = `
-      <table class="table table-bordered table-hover Master-table">
-        <thead class="Master-Thead">
-          <tr>
-            <th>Director</th>
-            <th>Signature</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${participants
-            .map(
-              (participant, index) => `
-            <tr key="${index}">
-              <td>${participant?.director?.name || "Unknown"}</td>
-              <td>${participant?.isPresent ? "" : "Absent"}</td>
-            </tr>
-          `
-            )
-            .join("")}
-        </tbody>
-      </table>
-<br/>
-<br/>
-<h5>Chairman</h5>
-
-    `;
-      setEditorContent(result.value + venue + tableHTML);
+      console.log(result, "123");
+      setEditorContent(result.value);
+      setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
+  useEffect(() => {
+    const handleMultipleFilesAddOn = async (urls) => {
+      try {
+        // Add title at the top
+        const title = urls?.[0]?.title || "Untitled";
+        let combinedContent = `<>${title}</>\n`;
+
+        // Fetch and process files concurrently
+        console.log(urls, "mk");
+        const fetchPromises = urls.map(async (url) => {
+          const processedContent = [];
+
+          if (url?.templateFile) {
+            console.log("Processing templateFile:", url.templateFile);
+            const response = await fetch(url.templateFile);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            processedContent.push(`${result.value}`);
+          } else {
+            console.warn(
+              "Skipped processing due to missing templateFile:",
+              url
+            );
+          }
+
+          if (url?.resolutionFile) {
+            console.log("Processing resolutionFile:", url.resolutionFile);
+            const response = await fetch(url.resolutionFile);
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch file from: ${url.resolutionFile}`
+              );
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            processedContent.push(`</br>${result.value}`);
+          } else {
+            console.warn(
+              "Skipped processing due to missing resolutionFile:",
+              url
+            );
+          }
+
+          return processedContent.join("\n");
+        });
+
+        const results = await Promise.all(fetchPromises);
+        combinedContent += results.join("\n");
+        setEditorContent(initializedContent + combinedContent);
+      } catch (error) {
+        console.error("Error fetching or converting one or more files:", error);
+      }
+    };
+
+    handleMultipleFilesAddOn(selectedData);
+    processPlaceholders(selectedData);
+  }, [selectedData]);
 
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl, participants]);
+    }, 6000);
+  }, [fileUrl]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -329,10 +383,7 @@ const AttendanceEditor = () => {
     const content = parser.parseFromString(htmlContent, "text/html");
     const elements = content.body.childNodes;
 
-    console.log(content, "cont-elements");
-    console.log(htmlContent, "elements");
     const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagname");
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -384,34 +435,19 @@ const AttendanceEditor = () => {
 
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row, rowIndex) => {
-          const cells = Array.from(row.cells).map((cell, cellIndex) => {
+        const rows = Array.from(element.rows).map((row) => {
+          const cells = Array.from(row.cells).map((cell) => {
             return new TableCell({
               children: [
-                new Paragraph({
-                  children: [new TextRun(cell.textContent)],
-                  alignment: "center",
-                }),
+                new Paragraph({ children: [new TextRun(cell.textContent)] }),
               ],
-              margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
-              verticalAlign: "center",
-              width: { size: 1000 }, // Adjust width dynamically
+              width: { size: 1000, type: WidthType.AUTO },
             });
           });
-          return new TableRow({
-            children: cells,
-            height:
-              rowIndex === 0
-                ? undefined
-                : { value: 1500, rule: HeightRule.EXACT }, // Skip height for the first row
-          });
+          return new TableRow({ children: cells });
         });
         return new Table({
           rows: rows,
-          width: { size: 100, type: WidthType.PERCENTAGE },
-          // Make table width responsive
-          // alignment: AlignmentType.CENTER, // Center the table horizontally
-          margins: { top: 0, bottom: 0 }, // Reduce gaps above and below the table
         });
       } else {
         return new Paragraph({
@@ -424,8 +460,8 @@ const AttendanceEditor = () => {
   };
 
   const createWordDocument = async () => {
-    // const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(editorContent);
+    const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
       sections: [
@@ -446,10 +482,11 @@ const AttendanceEditor = () => {
     setButtonLoading(true);
 
     const docBlob = await createWordDocument();
-    // saveAs(docBlob)
-    // return
+
     const formData = new FormData();
-    formData.append("attendance_file", docBlob);
+    formData.append("loa_file", docBlob);
+    formData.append("index", `${index}`);
+
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
@@ -476,7 +513,7 @@ const AttendanceEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Attendance Document</h1>
+      <h1>Leave of Absence Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -543,7 +580,7 @@ const AttendanceEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Attendance"
+                "Save Leave of Absence"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -560,4 +597,4 @@ const AttendanceEditor = () => {
   );
 };
 
-export default AttendanceEditor;
+export default LeaveEditor;

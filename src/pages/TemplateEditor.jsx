@@ -195,11 +195,16 @@ const DocumentEditor = () => {
     let match;
     let updatedContent = content;
     const fields = {};
-
+    let xValues;
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[2];
       const placeholder2 = match[1] || match[2];
 
+      if (variable !== {}) {
+        const filledVariable = variable[placeholder2];
+
+        xValues = filledVariable;
+      }
       // Check if it's a system variable
       const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
@@ -358,12 +363,17 @@ const DocumentEditor = () => {
         }
         // const value = systemVariable.mca_name; // System variable value
       } else {
+        if (variable !== {}) {
+          fields[placeholder2] = xValues || "";
+        } else {
+          fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
+        }
         // Initialize inputFields for non-system placeholders
-        fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
       }
     }
 
     setInputFields(fields);
+
     return updatedContent;
   };
 
@@ -387,8 +397,8 @@ const DocumentEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
-      console.log("object", result.value);
+      // setEditorContent(result.value);
+      // console.log("object", result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -397,7 +407,6 @@ const DocumentEditor = () => {
 
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
-      console.log(urls, "urls");
       let count = 5; // Start count from 7
       try {
         let combinedContent = "";
@@ -448,42 +457,66 @@ const DocumentEditor = () => {
             );
           }
         }
+        let footerContent = `
+        <br/><p>For #{company_name}</p><p></p>
 
-        setEditorContent(initializedContent + combinedContent);
+
+<h6>
+  Name: \${name}</h6>
+ <h6> Director</h6>
+ <h6> DIN: \${din_pan}</h6>
+`;
+
+        setEditorContent(initializedContent + combinedContent + footerContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
     };
 
     handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
+    processPlaceholders(editorContent);
   }, [selectedData]);
 
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    }, 1000);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
+    // Check if all placeholders have values
+    const hasEmptyFields = Object.keys(inputFields).some(
+      (key) => !inputFields[key]?.trim()
+    );
+
+    if (hasEmptyFields) {
+      // Show a toast notification for empty fields
+      toast.error("Please fill all required fields.");
+      return; // Stop execution
+    }
+
     // Replace placeholders for non-system variables
     const updatedContent = editorContent.replace(
       /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g,
       (match, p1, p2) => {
         const placeholder = p1 || p2;
-        // console.log(confirmedFields,"cnfrm",placeholder,"placehol",value)
+
         // Skip already confirmed/system variables
         if (confirmedFields[placeholder]) return match;
 
-        const value = inputFields[placeholder] || placeholder; // Use user-provided value or keep placeholder
+        const value = inputFields[placeholder]; // Use user-provided value
+
+        // Confirm field and update state
         setConfirmedFields((prevState) => ({
           ...prevState,
           [placeholder]: true,
         }));
+
         setPlaceVar((prevData) => ({
-          ...prevData, // Spread the existing state
-          [placeholder]: value, // Add the new key-value pair
+          ...prevData,
+          [placeholder]: value,
         }));
+
         return value;
       }
     );
@@ -625,13 +658,18 @@ const DocumentEditor = () => {
             resolutionFile: agenda?.resolutionUrl || "",
           };
         })
-      : [];
+      : "";
     let match = {};
+    let newSelect = [];
     const selectedOptions = xresolution
       ?.map((res) => {
         match = resolutionList.find(
           (option) => option.title === res?.templateName
         );
+        newSelect.push({
+          label: match?.templateName,
+          value: match?.templateName,
+        });
 
         return {
           title: match?.title || "",
@@ -640,27 +678,24 @@ const DocumentEditor = () => {
         };
       })
       .filter(Boolean);
+    console.log(match, "matches");
+
     const selectedResolOptions = resolutionList
       ?.map((res) => {
         // console.log(res,"tilejjjjj")
         const matchLabels = resolOptions.find(
-          (option) => option.label === "Authorisation MCA Compliances"
+          (option) => option.label === res.title
         );
         return matchLabels || null;
       })
       .filter(Boolean);
 
-    console.log("fge", selectedResolOptions);
-    // console.log("dds", selectedOptions);
-    let newSelect = [
-      { label: match?.templateName, value: match?.templateName },
-    ];
     setTimeout(() => {
-      setSelectedData(selectedOptions);
+      setSelectedData(selectedAgendas);
       setPrevoiusSelectedOptions(newSelect);
       // handleAgendaItemChange()
     }, 3000);
-  }, [resolutionList, xresolution]);
+  }, [resolutionList?.length, xresolution?.length]);
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
