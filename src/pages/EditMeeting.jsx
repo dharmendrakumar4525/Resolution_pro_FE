@@ -32,6 +32,8 @@ export default function EditMeeting() {
   const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -50,9 +52,13 @@ export default function EditMeeting() {
       },
     ],
     location: "",
+    standard_time: "",
     status: "scheduled",
   });
-  const navigate = useNavigate();
+  const timeZoneOptions = [
+    { value: "IST", label: "Indian Standard Time (IST)" },
+    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
+  ];
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -168,6 +174,7 @@ export default function EditMeeting() {
       startTime: row?.startTime,
       organizer: row.organizer?.role,
       participants: participantIds,
+      standard_time: row?.standard_time,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
@@ -392,6 +399,13 @@ export default function EditMeeting() {
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
 
     fetchDirectors(selectedOption?.value);
+  };
+  const handleTimeZoneChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      standard_time: selectedOption.value,
+    });
+    console.log("Selected Time Zone:", selectedOption.value);
   };
   return (
     <>
@@ -629,6 +643,25 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="selectTimeZone">
+                  <Form.Label>Select Time Zone</Form.Label>
+
+                  <Select
+                    id="time-zone-select"
+                    options={timeZoneOptions}
+                    value={timeZoneOptions.find(
+                      (option) => option.value === formData?.standard_time
+                    )}
+                    onChange={handleTimeZoneChange}
+                    isSearchable
+                    placeholder="Choose Time Zone"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mt-2">
+              {" "}
+              <Col>
                 <Form.Group controlId="location">
                   <Form.Label>Location</Form.Label>
                   <Form.Control
@@ -666,7 +699,7 @@ export default function EditMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={3000} />
+      <ToastContainer autoClose={1000} />
     </>
   );
 }

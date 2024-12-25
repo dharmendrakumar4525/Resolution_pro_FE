@@ -301,6 +301,29 @@ const DocumentEditor = () => {
             ...prevData, // Spread the existing state
             [systemVariable.name]: value, // Add the new key-value pair
           }));
+        } else if (res == "startTime") {
+          const timeParts = meetInfo[res]?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = timeParts[1];
+          const amPm = hours >= 12 ? "PM" : "AM";
+
+          const formattedHours = hours % 12 || 12;
+          const result = `${formattedHours}:${minutes} ${amPm} ${meetInfo?.standard_time}`;
+          console.log(result, "time-23");
+          value = result;
+
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData,
+            [systemVariable.name]: value,
+          }));
         } else if (formulaRes == "date") {
           console.log(res, "response1234");
           function getFormattedDate(dateString) {
