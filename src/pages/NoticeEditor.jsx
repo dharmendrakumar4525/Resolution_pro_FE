@@ -294,15 +294,12 @@ const NoticeEditor = () => {
         });
         const results = await Promise.all(fetchPromises);
         const combinedContent = results.join("");
-        let footerContent = `<br/><p>Kindly make it convenient to attend the meeting. 
-        Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
-        <br/><p>For #{company_name}</p><p></p>
+        let footerContent = `<br/><p>Kindly make it convenient to attend the meeting.Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
+<br/><p>For #{company_name}</p><p></p>
 
-
-<h6>
-  Name: \${name}</h6>
- <h6> Director</h6>
- <h6> DIN: \${din_pan}</h6>
+<p>Name: \${name}</p>
+<p> Director</p>
+<p> DIN: \${din_pan}</p>
 `;
 
         console.log(initializedContent, "hjkl");

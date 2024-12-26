@@ -319,7 +319,6 @@ const DocumentEditor = () => {
             [systemVariable.name]: value, // Add the new key-value pair
           }));
         } else if (res == "prev_board_meeting") {
-          console.log("previous");
           if (previousMeet == undefined) {
             fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
           } else {
@@ -514,7 +513,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<div>${result.value}</div>\n`;
+            combinedContent += `<div>${result.value}</div><br/>`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",

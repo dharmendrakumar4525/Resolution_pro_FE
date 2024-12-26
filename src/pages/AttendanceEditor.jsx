@@ -389,6 +389,8 @@ const AttendanceEditor = () => {
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
         const rows = Array.from(element.rows).map((row, rowIndex) => {
+          const totalColumns = row.cells.length; // Get the total number of columns
+          const columnWidth = 100 / totalColumns;
           const cells = Array.from(row.cells).map((cell, cellIndex) => {
             return new TableCell({
               children: [
@@ -399,7 +401,7 @@ const AttendanceEditor = () => {
               ],
               margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
               verticalAlign: "center",
-              width: { size: 1000 }, // Adjust width dynamically
+              width: { size: columnWidth, type: WidthType.PERCENTAGE }, // Adjust width dynamically
             });
           });
           return new TableRow({
