@@ -30,6 +30,7 @@ const DocumentEditor = () => {
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
+  const [previousMeet, setPreviousMeet] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
@@ -71,8 +72,23 @@ const DocumentEditor = () => {
         const specificMeetInfo = data.results.find((item) => item.id === id);
 
         if (specificMeetInfo) {
-          console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo); // Set the filtered object
+          const targetDate = new Date(specificMeetInfo?.createdAt);
+          console.log(targetDate, "target");
+
+          // // Find the closest previous meeting
+          const closestPreviousMeeting = data?.results.filter(
+            (meeting) =>
+              new Date(meeting.createdAt) < targetDate &&
+              meeting?.client_name?.id == specificMeetInfo?.client_name?.id
+          );
+          const newDate = closestPreviousMeeting.reduce((prev, curr) => {
+            const prevDate = prev ? new Date(prev.createdAt) : new Date(0);
+            const currDate = new Date(curr.createdAt);
+            return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
+          }, null);
+          setMeetInfo(specificMeetInfo);
+          setPreviousMeet(newDate?.date);
+
           setClientInfo(specificMeetInfo?.client_name);
         } else {
           console.warn("No match found for the specified id.");
@@ -210,6 +226,7 @@ const DocumentEditor = () => {
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
+
         let formulaRes = systemVariable.formula;
         let value;
         function getOrdinalSuffix(number) {
@@ -301,6 +318,31 @@ const DocumentEditor = () => {
             ...prevData, // Spread the existing state
             [systemVariable.name]: value, // Add the new key-value pair
           }));
+        } else if (res == "prev_board_meeting") {
+          console.log("previous");
+          if (previousMeet == undefined) {
+            fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+          } else {
+            const dateObj = new Date(previousMeet);
+            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+            const year = dateObj.getFullYear();
+            // return `${day}/${month}/${year}`; // Fo
+            const result = `${day}/${month}/${year}`;
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData,
+              [systemVariable.name]: value,
+            }));
+          }
         } else if (res == "startTime") {
           const timeParts = meetInfo[res]?.split(":");
           const hours = parseInt(timeParts[0], 10);

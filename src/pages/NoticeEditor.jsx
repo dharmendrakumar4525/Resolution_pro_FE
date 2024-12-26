@@ -193,7 +193,27 @@ const NoticeEditor = () => {
 
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[1] || match[2];
+      if (placeholder == "today_date") {
+        function getCurrentDate() {
+          const today = new Date();
+          const dd = String(today.getDate()).padStart(2, "0");
+          const mm = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+          const yyyy = today.getFullYear();
 
+          return `${dd}/${mm}/${yyyy}`;
+        }
+
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          getCurrentDate()
+        );
+
+        // Mark as confirmed
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
       // Check if it's a system variable
       const systemVariable = variable[placeholder];
       // const systemVariable = rows.find((row) => row.name === placeholder);

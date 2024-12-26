@@ -42,6 +42,7 @@ const AcknowledgementEditor = () => {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -60,6 +61,7 @@ const AcknowledgementEditor = () => {
           console.log(specificMeetInfo, "Filtered meetInfo");
           setMeetInfo(specificMeetInfo);
           setParticipants(specificMeetInfo.participants);
+          handleFileLoad(fileUrl, specificMeetInfo);
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -71,7 +73,6 @@ const AcknowledgementEditor = () => {
     fetchMeetData(id);
   }, [id, token]);
 
-  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -83,7 +84,6 @@ const AcknowledgementEditor = () => {
         });
         const data = await response.json();
 
-        console.log(data.results, "mkjl");
         setResolutionList(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -216,7 +216,7 @@ const AcknowledgementEditor = () => {
   };
 
   // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
+  const handleFileLoad = async (url, specificMeetInfo) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
@@ -239,8 +239,8 @@ const AcknowledgementEditor = () => {
           </tr>
         </thead>
         <tbody>
-          ${participants
-            .map(
+          ${specificMeetInfo?.participants
+            ?.map(
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
@@ -256,7 +256,6 @@ const AcknowledgementEditor = () => {
       </table>
       <br/>
       <br/>
-      <h5>Chairman</h5>
     `;
 
       setEditorContent(result.value + tableHTML);
@@ -265,12 +264,6 @@ const AcknowledgementEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 1000);
-  }, [fileUrl, participants]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -408,7 +401,7 @@ const AcknowledgementEditor = () => {
           return new TableRow({
             children: cells,
             height:
-              rowIndex === 0
+              rowIndex <= 1
                 ? undefined
                 : { value: 1500, rule: HeightRule.EXACT },
           });

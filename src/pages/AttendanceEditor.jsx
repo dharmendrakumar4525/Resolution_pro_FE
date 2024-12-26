@@ -45,41 +45,11 @@ const AttendanceEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const [refresh, setRefresh] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const fetchMeetData = async (id) => {
-      try {
-        const response = await fetch(`${apiURL}/meeting`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        setMeetData(data.results);
-        const specificMeetInfo = data.results.find((item) => item.id === id);
 
-        if (specificMeetInfo) {
-          console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo);
-          setClientInfo(specificMeetInfo.client_name);
-
-          setParticipants(specificMeetInfo.participants);
-          console.log(specificMeetInfo, "specific-data");
-        } else {
-          console.warn("No match found for the specified id.");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchMeetData(id);
-  }, [id, token]);
-
-  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -222,9 +192,36 @@ const AttendanceEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
+  const fetchMeetData = async (id) => {
+    try {
+      const response = await fetch(`${apiURL}/meeting`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setMeetData(data.results);
+      const specificMeetInfo = data.results.find((item) => item.id === id);
 
+      if (specificMeetInfo) {
+        console.log(specificMeetInfo, "Filtered meetInfo");
+        setMeetInfo(specificMeetInfo);
+        setClientInfo(specificMeetInfo.client_name);
+
+        setParticipants(specificMeetInfo.participants);
+        // setRefresh(!refresh)
+        handleFileLoad(fileUrl, specificMeetInfo);
+        console.log(specificMeetInfo, "specific-data");
+      } else {
+        console.warn("No match found for the specified id.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
+  const handleFileLoad = async (url, specificMeetInfo) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
@@ -232,12 +229,15 @@ const AttendanceEditor = () => {
       const result = await mammoth.convertToHtml({ arrayBuffer });
       console.log(meetInfo, clientInfo, "venue dhund");
       let venue;
-      if (meetInfo?.variables?.venue == clientInfo?.registered_address) {
-        venue = `THE REGISTERED OFFICE OF THE COMPANY AT ${clientInfo?.registered_address}`;
+      if (
+        specificMeetInfo?.variables?.venue ==
+        specificMeetInfo?.client_name?.registered_address
+      ) {
+        venue = `THE REGISTERED OFFICE OF THE COMPANY AT ${specificMeetInfo?.client_name?.registered_address}`;
       } else {
-        venue = `${meetInfo?.variables?.venue}`;
+        venue = `${specificMeetInfo?.variables?.venue}`;
       }
-      const tableHTML = `
+      const tableHTML = `<br/>
       <table class="table table-bordered table-hover Master-table">
         <thead class="Master-Thead">
           <tr>
@@ -246,8 +246,8 @@ const AttendanceEditor = () => {
           </tr>
         </thead>
         <tbody>
-          ${participants
-            .map(
+          ${specificMeetInfo?.participants
+            ?.map(
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
@@ -260,9 +260,14 @@ const AttendanceEditor = () => {
       </table>
 <br/>
 <br/>
-<h5>Chairman</h5>
+<h5>Authenticated by</h5><p></p>
 
-    `;
+
+<h6>Name: \${name}</h6>
+<h6>Chairperson</h6>
+<h6> DIN: \${din_pan}</h6>
+`;
+
       setEditorContent(result.value + venue + tableHTML);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -270,10 +275,9 @@ const AttendanceEditor = () => {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl, participants]);
+    fetchMeetData(id);
+    console.log(meetInfo, clientInfo, "venue");
+  }, [id, fileUrl, refresh]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables

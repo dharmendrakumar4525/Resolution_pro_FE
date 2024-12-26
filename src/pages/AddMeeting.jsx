@@ -530,14 +530,14 @@ export default function AddMeeting() {
           body: JSON.stringify(formData),
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          toast.success("Meeting added successfully");
+          navigate("/meeting");
+        } else {
           const errorData = await response.json();
           toast.error(errorData.message || "Error editing the meeting.");
           return;
         }
-
-        toast.success("Meeting added successfully");
-        navigate("/meeting");
       }
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
@@ -691,6 +691,7 @@ export default function AddMeeting() {
                   <Form.Label>Participants</Form.Label>
                   <Select
                     isMulti
+                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
@@ -749,6 +750,12 @@ export default function AddMeeting() {
                     isSearchable
                   />
                 </Form.Group>
+                {directorList.length == 0 && (
+                  <p style={{ color: "red", marginTop: "10px" }}>
+                    Director options are not available. Please add options
+                    before proceeding.
+                  </p>
+                )}
               </Col>
             </Row>
             <Col>
