@@ -235,7 +235,7 @@ const AgendaTemplateGenerator = () => {
   };
 
   const createWordDocument = async () => {
-    // const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const formattedContent = editorContent.replace(/\n/g, "<br>");
     // console.log(formattedContent,"formatted")
     let footerContent = `<p>Kindly make it convenient to attend the meeting. 
         Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
@@ -247,27 +247,10 @@ const AgendaTemplateGenerator = () => {
  <h6> Director</h6>
  <h6> DIN: \${din_pan}</h6>
 `;
-    const formattedContent = `
-<html>
-  <head>
-    <meta charset="utf-8">
-  </head>
-  <body>
-    <p>It is proposed to severally authorise the Directors and the Company Secretary...</p>
-    <p>In this regard, the following resolution is proposed:</p>
-  </body>
-</html>`;
 
     const docxBlob = htmlDocx.asBlob(formattedContent);
     console.log(docxBlob);
-    // return
-    // const url=URL.createObjectURL(docxBlob)
-    // const a =document.createElement("a")
-    // a.href=url
-    // a.download="filename.docx"
-    // a.click()
-    // saveAs(docxBlob)
-    //     return
+
     const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
