@@ -37,7 +37,6 @@ export default function EditMeeting() {
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
     meetingType: "",
     date: "",
     startTime: "",
@@ -162,18 +161,18 @@ export default function EditMeeting() {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
-    const participantIds = row.participants.map(
-      (participant) => participant?.director?.id
-    );
+    const transformedParticipants = row?.participants.map((participant) => ({
+      director: participant?.director?.id,
+      isPresent: participant?.isPresent,
+    }));
     setFormData({
       title: row?.title,
       client_name: row.client_name?.id || "",
-      description: row.description,
       meetingType: "board_meeting",
       date: row.date.split("T")[0],
       startTime: row?.startTime,
       organizer: row.organizer?.role,
-      participants: participantIds,
+      participants: transformedParticipants,
       standard_time: row?.standard_time,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
@@ -407,6 +406,7 @@ export default function EditMeeting() {
     });
     console.log("Selected Time Zone:", selectedOption.value);
   };
+  console.log(formData, "formdata");
   return (
     <>
       <div
@@ -442,20 +442,6 @@ export default function EditMeeting() {
                     )}
                     onChange={handleClientChange}
                     isClearable
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
-                <Form.Group controlId="description">
-                  <Form.Label className="f-label">Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData?.description}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
                   />
                 </Form.Group>
               </Col>
@@ -508,21 +494,24 @@ export default function EditMeeting() {
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
+
                   <Select
                     isMulti
+                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions?.length
+                      formData.participants.length === directorOptions.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
                           ]
                         : directorOptions.filter((option) =>
                             formData.participants.some(
-                              (participant) => participant == option.value
+                              (participant) =>
+                                participant.director === option.value
                             )
                           )
                     }
@@ -533,6 +522,7 @@ export default function EditMeeting() {
                         ) &&
                         formData.participants.length !== directorOptions.length
                       ) {
+                        // Select all participants
                         setFormData({
                           ...formData,
                           participants: directorOptions?.map((option) => ({

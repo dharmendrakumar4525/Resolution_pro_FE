@@ -320,7 +320,14 @@ const DocumentEditor = () => {
           }));
         } else if (res == "prev_board_meeting") {
           if (previousMeet == undefined) {
-            fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+            console.log(previousMeet, res, "res-123", systemVariable);
+            if (variable !== {}) {
+              fields[placeholder] = variable[placeholder] || "";
+            } else {
+              fields[placeholder] = inputFields[placeholder] || "";
+            }
+
+            // Preserve or initialize
           } else {
             const dateObj = new Date(previousMeet);
             const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
@@ -430,6 +437,7 @@ const DocumentEditor = () => {
         if (variable !== {}) {
           fields[placeholder2] = xValues || "";
         } else {
+          console.log("Y");
           fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
         }
         // Initialize inputFields for non-system placeholders
@@ -899,9 +907,6 @@ const DocumentEditor = () => {
             editor={ClassicEditor}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: false,
-            }}
           />
         </div>
         <div className="rightContainer">
