@@ -30,6 +30,7 @@ const DocumentEditor = () => {
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
+  const [previousMeet, setPreviousMeet] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
@@ -71,8 +72,23 @@ const DocumentEditor = () => {
         const specificMeetInfo = data.results.find((item) => item.id === id);
 
         if (specificMeetInfo) {
-          console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo); // Set the filtered object
+          const targetDate = new Date(specificMeetInfo?.createdAt);
+          console.log(targetDate, "target");
+
+          // // Find the closest previous meeting
+          const closestPreviousMeeting = data?.results.filter(
+            (meeting) =>
+              new Date(meeting.createdAt) < targetDate &&
+              meeting?.client_name?.id == specificMeetInfo?.client_name?.id
+          );
+          const newDate = closestPreviousMeeting.reduce((prev, curr) => {
+            const prevDate = prev ? new Date(prev.createdAt) : new Date(0);
+            const currDate = new Date(curr.createdAt);
+            return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
+          }, null);
+          setMeetInfo(specificMeetInfo);
+          setPreviousMeet(newDate?.date);
+
           setClientInfo(specificMeetInfo?.client_name);
         } else {
           console.warn("No match found for the specified id.");
@@ -195,16 +211,22 @@ const DocumentEditor = () => {
     let match;
     let updatedContent = content;
     const fields = {};
-
+    let xValues;
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[2];
       const placeholder2 = match[1] || match[2];
 
+      if (variable !== {}) {
+        const filledVariable = variable[placeholder2];
+
+        xValues = filledVariable;
+      }
       // Check if it's a system variable
       const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
         let res = systemVariable.mca_name;
+
         let formulaRes = systemVariable.formula;
         let value;
         function getOrdinalSuffix(number) {
@@ -296,6 +318,60 @@ const DocumentEditor = () => {
             ...prevData, // Spread the existing state
             [systemVariable.name]: value, // Add the new key-value pair
           }));
+        } else if (res == "prev_board_meeting") {
+          if (previousMeet == undefined) {
+            console.log(previousMeet, res, "res-123", systemVariable);
+            if (variable !== {}) {
+              fields[placeholder] = variable[placeholder] || "";
+            } else {
+              fields[placeholder] = inputFields[placeholder] || "";
+            }
+
+            // Preserve or initialize
+          } else {
+            const dateObj = new Date(previousMeet);
+            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+            const year = dateObj.getFullYear();
+            // return `${day}/${month}/${year}`; // Fo
+            const result = `${day}/${month}/${year}`;
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData,
+              [systemVariable.name]: value,
+            }));
+          }
+        } else if (res == "startTime") {
+          const timeParts = meetInfo[res]?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = timeParts[1];
+          const amPm = hours >= 12 ? "PM" : "AM";
+
+          const formattedHours = hours % 12 || 12;
+          const result = `${formattedHours}:${minutes} ${amPm} ${meetInfo?.standard_time}`;
+          console.log(result, "time-23");
+          value = result;
+
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData,
+            [systemVariable.name]: value,
+          }));
         } else if (formulaRes == "date") {
           console.log(res, "response1234");
           function getFormattedDate(dateString) {
@@ -358,12 +434,18 @@ const DocumentEditor = () => {
         }
         // const value = systemVariable.mca_name; // System variable value
       } else {
+        if (variable !== {}) {
+          fields[placeholder2] = xValues || "";
+        } else {
+          console.log("Y");
+          fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
+        }
         // Initialize inputFields for non-system placeholders
-        fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
       }
     }
 
     setInputFields(fields);
+
     return updatedContent;
   };
 
@@ -387,8 +469,8 @@ const DocumentEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
-      console.log("object", result.value);
+      // setEditorContent(result.value);
+      // console.log("object", result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -397,7 +479,6 @@ const DocumentEditor = () => {
 
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
-      console.log(urls, "urls");
       let count = 5; // Start count from 7
       try {
         let combinedContent = "";
@@ -440,7 +521,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<div>${result.value}</div>\n`;
+            combinedContent += `<div>${result.value}</div><br/>`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
@@ -448,42 +529,66 @@ const DocumentEditor = () => {
             );
           }
         }
+        let footerContent = `
+        <br/><p>For #{company_name}</p><p></p>
 
-        setEditorContent(initializedContent + combinedContent);
+
+<h6>
+  Name: \${name}</h6>
+ <h6> Director</h6>
+ <h6> DIN: \${din_pan}</h6>
+`;
+
+        setEditorContent(initializedContent + combinedContent + footerContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
     };
 
     handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
+    processPlaceholders(editorContent);
   }, [selectedData]);
 
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    }, 1000);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
+    // Check if all placeholders have values
+    const hasEmptyFields = Object.keys(inputFields).some(
+      (key) => !inputFields[key]?.trim()
+    );
+
+    if (hasEmptyFields) {
+      // Show a toast notification for empty fields
+      toast.error("Please fill all required fields.");
+      return; // Stop execution
+    }
+
     // Replace placeholders for non-system variables
     const updatedContent = editorContent.replace(
       /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g,
       (match, p1, p2) => {
         const placeholder = p1 || p2;
-        // console.log(confirmedFields,"cnfrm",placeholder,"placehol",value)
+
         // Skip already confirmed/system variables
         if (confirmedFields[placeholder]) return match;
 
-        const value = inputFields[placeholder] || placeholder; // Use user-provided value or keep placeholder
+        const value = inputFields[placeholder]; // Use user-provided value
+
+        // Confirm field and update state
         setConfirmedFields((prevState) => ({
           ...prevState,
           [placeholder]: true,
         }));
+
         setPlaceVar((prevData) => ({
-          ...prevData, // Spread the existing state
-          [placeholder]: value, // Add the new key-value pair
+          ...prevData,
+          [placeholder]: value,
         }));
+
         return value;
       }
     );
@@ -625,13 +730,18 @@ const DocumentEditor = () => {
             resolutionFile: agenda?.resolutionUrl || "",
           };
         })
-      : [];
+      : "";
     let match = {};
+    let newSelect = [];
     const selectedOptions = xresolution
       ?.map((res) => {
         match = resolutionList.find(
           (option) => option.title === res?.templateName
         );
+        newSelect.push({
+          label: match?.templateName,
+          value: match?.templateName,
+        });
 
         return {
           title: match?.title || "",
@@ -640,27 +750,24 @@ const DocumentEditor = () => {
         };
       })
       .filter(Boolean);
+    console.log(match, "matches");
+
     const selectedResolOptions = resolutionList
       ?.map((res) => {
         // console.log(res,"tilejjjjj")
         const matchLabels = resolOptions.find(
-          (option) => option.label === "Authorisation MCA Compliances"
+          (option) => option.label === res.title
         );
         return matchLabels || null;
       })
       .filter(Boolean);
 
-    console.log("fge", selectedResolOptions);
-    // console.log("dds", selectedOptions);
-    let newSelect = [
-      { label: match?.templateName, value: match?.templateName },
-    ];
     setTimeout(() => {
-      setSelectedData(selectedOptions);
+      setSelectedData(selectedAgendas);
       setPrevoiusSelectedOptions(newSelect);
       // handleAgendaItemChange()
     }, 3000);
-  }, [resolutionList, xresolution]);
+  }, [resolutionList?.length, xresolution?.length]);
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
@@ -715,7 +822,7 @@ const DocumentEditor = () => {
     formData.append("file", docBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
-    formData.append("is_approved", true);
+    // formData.append("is_approved", true);
     console.log(JSON.stringify(placeVar));
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
@@ -800,9 +907,6 @@ const DocumentEditor = () => {
             editor={ClassicEditor}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: false,
-            }}
           />
         </div>
         <div className="rightContainer">

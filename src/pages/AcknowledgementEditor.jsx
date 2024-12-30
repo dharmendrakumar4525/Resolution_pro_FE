@@ -10,6 +10,7 @@ import {
   TableCell,
   TableRow,
   WidthType,
+  HeightRule,
 } from "docx";
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -21,10 +22,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 import Select from "react-select";
 
-const ResolutionEditor = () => {
+const AcknowledgementEditor = () => {
   const [rows, setRows] = useState([]);
   const [variable, setVariable] = useState({});
   const [resolutionList, setResolutionList] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
@@ -39,10 +41,8 @@ const ResolutionEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
-  const resolTitle = location.state?.resolTitle;
-
   const [buttonLoading, setButtonLoading] = useState(false);
-
+  const [refresh, setRefresh] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -59,7 +59,9 @@ const ResolutionEditor = () => {
 
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo); // Set the filtered object
+          setMeetInfo(specificMeetInfo);
+          setParticipants(specificMeetInfo.participants);
+          handleFileLoad(fileUrl, specificMeetInfo);
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -70,29 +72,7 @@ const ResolutionEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
-  useEffect(() => {
-    const fetchData = async (clientID) => {
-      try {
-        const response = await fetch(
-          `${apiURL}/customer-maintenance/${clientID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
 
-        setClientInfo(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData(meetInfo.client_name?.id);
-  }, [meetInfo.client_name?.id, token]);
-  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,7 +84,6 @@ const ResolutionEditor = () => {
         });
         const data = await response.json();
 
-        console.log(data.results, "mkjl");
         setResolutionList(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -235,60 +214,56 @@ const ResolutionEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 1000);
-  }, [fileUrl]);
 
   // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
+  const handleFileLoad = async (url, specificMeetInfo) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      // setEditorContent(result.value);
+      const tableHTML = `
+  </style>
+      <table class="table table-bordered table-hover Master-table">
+        <thead class="Master-Thead">
+          <tr>
+            <th rowspan="2">Director</th>
+            <th colspan="2">Acknowledgement towards receipt<br/> of Notice,Agenda Notes</th>
+            <th colspan="2">Acknowledgement towards receipt<br/> of Draft Minutes</th>
+          </tr>
+          <tr>
+            <th>Signature</th>
+            <th>Date of Receipt</th>
+            <th>Signature</th>
+            <th>Date of Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${specificMeetInfo?.participants
+            ?.map(
+              (participant, index) => `
+            <tr key="${index}">
+              <td>${participant?.director?.name || "Unknown"}</td>
+              <td>${participant?.acknowledgementNotice?.signature || ""}</td>
+              <td>${participant?.acknowledgementNotice?.date || ""}</td>
+              <td>${participant?.draftMinutes?.signature || ""}</td>
+              <td>${participant?.draftMinutes?.date || ""}</td>
+            </tr>
+          `
+            )
+            .join("")}
+        </tbody>
+      </table>
+      <br/>
+      <br/>
+    `;
+
+      setEditorContent(result.value + tableHTML);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  useEffect(() => {
-    const handleMultipleFilesAddOn = async () => {
-      try {
-        // Add title at the top
-        const title =
-          "CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF #{company_name} AT THEIR MEETING HELD ON #{day_date}. ";
-        let titleContent = `<h3>${title}</h3>\n<br/>`;
-        let subTitle = `<h3>${resolTitle}</h3>`;
-
-        let footerContent = `<br/><p>For #{company_name}</p>
-
-<br/>
-<p>
-  Name: \${name}</p>
- <p> Director</p>
- <p> DIN: \${din_pan}</p>
-`;
-        setEditorContent(
-          titleContent + subTitle + initializedContent + footerContent
-        );
-      } catch (error) {
-        console.error("Error fetching or converting one or more files:", error);
-      }
-    };
-    setTimeout(() => {
-      handleMultipleFilesAddOn();
-    }, 2000);
-
-    processPlaceholders();
-  }, [initializedContent]);
-
-  // Load content on file URL change
-  useEffect(() => {
-    if (fileUrl) handleFileLoad(fileUrl);
-  }, [fileUrl]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -314,6 +289,19 @@ const ResolutionEditor = () => {
     );
 
     setEditorContent(updatedContent);
+  };
+
+  const handleConfirm = (placeholder) => {
+    const value = inputFields[placeholder] || placeholder;
+    const updatedContent = editorContent.replace(
+      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+      value
+    );
+    setEditorContent(updatedContent);
+    setConfirmedFields((prevState) => ({
+      ...prevState,
+      [placeholder]: true,
+    }));
   };
 
   const handleInputChange = (placeholder, value) => {
@@ -383,19 +371,46 @@ const ResolutionEditor = () => {
 
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
+        const rows = Array.from(element.rows).map((row, rowIndex) => {
           const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
+            const cellOptions = {
               children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
+                new Paragraph({
+                  children: [new TextRun(cell.textContent)],
+                  alignment: "center",
+                }),
               ],
+              margins: { top: 0, bottom: 0, left: 0, right: 0 },
+              verticalAlign: "center",
               width: { size: 1000, type: WidthType.AUTO },
-            });
+            };
+
+            // Handle colspan
+            if (cell.colSpan > 1) {
+              cellOptions.columnSpan = cell.colSpan;
+            }
+
+            // Handle rowspan
+            if (cell.rowSpan > 1) {
+              cellOptions.rowSpan = cell.rowSpan;
+            }
+
+            return new TableCell(cellOptions);
           });
-          return new TableRow({ children: cells });
+
+          return new TableRow({
+            children: cells,
+            height:
+              rowIndex <= 1
+                ? undefined
+                : { value: 1500, rule: HeightRule.EXACT },
+          });
         });
+
         return new Table({
           rows: rows,
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          margins: { top: 0, bottom: 0 },
         });
       } else {
         return new Paragraph({
@@ -408,8 +423,8 @@ const ResolutionEditor = () => {
   };
 
   const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
+    // const formattedContent = editorContent.replace(/\n/g, " ");
+    const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
       sections: [
@@ -432,8 +447,7 @@ const ResolutionEditor = () => {
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
-    formData.append("resolution_file", docBlob);
-    formData.append("index", `${index}`);
+    formData.append("acknowledgement_file", docBlob);
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
@@ -460,7 +474,7 @@ const ResolutionEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Resolution Document</h1>
+      <h1>Acknowledgement Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -527,7 +541,7 @@ const ResolutionEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Resolution"
+                "Save Acknowledgement"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -544,4 +558,4 @@ const ResolutionEditor = () => {
   );
 };
 
-export default ResolutionEditor;
+export default AcknowledgementEditor;

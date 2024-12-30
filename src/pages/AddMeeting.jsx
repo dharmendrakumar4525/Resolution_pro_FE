@@ -48,6 +48,7 @@ export default function AddMeeting() {
     agendaItems: [],
     variables: {},
     location: "",
+    standard_time: "",
     notes: {
       templateName: "Notice",
       meetingType: "board_meeting",
@@ -63,8 +64,16 @@ export default function AddMeeting() {
       meetingType: "board_meeting",
       templateFile: "",
     },
+    acknowledgement: {
+      templateName: "Acknowledgement",
+      meetingType: "board_meeting",
+      templateFile: "",
+    },
   });
-
+  const timeZoneOptions = [
+    { value: "IST", label: "Indian Standard Time (IST)" },
+    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
+  ];
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -268,11 +277,24 @@ export default function AddMeeting() {
           },
         });
         const data = await response.json();
-        console.log(data, "daada");
         console.log(formData?.agendaItems[0], "selectedOption");
 
         setDocxUrl(data?.results);
         if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "676a5881db544a64c6baa090"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
+
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "673efb66ace56b4760e37c61"
           );
@@ -380,6 +402,20 @@ export default function AddMeeting() {
               },
             }));
           }
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "676a5881db544a64c6baa090"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
+
           const shortNoticeTemplate = data?.results?.find(
             (item) => item.id === "6756b022696ba6002745bbeb"
           );
@@ -494,14 +530,14 @@ export default function AddMeeting() {
           body: JSON.stringify(formData),
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          toast.success("Meeting added successfully");
+          navigate("/meeting");
+        } else {
           const errorData = await response.json();
           toast.error(errorData.message || "Error editing the meeting.");
           return;
         }
-
-        toast.success("Meeting added successfully");
-        navigate("/meeting");
       }
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
@@ -530,6 +566,13 @@ export default function AddMeeting() {
     fetchDirectors(selectedOption?.value);
     fetchRegisteredAddress(selectedOption?.value);
   };
+  const handleTimeZoneChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      standard_time: selectedOption.value,
+    });
+    console.log("Selected Time Zone:", selectedOption.value);
+  };
 
   return (
     <>
@@ -538,7 +581,7 @@ export default function AddMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <ToastContainer autoClose={3000} />
+        <ToastContainer autoClose={1000} />
 
         <h2 className="mb-3 mt-5">{editingRow ? "Edit" : "Add"} Meeting</h2>
 
@@ -648,6 +691,7 @@ export default function AddMeeting() {
                   <Form.Label>Participants</Form.Label>
                   <Select
                     isMulti
+                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
@@ -706,6 +750,12 @@ export default function AddMeeting() {
                     isSearchable
                   />
                 </Form.Group>
+                {directorList.length == 0 && (
+                  <p style={{ color: "red", marginTop: "10px" }}>
+                    Director options are not available. Please add options
+                    before proceeding.
+                  </p>
+                )}
               </Col>
             </Row>
             <Col>
@@ -782,6 +832,22 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
+
+              <Col>
+                <Form.Group controlId="selectTimeZone">
+                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+
+                  <Select
+                    id="time-zone-select"
+                    options={timeZoneOptions}
+                    onChange={handleTimeZoneChange}
+                    isSearchable
+                    placeholder="Choose Time Zone"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
               <Col>
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">Location</Form.Label>
