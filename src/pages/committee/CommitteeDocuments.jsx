@@ -12,13 +12,13 @@ import {
   Tabs,
   Tab,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const token = localStorage.getItem("refreshToken");
 
-export default function MeetingDocuments() {
+export default function CommitteeDocuments() {
   const [rows, setRows] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [notice, setNotice] = useState({});
@@ -47,7 +47,7 @@ export default function MeetingDocuments() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        const response = await fetch(`${apiURL}/committee-meeting/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export default function MeetingDocuments() {
 
   const handleEditClick = (row, index) => {
     navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row?.templateFile}` },
+      state: { index, fileUrl: `${row?.templateFile}`,page:"committee" },
     });
   };
   const handleView = (row) => {
@@ -83,7 +83,7 @@ export default function MeetingDocuments() {
       return;
     }
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filedocx}` },
+      state: { fileUrl: `${row?.filedocx}`,page:"committee" },
     });
   };
   const sendApproval = async (meetData) => {

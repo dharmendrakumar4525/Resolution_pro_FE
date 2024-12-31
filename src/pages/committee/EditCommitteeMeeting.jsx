@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import {
   Table,
   Button,
@@ -14,99 +14,47 @@ import {
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from "react-router-dom";
 import Select from "react-select";
 
-export default function AddMeeting() {
+export default function EditCommitteeMeeting() {
   const [rows, setRows] = useState([]);
-  const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
   const handleCloseAddModal = () => navigate("/meeting");
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
+
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
-
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
-  const navigate = useNavigate();
-
+  const location = useLocation();
+  const row = location.state?.row;
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
-    meetingType: "board_meeting",
+    meetingType: "",
     date: "",
-    description: "To disburse Salary",
     startTime: "",
     organizer: user.id,
+    committee_id: "",
     participants: [],
-    status: "scheduled",
     other_participants: [],
-    agendaItems: [],
-    variables: {},
+    agendaItems: [
+      {
+        templateName: "",
+        meetingType: "",
+        fileName: "",
+      },
+    ],
     location: "",
-    notes: {
-      templateName: "Notice",
-      meetingType: "board_meeting",
-      templateFile: "",
-    },
-    mom: {
-      templateName: "MOM",
-      meetingType: "board_meeting",
-      templateFile: "",
-    },
-    attendance: {
-      templateName: "Attendance",
-      meetingType: "board_meeting",
-      templateFile: "",
-    },
+    status: "scheduled",
   });
-  const fetchRegisteredAddress = async (cid) => {
-    try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      setFormData((prevData) => ({
-        ...prevData,
-
-        location: data.registered_address,
-      }));
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/meeting`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        setRows(data.results);
-        // console.log(data.results,"meetCli")
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -118,7 +66,6 @@ export default function AddMeeting() {
         });
         const data = await response.json();
         setClientList(data.docs);
-        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
@@ -132,7 +79,6 @@ export default function AddMeeting() {
           },
         });
         const data = await response.json();
-        console.log("data", data);
         const idsToSkip = [
           "673efb66ace56b4760e37c61",
           "673f2063640f38762b0450c4",
@@ -155,53 +101,23 @@ export default function AddMeeting() {
     fetchClientList();
     fetchAgendaList();
   }, []);
-  useEffect(() => {
-    if (formData?.client_name && clientList.length > 0) {
-      const selectedCompany = clientList.find(
-        (company) => company._id === formData?.client_name
-      );
-
-      if (selectedCompany) {
-        countPreviousMeetings(rows, selectedCompany._id);
-      }
-    }
-  }, [formData?.client_name, clientList, rows]);
-  const fetchRegisteredAddress = async (cid) => {
+  const fetchCommitteeList = async (clientId) => {
     try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${apiURL}/committee-member?client_name=${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
-      setFormData((prevData) => ({
-        ...prevData,
-        location: data.registered_address,
-      }));
+      setCommitteeList(data.results);
     } catch (error) {
-      console.error("Error fetching clients:", error);
+      console.error("Error fetching Agenda:", error);
     }
   };
-  function getOrdinalSuffix(number) {
-    const suffixes = ["th", "st", "nd", "rd"];
-    const value = number % 100;
-    return (
-      number + (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-    );
-  }
-  const countPreviousMeetings = (meetData, selectedId) => {
-    console.log(meetData, "meetDataaa");
-
-    const previousCount = meetData.filter(
-      (meeting) =>
-        meeting?.client_name?.id === selectedId &&
-        new Date(meeting.createdAt) < new Date()
-    ).length;
-    let result = getOrdinalSuffix(previousCount + 1);
-    setFormData((prev) => ({ ...prev, title: result + " " + "Board Meeting" }));
-  };
-
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -219,6 +135,76 @@ export default function AddMeeting() {
       console.error("Error fetching directors:", error);
     }
   };
+
+  const handleDeleteClick = async (row) => {
+    try {
+      const response = await fetch(`${apiURL}/meeting/${row.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete item");
+      }
+
+      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
+
+      toast.success("Item deleted successfully");
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Failed to delete item. Please try again.");
+    }
+  };
+
+  const handleDirectorSelection = (e) => {
+    const selectedDirectorId = e.target.value;
+    const selectedDirector = directorList.find(
+      (director) => director.id === selectedDirectorId
+    );
+    if (selectedDirector) {
+      setFormData((prevData) => ({
+        ...prevData,
+        participants: [...prevData.participants, selectedDirector],
+      }));
+    }
+  };
+
+  const handleEditClick = (row) => {
+    console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
+    setEditingRow(row);
+    setOpenAddModal(true);
+    setFormData({
+      title: row?.title,
+      client_name: row.client_name?.id || "",
+      description: row.description,
+      meetingType: "board_meeting",
+      date: row.date.split("T")[0],
+      startTime: row?.startTime,
+      organizer: row.organizer?.role,
+      participants: row?.participants,
+      agendaItems: row.agendaItems.map((agendaItem) => ({
+        templateName: agendaItem.templateName,
+        templateFile: agendaItem.templateFile,
+        meetingType: agendaItem.meetingType,
+      })),
+      committee_id: row?.committee_id,
+      other_participants: row.other_participants.length
+        ? row.other_participants
+        : [],
+      location: row.location,
+    });
+    if (row.client_name?.id) {
+      fetchDirectors(row.client_name.id);
+    }
+  };
+  useEffect(() => {
+
+    handleEditClick(row);
+    fetchCommitteeList(formData?.client_name);
+
+  }, [row]);
   const handleAddParticipant = () => {
     setFormData((prevState) => ({
       ...prevState,
@@ -237,7 +223,7 @@ export default function AddMeeting() {
     }));
   };
   const handleParticipantChange = (index, field, value) => {
-    const updatedParticipants = formData?.other_participants.map(
+    const updatedParticipants = formData?.other_participants?.map(
       (participant, i) =>
         i === index ? { ...participant, [field]: value } : participant
     );
@@ -247,14 +233,6 @@ export default function AddMeeting() {
       other_participants: updatedParticipants,
     }));
   };
-
-  // const handleChange = (e) => {
-  //   const { id, name, value } = e.target;
-  //   setFormData({ ...formData, [id || name]: value });
-  //   if (name === "client_name" && value) {
-  //     fetchDirectors(value);
-  //   }
-  // };
   const handleAgendaItemChange = (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevData) => ({
@@ -279,258 +257,145 @@ export default function AddMeeting() {
       ],
     }));
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/meeting-agenda-template`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        console.log(data, "daada");
-        console.log(formData?.agendaItems[0], "selectedOption");
+  // const handleAgendaItemChange = (selectedOptions) => {
+  //   const selectedAgendas = selectedOptions
+  //     ? selectedOptions.map((option) => {
+  //         const agenda = agendaList.find(
+  //           (item) => item.templateName === option.value
+  //         );
+  //         return {
+  //           templateName: option.value,
+  //           meetingType: agenda?.meetingType || "",
+  //           templateFile: agenda?.fileName || "",
+  //         };
+  //       })
+  //     : [];
 
-        setDocxUrl(data?.results);
-        if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
-          const noticeTemplate = data?.results?.find(
-            (item) => item.id === "673efb66ace56b4760e37c61"
-          );
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     agendaItems: selectedAgendas,
+  //   }));
+  // };
 
-          if (noticeTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              notes: {
-                ...prevFormData.notes,
-                templateFile: noticeTemplate.fileName,
-              },
-            }));
-          }
-          const momTemplate = data?.results?.find(
-            (item) => item.id === "673f2063640f38762b0450c4"
-          );
+  const addAgendaItem = () => {
+    setFormData((prevData) => ({
+      ...prevData,
+      agendaItems: [
+        ...prevData.agendaItems,
+        { templateName: "", meetingType: "board_meeting", fileName: "" },
+      ],
+    }));
+  };
 
-          if (momTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              mom: {
-                ...prevFormData.mom,
-                templateFile: momTemplate.fileName,
-              },
-            }));
-          }
-          const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
-          );
-
-          if (attendanceTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              attendance: {
-                ...prevFormData.attendance,
-                templateFile: attendanceTemplate.fileName,
-              },
-            }));
-          }
-          const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "67515198aa5dd74676e405be"
-          );
-          if (formData?.date) {
-            const formDate = new Date(formData?.date);
-            const currentDate = new Date();
-            const timeDifference = formDate - currentDate;
-            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-            if (daysDifference < 7 && daysDifference >= 0) {
-              setFormData((prevFormData) => ({
-                ...prevFormData,
-                notes: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
-              }));
-            } else {
-              setFormData((prevFormData) => ({
-                ...prevFormData,
-                notes: {
-                  ...prevFormData.notes,
-                  templateFile: noticeTemplate.fileName,
-                },
-              }));
-            }
-          }
-        } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
-          const noticeTemplate = data?.results?.find(
-            (item) => item.id === "6756aaaa696ba6002745bbd9"
-          );
-
-          if (noticeTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              notes: {
-                ...prevFormData.notes,
-                templateFile: noticeTemplate.fileName,
-              },
-            }));
-          }
-          const momTemplate = data?.results?.find(
-            (item) => item.id === "6756ab53696ba6002745bbe5"
-          );
-
-          if (momTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              mom: {
-                ...prevFormData.mom,
-                templateFile: momTemplate.fileName,
-              },
-            }));
-          }
-          const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
-          );
-
-          if (attendanceTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              attendance: {
-                ...prevFormData.attendance,
-                templateFile: attendanceTemplate.fileName,
-              },
-            }));
-          }
-          const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "6756b022696ba6002745bbeb"
-          );
-          if (formData?.date) {
-            const formDate = new Date(formData?.date);
-            const currentDate = new Date();
-            const timeDifference = formDate - currentDate;
-            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-            if (daysDifference < 7 && daysDifference >= 0) {
-              setFormData((prevFormData) => ({
-                ...prevFormData,
-                notes: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
-              }));
-            } else {
-              setFormData((prevFormData) => ({
-                ...prevFormData,
-                notes: {
-                  ...prevFormData.notes,
-                  templateFile: noticeTemplate.fileName,
-                },
-              }));
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [formData?.agendaItems[0]]);
+  const removeAgendaItem = (index) => {
+    if (formData?.agendaItems.length > 1) {
+      setFormData((prevData) => ({
+        ...prevData,
+        agendaItems: prevData.agendaItems.filter((_, i) => i !== index),
+      }));
+    } else {
+      toast.error("Please fill atleast 1 Agenda Item");
+    }
+  };
 
   const agendaOptions = agendaList.map((agenda) => ({
     value: agenda.templateName,
     label: agenda.templateName,
   }));
 
-  const agendaFileOptions = agendaList.map((agenda) => ({
-    value: agenda.fileName,
-    label: agenda.fileName,
-  }));
-  const directorOptions = directorList.map((director) => ({
+  const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
   }));
-
+  const CommitteeOptions = committeeList?.map((committee) => ({
+    value: committee.committee.id,
+    label: committee.committee.name,
+  }));
   const validateForm = () => {
-    const {
-      title,
-      client_name,
-      description,
-      meetingType,
-      date,
-      startTime,
-      organizer,
-      location,
-    } = formData;
+    const { meetingType, date, startTime, location } = formData;
 
-    if (
-      !title ||
-      !client_name ||
-      !description ||
-      !date ||
-      !startTime ||
-      !organizer ||
-      !location
-    ) {
+    if (!meetingType || !date || !startTime || !location) {
       toast.error("Please fill out all required fields.");
-      return false;
-    }
-    if (new Date(date) < new Date()) {
-      toast.error("Date cannot be in the past.");
       return false;
     }
 
     return true;
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
     setButtonLoading(true);
+
     try {
-      let response;
+      if (!validateForm()) {
+        setButtonLoading(false);
+        return;
+      }
+
       if (editingRow) {
+        const sanitizedFormData = {
+          ...formData,
+          other_participants: formData.other_participants.map(
+            ({ _id, ...rest }) => rest
+          ),
+        };
+
+        let response;
+        // Update an existing meeting
         response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
-          method: "PATCH",
-          body: JSON.stringify(formData),
+          body: JSON.stringify(sanitizedFormData),
         });
-        toast.success("Meeting template edited successfully");
+        if (!response.ok) {
+          const errorData = await response.json();
+          toast.error(errorData.message || "Error editing the meeting.");
+          setButtonLoading(false);
+          return;
+        }
         navigate("/meeting");
+        toast.success("Meeting document edited successfully");
       } else {
+        const sanitizedFormData = {
+          ...formData,
+          other_participants: formData?.other_participants.map(
+            ({ _id, ...rest }) => rest
+          ),
+        };
+
+        let response;
+        // Create a new meeting
         response = await fetch(`${apiURL}/meeting`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(sanitizedFormData),
         });
-
         if (!response.ok) {
           const errorData = await response.json();
-          toast.error(errorData.message || "Error editing the meeting.");
+          toast.error(errorData.message || "Failed to add item.");
+          setButtonLoading(false);
           return;
         }
 
         toast.success("Meeting added successfully");
-        navigate("/meeting");
       }
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
-      setButtonLoading(false);
-      setLoading(false);
+      setButtonLoading(false); // Hide button spinner
     }
   };
+
+  const options = directorList?.map((director) => ({
+    value: director?.id,
+    label: director?.name,
+  }));
   const clientOptions = clientList?.map((client) => ({
     value: client._id,
     label: client.company_name,
@@ -543,13 +408,10 @@ export default function AddMeeting() {
   };
 
   const handleClientChange = (selectedOption) => {
-    console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
 
     fetchDirectors(selectedOption?.value);
-    fetchRegisteredAddress(selectedOption?.value);
   };
-
   return (
     <>
       <div
@@ -557,63 +419,43 @@ export default function AddMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <ToastContainer autoClose={3000} />
-
-        <h2 className="mb-3 mt-5">{editingRow ? "Edit" : "Add"} Meeting</h2>
+        <h2 className="mb-3 mt-5">Edit Commitee Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col>
-                <Form.Group controlId="client_name">
-                  <Form.Label>Client Name</Form.Label>
-                  <Select
-                    id="client-name-select"
-                    options={clientOptions}
-                    placeholder="Select Client"
-                    value={clientOptions.find(
-                      (option) => option.value === formData?.client_name
-                    )}
-                    onChange={handleClientChange}
-                    isClearable
-                  />
-                  {/* <Form.Control
-                    as="select"
-                    name="client_name"
-                    value={formData.client_name}
-                    onChange={handleChange}
-                    style={{
-                      height: "50px", // Taller dropdown
-                      width: "300px", // Wider dropdown
-                      position: "absolute", // Positioned absolutely within its parent
-                      top: "20px", // Distance from the top
-                      left: "10px", // Distance from the left
-                      padding: "10px", // More padding for better appearance
-                    }}
-                  >
-                    <option value="">Select Client</option>
-                    {clientList?.map((client) => (
-                      <option key={client._id} value={client._id}>
-                        {client.company_name}
-                      </option>
-                    ))}
-                  </Form.Control> */}
-                </Form.Group>
-              </Col>
-              <Col>
                 <Form.Group controlId="title">
                   <Form.Label>Title</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.title}
+                    value={formData?.title}
                     onChange={handleChange}
                     placeholder="Enter Title"
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Group controlId="client_name">
+                  <Form.Label>Client Name</Form.Label>
+                  <Select
+                    isDisabled={true}
+                    id="client-name-select"
+                    options={clientOptions}
+                    placeholder="Select Client"
+                    value={clientOptions.find(
+                      (option) => option.value === formData.client_name
+                    )}
+                    onChange={handleClientChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
-            <Row className="mt-2 mb-2">
+            <Row></Row>
+
+            <Row className="mt-4 mb-3">
               <Form.Label>Meeting Documents</Form.Label>
 
               <Form.Group controlId="agendaItems">
@@ -621,29 +463,24 @@ export default function AddMeeting() {
                   options={agendaOptions}
                   placeholder="Select Meeting Document"
                   value={
-                    formData.agendaItems.length > 0
+                    formData?.agendaItems.length > 0
                       ? {
-                          value: formData.agendaItems[0].templateName,
-                          label: formData.agendaItems[0].templateName,
+                          value: formData?.agendaItems[0].templateName,
+                          label: formData?.agendaItems[0].templateName,
                         }
                       : null
                   }
                   onChange={handleAgendaItemChange}
                   isClearable
                 />
-
                 {/* <Select
                   options={agendaOptions}
                   placeholder="Select Meeting Documents"
                   isMulti
-                  value={
-                    formData.agendaItems.length > 0
-                      ? {
-                          value: formData.agendaItems[0].templateName,
-                          label: formData.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
+                  value={formData.agendaItems.map((item) => ({
+                    value: item.templateName,
+                    label: item.templateName,
+                  }))}
                   onChange={handleAgendaItemChange}
                   isClearable
                 /> */}
@@ -663,6 +500,36 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="committee" className="mt-2">
+                  <Form.Label>Committee</Form.Label>
+                  <Select
+                    options={CommitteeOptions}
+                    onChange={(selectedOption) => {
+                      const selectedCommittee = committeeList.find(
+                        (committee) =>
+                          committee.committee.id === selectedOption.value
+                      );
+
+                      const members =
+                        selectedCommittee?.committee_members.map((member) => ({
+                          director: member.name.id,
+                          isPresent: false,
+                        })) || [];
+
+                      setFormData({
+                        ...formData,
+                        committee_id: selectedOption.value,
+                        participants: members,
+                      });
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
                   <Select
@@ -672,7 +539,7 @@ export default function AddMeeting() {
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions.length
+                      formData.participants.length === directorOptions?.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
@@ -680,7 +547,7 @@ export default function AddMeeting() {
                         : directorOptions.filter((option) =>
                             formData.participants.some(
                               (participant) =>
-                                participant.director === option.value
+                                participant?.director?.id == option.value
                             )
                           )
                     }
@@ -710,6 +577,7 @@ export default function AddMeeting() {
                           participants: [],
                         });
                       } else {
+                        console.log(formData.participants, "d-1");
                         setFormData({
                           ...formData,
                           participants: selectedOptions
@@ -719,6 +587,7 @@ export default function AddMeeting() {
                               isPresent: false,
                             })),
                         });
+                        console.log(formData.participants, "d-2");
                       }
                     }}
                     isClearable
@@ -730,9 +599,9 @@ export default function AddMeeting() {
             <Col>
               <Form.Group className="mt-2" controlId="other-participants">
                 <Form.Label>Other Participants</Form.Label>
-                {formData.other_participants.map((participant, index) => (
+                {formData?.other_participants?.map((participant, index) => (
                   <div key={index} className="participant-inputs">
-                    <Row className="mt-2">
+                    <Row>
                       <Col>
                         <Form.Control
                           type="text"
@@ -786,16 +655,16 @@ export default function AddMeeting() {
                 type="button"
                 onClick={handleAddParticipant}
               >
-                Click to add more Participant
+                Add Participant
               </Button>
             </Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
-                  <Form.Label className="f-label">Start Time</Form.Label>
+                  <Form.Label>Start Time</Form.Label>
                   <Form.Control
                     type="time"
-                    value={formData.startTime}
+                    value={formData?.startTime}
                     onChange={handleChange}
                     required
                   />
@@ -803,10 +672,10 @@ export default function AddMeeting() {
               </Col>
               <Col>
                 <Form.Group controlId="location">
-                  <Form.Label className="f-label">Location</Form.Label>
+                  <Form.Label>Location</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.location}
+                    value={formData?.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
                   />
@@ -814,7 +683,7 @@ export default function AddMeeting() {
               </Col>
             </Row>
 
-            <div className="mt-4">
+            <div className="mt-2">
               <Button
                 variant="primary"
                 onClick={handleCloseAddModal}
@@ -839,6 +708,7 @@ export default function AddMeeting() {
           </Form>
         </Modal.Body>
       </div>
+      <ToastContainer autoClose={3000} />
     </>
   );
 }

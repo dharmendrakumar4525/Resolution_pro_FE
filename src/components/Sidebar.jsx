@@ -6,6 +6,7 @@ import {
   faTable,
   faTimes,
   faUser,
+  faPenToSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
@@ -129,7 +130,7 @@ export default function Sidebar() {
                 <NavItem title="Board Meeting" link="/meeting" />
               )}
               {hasPermission("Meeting", "view") && (
-                <NavItem title="Committee Meeting" link="/meeting" />
+                <NavItem title="Committee Meeting" link="/committee-meeting" />
               )}
               {hasPermission("Meeting", "view") && (
                 <NavItem title="Shareholder Meeting" link="/meeting" />
@@ -137,6 +138,16 @@ export default function Sidebar() {
               {hasPermission("Meeting", "view") && (
                 <NavItem title="CSR Meeting" link="/meeting" />
               )}
+            </CollapsableNavItem>
+            <CollapsableNavItem
+              eventKey="approval/"
+              title="Pending Approval"
+              icon={faPenToSquare}
+            >
+              {/* {hasPermission("Members_resolution", "view") && ( */}
+              <NavItem title="Approval" link="/approval-docs" />
+              <NavItem title="Revise" link="/revise-docs" />
+              {/* )} */}
             </CollapsableNavItem>
 
             <CollapsableNavItem
