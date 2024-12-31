@@ -166,6 +166,23 @@ export default function AddMeeting() {
       }
     }
   }, [formData?.client_name, clientList, rows]);
+  const fetchRegisteredAddress = async (cid) => {
+    try {
+      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setFormData((prevData) => ({
+        ...prevData,
+        location: data.registered_address,
+      }));
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
   function getOrdinalSuffix(number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const value = number % 100;

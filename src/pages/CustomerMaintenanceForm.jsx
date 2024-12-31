@@ -116,6 +116,7 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleAuditorChange = (field, value) => {
+
     if (value == "") {
       value = null;
     }
@@ -151,6 +152,7 @@ export default function CustomerMaintenanceForm() {
       setButtonLoading(false);
       return;
     }
+
     if (
       parseFloat(formData.paid_up_capital_preference_capital) >
       parseFloat(formData.authorised_capital_preference_capital)
@@ -166,6 +168,7 @@ export default function CustomerMaintenanceForm() {
       setButtonLoading(false);
       return;
     }
+
     if (bsDate <= incorporationDate) {
       toast.error(
         "Balance Sheet Date must be after the Date of Incorporation."

@@ -233,6 +233,11 @@ const ResolutionEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
+  useEffect(() => {
+    setTimeout(() => {
+      if (fileUrl) handleFileLoad(fileUrl);
+    }, 1000);
+  }, [fileUrl]);
 
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
@@ -248,77 +253,36 @@ const ResolutionEditor = () => {
     }
   };
   useEffect(() => {
-    const handleMultipleFilesAddOn = async (urls) => {
+    const handleMultipleFilesAddOn = async () => {
       try {
         // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
+        const title =
+          "CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF #{company_name} AT THEIR MEETING HELD ON #{day_date}. ";
+        let titleContent = `<h3>${title}</h3>\n`;
 
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
-          const processedContent = [];
+        let footerContent = `<p>For #{company_name}
 
-          if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
+<br/>
+     Name: ${"name"}<br/>
+     Director<br/>
+     DIN: ${"din_pan"}<br/>
+     </p>`;
 
-          if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
-          }
-
-          return processedContent.join("\n");
-        });
-
-        const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
-        setEditorContent(initializedContent + combinedContent);
+        setEditorContent(titleContent + initializedContent + footerContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
     };
-
-    handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
-  }, [selectedData]);
-
-  useEffect(() => {
     setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
+      handleMultipleFilesAddOn();
+    }, 2000);
+
+    processPlaceholders();
+  }, [initializedContent]);
 
   // Load content on file URL change
   useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    if (fileUrl) handleFileLoad(fileUrl);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
@@ -345,19 +309,6 @@ const ResolutionEditor = () => {
     );
 
     setEditorContent(updatedContent);
-  };
-
-  const handleConfirm = (placeholder) => {
-    const value = inputFields[placeholder] || placeholder;
-    const updatedContent = editorContent.replace(
-      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-      value
-    );
-    setEditorContent(updatedContent);
-    setConfirmedFields((prevState) => ({
-      ...prevState,
-      [placeholder]: true,
-    }));
   };
 
   const handleInputChange = (placeholder, value) => {
