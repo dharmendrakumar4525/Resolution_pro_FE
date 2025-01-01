@@ -47,6 +47,12 @@ import AttendanceEditor from "../pages/AttendanceEditor";
 import ResolutionEditor from "../pages/ResolutionEditor";
 import AcknowledgementEditor from "../pages/AcknowledgementEditor";
 import LeaveEditor from "../pages/LeaveEditor";
+import ApprovalDocs from "../pages/ApprovalDocs";
+import ReviseDocs from "../pages/ReviseDocs";
+import CommitteeMeeting from "../pages/committee/CommitteeMeeting";
+import CommitteeDocuments from "../pages/committee/CommitteeDocuments";
+import AddCommitteeMeeting from "../pages/committee/AddCommitteeMeeting";
+import EditCommitteeMeeting from "../pages/committee/EditCommitteeMeeting";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -98,6 +104,46 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Committee />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/add-committee-meet"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AddCommitteeMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/edit-committee-meet/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<EditCommitteeMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/committee-meeting"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CommitteeMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/committee-documents/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CommitteeDocuments />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -338,6 +384,36 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<EditMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/approval"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ApprovalDocs />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/approval-docs"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ApprovalDocs />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/revise-docs"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ReviseDocs />} />
           ) : (
             <Navigate to="/login" />
           )

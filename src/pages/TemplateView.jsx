@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 // import { getDocument } from "pdfjs-dist";
 import { saveAs } from "file-saver";
@@ -25,9 +25,15 @@ const TemplateViewer = () => {
   const { id } = useParams();
   const token = localStorage.getItem("refreshToken");
   const [buttonLoading, setButtonLoading] = useState(false);
-
+  const navigate = useNavigate();
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page;
+  const approvalData = location.state?.meetData;
+  const meetData = approvalData?.meeting_id;
+  console.log(approvalData, "approved");
+  console.log(fileUrl, "approved");
+  console.log(meetData, "meetData");
   useEffect(() => {
     handleFileLoad(fileUrl);
   }, [fileUrl]);
@@ -45,6 +51,110 @@ const TemplateViewer = () => {
     }
 
     setInputFields(fields);
+  };
+  const [formData, setFormData] = useState({
+    decision: "",
+    remarks: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    console.log(formData);
+    e.preventDefault();
+    if (formData.decision == "revise" && formData.remarks == "") {
+      toast.info("Please add a reason before sending for Revision");
+      return;
+    } else if (formData.decision == "revise") {
+      const RefusalData = {
+        meeting_id: meetData?.id,
+        meeting_type: meetData?.meetingType,
+        company_id: meetData?.client_name,
+        reason: formData?.remarks,
+      };
+      try {
+        const response = await fetch(`${apiURL}/meeting-revise`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(RefusalData),
+        });
+        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            approval_status: "draft",
+          }),
+        });
+        const patchApprovalResponse = await fetch(
+          `${apiURL}/meeting-approval/${approvalData.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              is_active: false,
+            }),
+          }
+        );
+        if (response.ok && patchResponse.ok && patchApprovalResponse.ok) {
+          toast.success("This Document is sent for revision");
+          navigate("/approval-docs");
+        } else {
+          toast.error("Error making request");
+        }
+      } catch (error) {
+        toast.error("Error occurred while saving the document.");
+      }
+    } else if (formData.decision == "accept") {
+      try {
+        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_approved: false,
+            approval_status: "approved",
+          }),
+        });
+        const patchApprovalResponse = await fetch(
+          `${apiURL}/meeting-approval/${approvalData.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              is_active: false,
+            }),
+          }
+        );
+        if (patchResponse.ok && patchApprovalResponse) {
+          toast.success("The document is approved now");
+          navigate("/approval-docs");
+        } else {
+          toast.error("Error making request");
+        }
+      } catch (error) {
+        toast.error("Error occurred while saving the document.");
+      }
+    }
   };
 
   // Handle input changes for each placeholder
@@ -128,12 +238,12 @@ const TemplateViewer = () => {
         const result = await mammoth.convertToHtml({ arrayBuffer });
         const htmlContent = result.value;
         setEditorContent(htmlContent);
-      } 
+      }
       // else if (fileType === "pdf") {
       //   // Handle PDF file
       //   const textContent = await extractPdfText(arrayBuffer);
       //   setEditorContent(textContent);
-      // } 
+      // }
       else {
         throw new Error(
           "Unsupported file format. Only DOCX and PDF are supported."
@@ -249,6 +359,7 @@ const TemplateViewer = () => {
 
   return (
     <Container className="mt-5">
+      <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer" style={{ width: "70%" }}>
           <h1 className="mb-4">Document Viewer</h1>
@@ -265,108 +376,47 @@ const TemplateViewer = () => {
             }}
           />
         </div>
-        <div className="rightContainerHidden">
-          {/* Detected Placeholder Input Fields */}
-          <div className="dynamic-inputs mt-4">
-            <h3>Detected Placeholders:</h3>
-            {Object.keys(inputFields).length > 0 ? (
-              Object.keys(inputFields).map((placeholder) => (
-                <div key={placeholder}>
-                  <label>{placeholder}:</label>
-                  <input
-                    type="text"
-                    value={inputFields[placeholder]}
-                    onChange={(e) =>
-                      handleInputChange(placeholder, e.target.value)
-                    }
-                    placeholder={`Enter ${placeholder}`}
-                    disabled={confirmedFields[placeholder]} // Disable if confirmed
-                  />
-                  <Button
-                    variant="secondary"
-                    className="ms-2"
-                    onClick={() => handleConfirm(placeholder)}
-                    disabled={confirmedFields[placeholder]} // Disable if already confirmed
-                  >
-                    Confirm
-                  </Button>
-                </div>
-              ))
-            ) : (
-              <p>All placeholders with ${"{example}"} are filled</p>
-            )}
-          </div>
-
-          {/* Download and Save Actions */}
-          <div className="download-options mt-5">
-            <Button
-              // onClick={createWordDocument}
-              onClick={saveDocument}
-              disabled={hasUnconfirmedPlaceholders} // Disable if placeholders are unconfirmed
-            >
-              {buttonLoading ? (
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />
-              ) : (
-                "Save Meeting Document"
-              )}
-            </Button>
-            {hasUnconfirmedPlaceholders && (
-              <p style={{ color: "red" }}>
-                Some placeholders are unconfirmed. Please confirm all before
-                downloading the Word file.
-              </p>
-            )}
-          </div>
-
-          {/* Saved documents removed */}
-          {/* {documents.length > 0 && (
-            <div className="mt-5">
-              <h3>Saved Documents</h3>
-              <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                  <tr>
-                    <th>#</th>
-                    <th>Document Name</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((doc, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{doc.name}</td>
-                      <td>
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setEditorContent(doc.content);
-                            setCurrentDocName(doc.name);
-                            setIsEditing(true);
-                          }}
-                          className="me-2"
-                        >
-                          Open
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={createWordDocument}
-                        >
-                          Download as .docx
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+        {page == "approval" && (
+          <form onSubmit={(e) => handleSubmit(e)} className="mt-4">
+            {/* Select Field */}
+            <div className="mb-3">
+              <label htmlFor="decision" className="form-label">
+                Decision
+              </label>
+              <select
+                id="decision"
+                name="decision"
+                className="form-select"
+                value={formData.decision}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select</option>
+                <option value="accept">Accept</option>
+                <option value="revise">Revise</option>
+              </select>
             </div>
-          )} */}
-        </div>
+
+            <div className="mb-3">
+              <label htmlFor="remarks" className="form-label">
+                Remarks
+              </label>
+              <textarea
+                id="remarks"
+                name="remarks"
+                className="form-control"
+                rows="4"
+                placeholder="Enter remarks here..."
+                value={formData.remarks}
+                onChange={handleChange}
+              ></textarea>
+            </div>
+
+            <button type="submit" className="btn btn-primary">
+              Submit
+            </button>
+          </form>
+        )}
       </div>
     </Container>
   );

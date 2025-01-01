@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import {
   Table,
   Button,
@@ -16,7 +16,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 
-export default function AddMeeting() {
+export default function AddCommitteeMeeting() {
   const [rows, setRows] = useState([]);
   const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -25,6 +25,7 @@ export default function AddMeeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -36,73 +37,37 @@ export default function AddMeeting() {
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
-    meetingType: "board_meeting",
+    meetingType: "committee_meeting",
     date: "",
-    description: "To disburse Salary",
     startTime: "",
     organizer: user.id,
+    committee_id: "",
     participants: [],
     status: "scheduled",
     other_participants: [],
     agendaItems: [],
     variables: {},
-    location: "",
-    standard_time: "",
     notes: {
       templateName: "Notice",
-      meetingType: "board_meeting",
+      meetingType: "committee_meeting",
       templateFile: "",
     },
     mom: {
       templateName: "MOM",
-      meetingType: "board_meeting",
+      meetingType: "committee_meeting",
       templateFile: "",
     },
     attendance: {
       templateName: "Attendance",
-      meetingType: "board_meeting",
-      templateFile: "",
-    },
-    acknowledgement: {
-      templateName: "Acknowledgement",
-      meetingType: "board_meeting",
+      meetingType: "committee_meeting",
       templateFile: "",
     },
   });
 
-  const timeZoneOptions = [
-    { value: "IST", label: "Indian Standard Time (IST)" },
-    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
-  ];
-
-  const fetchRegisteredAddress = async (cid) => {
-    try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      setFormData((prevData) => ({
-        ...prevData,
-
-        location: data.registered_address,
-      }));
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-    }
-  };
-
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
+        const response = await fetch(`${apiURL}/committee-meeting`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -165,6 +130,7 @@ export default function AddMeeting() {
         console.error("Error fetching Agenda:", error);
       }
     };
+
     fetchClientList();
     fetchAgendaList();
   }, []);
@@ -179,23 +145,6 @@ export default function AddMeeting() {
       }
     }
   }, [formData?.client_name, clientList, rows]);
-  const fetchRegisteredAddress = async (cid) => {
-    try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      setFormData((prevData) => ({
-        ...prevData,
-        location: data.registered_address,
-      }));
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-    }
-  };
   function getOrdinalSuffix(number) {
     const suffixes = ["th", "st", "nd", "rd"];
     const value = number % 100;
@@ -212,9 +161,28 @@ export default function AddMeeting() {
         new Date(meeting.createdAt) < new Date()
     ).length;
     let result = getOrdinalSuffix(previousCount + 1);
-    setFormData((prev) => ({ ...prev, title: result + " " + "Board Meeting" }));
+    setFormData((prev) => ({
+      ...prev,
+      title: result + " " + "Committee Meeting",
+    }));
   };
-
+  const fetchCommitteeList = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/committee-member?client_name=${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setCommitteeList(data.results);
+    } catch (error) {
+      console.error("Error fetching Agenda:", error);
+    }
+  };
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -286,7 +254,7 @@ export default function AddMeeting() {
       agendaItems: [
         {
           templateName: selectedOption.value,
-          meetingType: agenda?.meetingType || "",
+          meetingType: "committee_meeting",
           templateFile: agenda?.fileName || "",
         },
       ],
@@ -302,24 +270,9 @@ export default function AddMeeting() {
           },
         });
         const data = await response.json();
-        console.log(formData?.agendaItems[0], "selectedOption");
 
         setDocxUrl(data?.results);
         if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
-          const acknowledgementTemplate = data?.results?.find(
-            (item) => item.id === "676a5881db544a64c6baa090"
-          );
-          console.log(acknowledgementTemplate, "a123");
-          if (acknowledgementTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              acknowledgement: {
-                ...prevFormData.acknowledgement,
-                templateFile: acknowledgementTemplate?.fileName,
-              },
-            }));
-          }
-
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "673efb66ace56b4760e37c61"
           );
@@ -427,20 +380,6 @@ export default function AddMeeting() {
               },
             }));
           }
-          const acknowledgementTemplate = data?.results?.find(
-            (item) => item.id === "676a5881db544a64c6baa090"
-          );
-          console.log(acknowledgementTemplate, "a123");
-          if (acknowledgementTemplate) {
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              acknowledgement: {
-                ...prevFormData.acknowledgement,
-                templateFile: acknowledgementTemplate?.fileName,
-              },
-            }));
-          }
-
           const shortNoticeTemplate = data?.results?.find(
             (item) => item.id === "6756b022696ba6002745bbeb"
           );
@@ -480,25 +419,23 @@ export default function AddMeeting() {
     fetchData();
   }, [formData?.agendaItems[0]]);
 
-  const agendaOptions = agendaList.map((agenda) => ({
+  const agendaOptions = agendaList?.map((agenda) => ({
     value: agenda.templateName,
     label: agenda.templateName,
   }));
 
-  const agendaFileOptions = agendaList.map((agenda) => ({
-    value: agenda.fileName,
-    label: agenda.fileName,
-  }));
-  const directorOptions = directorList.map((director) => ({
+  const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
   }));
-
+  const CommitteeOptions = committeeList?.map((committee) => ({
+    value: committee.committee.id,
+    label: committee.committee.name,
+  }));
   const validateForm = () => {
     const {
       title,
       client_name,
-      description,
       meetingType,
       date,
       startTime,
@@ -509,7 +446,6 @@ export default function AddMeeting() {
     if (
       !title ||
       !client_name ||
-      !description ||
       !date ||
       !startTime ||
       !organizer ||
@@ -533,37 +469,24 @@ export default function AddMeeting() {
     setButtonLoading(true);
     try {
       let response;
-      if (editingRow) {
-        response = await fetch(`${apiURL}/meeting/${editingRow.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
 
-          method: "PATCH",
-          body: JSON.stringify(formData),
-        });
-        toast.success("Meeting template edited successfully");
-        navigate("/meeting");
-      } else {
-        response = await fetch(`${apiURL}/meeting`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
+      response = await fetch(`${apiURL}/committee-meeting`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-        if (response.ok) {
-          toast.success("Meeting added successfully");
-          navigate("/meeting");
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || "Error editing the meeting.");
-          return;
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Error editing the meeting.");
+        return;
       }
+
+      toast.success("Committee Meeting added successfully");
+      navigate("/committe-meeting");
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -580,21 +503,18 @@ export default function AddMeeting() {
     console.log(id, name, value, "target");
 
     setFormData({ ...formData, [id || name]: value });
+    // if (name === "client_name" && value) {
+    //   fetchDirectors(value);
+    // }
   };
 
   const handleClientChange = (selectedOption) => {
     console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
-
+    // if (name === "client_name" && value) {
+    fetchCommitteeList(selectedOption?.value);
     fetchDirectors(selectedOption?.value);
-    fetchRegisteredAddress(selectedOption?.value);
-  };
-  const handleTimeZoneChange = (selectedOption) => {
-    setFormData({
-      ...formData,
-      standard_time: selectedOption.value,
-    });
-    console.log("Selected Time Zone:", selectedOption.value);
+    // }
   };
 
   return (
@@ -604,9 +524,9 @@ export default function AddMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <ToastContainer autoClose={1000} />
+        <ToastContainer autoClose={3000} />
 
-        <h2 className="mb-3 mt-5">{editingRow ? "Edit" : "Add"} Meeting</h2>
+        <h2 className="mb-3 mt-5">Add Committee Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
@@ -710,11 +630,41 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="committee" className="mt-2">
+                  <Form.Label>Committee</Form.Label>
+                  <Select
+                    options={CommitteeOptions}
+                    onChange={(selectedOption) => {
+                      const selectedCommittee = committeeList.find(
+                        (committee) =>
+                          committee.committee.id === selectedOption.value
+                      );
+
+                      const members =
+                        selectedCommittee?.committee_members.map((member) => ({
+                          director: member.name.id,
+                          isPresent: false,
+                        })) || [];
+
+                      setFormData({
+                        ...formData,
+                        committee_id: selectedOption.value,
+                        participants: members,
+                      });
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
                   <Select
+                    isDisabled
                     isMulti
-                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
@@ -773,76 +723,71 @@ export default function AddMeeting() {
                     isSearchable
                   />
                 </Form.Group>
-                {directorList.length == 0 && (
-                  <p style={{ color: "red", marginTop: "10px" }}>
-                    Director options are not available. Please add options
-                    before proceeding.
-                  </p>
-                )}
               </Col>
             </Row>
-            <Col>
-              <Form.Group className="mt-2" controlId="other-participants">
-                <Form.Label>Other Participants</Form.Label>
-                {formData.other_participants.map((participant, index) => (
-                  <div key={index} className="participant-inputs">
-                    <Row className="mt-2">
-                      <Col>
-                        <Form.Control
-                          type="text"
-                          value={participant.name || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "name",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Name"
-                        />
-                      </Col>
-                      <Col>
-                        <Form.Control
-                          type="email"
-                          value={participant.email || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "email",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Email"
-                        />
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      <Col>
-                        <Button
-                          className="mt-2"
-                          type="button"
-                          variant="danger"
-                          onClick={() => handleRemoveParticipant(index)}
-                        >
-                          Remove
-                        </Button>
-                      </Col>
-                    </Row>
-                  </div>
-                ))}
-              </Form.Group>
-            </Col>
             <Row>
-              <Button
-                className="mt-2"
-                style={{ width: "300px", marginBottom: "30px" }}
-                type="button"
-                onClick={handleAddParticipant}
-              >
-                Click to add more Participant
-              </Button>
+              <Col>
+                <Form.Group className="mt-2" controlId="other-participants">
+                  <Form.Label>Other Participants</Form.Label>
+                  {formData.other_participants.map((participant, index) => (
+                    <div key={index} className="participant-inputs">
+                      <Row className="mt-2">
+                        <Col>
+                          <Form.Control
+                            type="text"
+                            value={participant.name || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Name"
+                          />
+                        </Col>
+                        <Col>
+                          <Form.Control
+                            type="email"
+                            value={participant.email || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "email",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Email"
+                          />
+                        </Col>
+                      </Row>
+
+                      <Row>
+                        <Col>
+                          <Button
+                            className="mt-2"
+                            type="button"
+                            variant="danger"
+                            onClick={() => handleRemoveParticipant(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
+                  ))}
+                </Form.Group>
+                <Button
+                  className="mt-2"
+                  style={{ width: "300px", marginBottom: "30px" }}
+                  type="button"
+                  onClick={handleAddParticipant}
+                >
+                  Click to add more Participant
+                </Button>
+              </Col>
             </Row>
+            <Row></Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
@@ -855,22 +800,6 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-
-              <Col>
-                <Form.Group controlId="selectTimeZone">
-                  <Form.Label className="f-label">Select Time Zone</Form.Label>
-
-                  <Select
-                    id="time-zone-select"
-                    options={timeZoneOptions}
-                    onChange={handleTimeZoneChange}
-                    isSearchable
-                    placeholder="Choose Time Zone"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
               <Col>
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">Location</Form.Label>

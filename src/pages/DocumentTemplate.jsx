@@ -113,6 +113,7 @@ export default function DocumentTemplate() {
       templateName: "",
       fileName: "",
       by: user.id,
+      isTemplateNameEditable: true,
     });
     setOpenAddModal(true);
   };
@@ -186,7 +187,7 @@ export default function DocumentTemplate() {
       "674869ef2be3f7ca95d98465",
       "6756aac6696ba6002745bbdf",
     ];
-    console.log(row, "muk");
+
     setEditingRow(row);
     setOpenAddModal(true);
     setFormData({

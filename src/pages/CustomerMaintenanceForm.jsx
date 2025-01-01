@@ -116,7 +116,7 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleAuditorChange = (field, value) => {
-    console.log(value, "value", field);
+
     if (value == "") {
       value = null;
     }

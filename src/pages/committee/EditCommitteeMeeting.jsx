@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import {
   Table,
   Button,
@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from "react-router-dom";
 import Select from "react-select";
 
-export default function EditMeeting() {
+export default function EditCommitteeMeeting() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
@@ -25,6 +25,8 @@ export default function EditMeeting() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
+  const [committeeList, setCommitteeList] = useState([]);
+
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -32,8 +34,6 @@ export default function EditMeeting() {
   const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
@@ -41,6 +41,7 @@ export default function EditMeeting() {
     date: "",
     startTime: "",
     organizer: user.id,
+    committee_id: "",
     participants: [],
     other_participants: [],
     agendaItems: [
@@ -51,13 +52,9 @@ export default function EditMeeting() {
       },
     ],
     location: "",
-    standard_time: "",
     status: "scheduled",
   });
-  const timeZoneOptions = [
-    { value: "IST", label: "Indian Standard Time (IST)" },
-    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
-  ];
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -104,6 +101,23 @@ export default function EditMeeting() {
     fetchClientList();
     fetchAgendaList();
   }, []);
+  const fetchCommitteeList = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/committee-member?client_name=${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setCommitteeList(data.results);
+    } catch (error) {
+      console.error("Error fetching Agenda:", error);
+    }
+  };
   const fetchDirectors = async (clientId) => {
     try {
       const response = await fetch(
@@ -161,30 +175,21 @@ export default function EditMeeting() {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
-
-    const transformedParticipants = row?.participants.map((participant) => ({
-      director: participant?.director?.id,
-      isPresent: participant?.isPresent,
-    }));
-
     setFormData({
       title: row?.title,
       client_name: row.client_name?.id || "",
+      description: row.description,
       meetingType: "board_meeting",
       date: row.date.split("T")[0],
       startTime: row?.startTime,
       organizer: row.organizer?.role,
-
-      participants: transformedParticipants,
-      standard_time: row?.standard_time,
-
       participants: row?.participants,
-
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
       })),
+      committee_id: row?.committee_id,
       other_participants: row.other_participants.length
         ? row.other_participants
         : [],
@@ -195,7 +200,10 @@ export default function EditMeeting() {
     }
   };
   useEffect(() => {
+
     handleEditClick(row);
+    fetchCommitteeList(formData?.client_name);
+
   }, [row]);
   const handleAddParticipant = () => {
     setFormData((prevState) => ({
@@ -295,14 +303,13 @@ export default function EditMeeting() {
     label: agenda.templateName,
   }));
 
-  const agendaFileOptions = agendaList.map((agenda) => ({
-    value: agenda.fileName,
-    label: agenda.fileName,
-  }));
-
   const directorOptions = directorList?.map((director) => ({
     value: director.id,
     label: director.name,
+  }));
+  const CommitteeOptions = committeeList?.map((committee) => ({
+    value: committee.committee.id,
+    label: committee.committee.name,
   }));
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
@@ -405,14 +412,6 @@ export default function EditMeeting() {
 
     fetchDirectors(selectedOption?.value);
   };
-  const handleTimeZoneChange = (selectedOption) => {
-    setFormData({
-      ...formData,
-      standard_time: selectedOption.value,
-    });
-    console.log("Selected Time Zone:", selectedOption.value);
-  };
-  console.log(formData, "formdata");
   return (
     <>
       <div
@@ -420,7 +419,7 @@ export default function EditMeeting() {
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <h2 className="mb-3 mt-5">Edit Meeting</h2>
+        <h2 className="mb-3 mt-5">Edit Commitee Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
@@ -453,6 +452,8 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
             </Row>
+
+            <Row></Row>
 
             <Row className="mt-4 mb-3">
               <Form.Label>Meeting Documents</Form.Label>
@@ -499,18 +500,46 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="committee" className="mt-2">
+                  <Form.Label>Committee</Form.Label>
+                  <Select
+                    options={CommitteeOptions}
+                    onChange={(selectedOption) => {
+                      const selectedCommittee = committeeList.find(
+                        (committee) =>
+                          committee.committee.id === selectedOption.value
+                      );
+
+                      const members =
+                        selectedCommittee?.committee_members.map((member) => ({
+                          director: member.name.id,
+                          isPresent: false,
+                        })) || [];
+
+                      setFormData({
+                        ...formData,
+                        committee_id: selectedOption.value,
+                        participants: members,
+                      });
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
-
                   <Select
                     isMulti
-                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions.length
+                      formData.participants.length === directorOptions?.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
@@ -518,9 +547,7 @@ export default function EditMeeting() {
                         : directorOptions.filter((option) =>
                             formData.participants.some(
                               (participant) =>
-
                                 participant?.director?.id == option.value
-
                             )
                           )
                     }
@@ -550,7 +577,7 @@ export default function EditMeeting() {
                           participants: [],
                         });
                       } else {
-                        console.log(formData.participants,"d-1")
+                        console.log(formData.participants, "d-1");
                         setFormData({
                           ...formData,
                           participants: selectedOptions
@@ -560,8 +587,7 @@ export default function EditMeeting() {
                               isPresent: false,
                             })),
                         });
-                        console.log(formData.participants,"d-2")
-
+                        console.log(formData.participants, "d-2");
                       }
                     }}
                     isClearable
@@ -645,25 +671,6 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
               <Col>
-                <Form.Group controlId="selectTimeZone">
-                  <Form.Label>Select Time Zone</Form.Label>
-
-                  <Select
-                    id="time-zone-select"
-                    options={timeZoneOptions}
-                    value={timeZoneOptions.find(
-                      (option) => option.value === formData?.standard_time
-                    )}
-                    onChange={handleTimeZoneChange}
-                    isSearchable
-                    placeholder="Choose Time Zone"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row className="mt-2">
-              {" "}
-              <Col>
                 <Form.Group controlId="location">
                   <Form.Label>Location</Form.Label>
                   <Form.Control
@@ -701,7 +708,7 @@ export default function EditMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={1000} />
+      <ToastContainer autoClose={3000} />
     </>
   );
 }
