@@ -23,6 +23,7 @@ import {
   Col,
 } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
@@ -34,7 +35,7 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
-
+import htmlDocx from "html-docx-js/dist/html-docx";
 const TemplateGenerator = () => {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
@@ -52,7 +53,6 @@ const TemplateGenerator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-
   const fileUrl = location.state;
   useEffect(() => {
     const fetchData = async (pageNo) => {
@@ -238,6 +238,9 @@ const TemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
+    // const docxBlob = htmlDocx.asBlob(formattedContent);
+    // saveAs(docxBlob)
+
     const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
@@ -258,14 +261,13 @@ const TemplateGenerator = () => {
 
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
-    console.log(docBlob, "mukul");
+
     // saveAs(docBlob, "mukul.docx")
     // return
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
 
-    console.log(formData, "tokennn1");
     try {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`, {

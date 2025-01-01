@@ -10,7 +10,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-
+import htmlDocx from "html-docx-js/dist/html-docx";
 import {
   Button,
   Modal,
@@ -236,6 +236,21 @@ const AgendaTemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
+    // console.log(formattedContent,"formatted")
+    let footerContent = `<p>Kindly make it convenient to attend the meeting. 
+        Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
+        <br/><p>For #{company_name}</p><p></p>
+
+
+<h6>
+  Name: \${name}</h6>
+ <h6> Director</h6>
+ <h6> DIN: \${din_pan}</h6>
+`;
+
+    const docxBlob = htmlDocx.asBlob(formattedContent);
+    console.log(docxBlob);
+
     const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({

@@ -45,6 +45,8 @@ import NoticeEditor from "../pages/NoticeEditor";
 import MomEditor from "../pages/MomEditor";
 import AttendanceEditor from "../pages/AttendanceEditor";
 import ResolutionEditor from "../pages/ResolutionEditor";
+import AcknowledgementEditor from "../pages/AcknowledgementEditor";
+import LeaveEditor from "../pages/LeaveEditor";
 import ApprovalDocs from "../pages/ApprovalDocs";
 import ReviseDocs from "../pages/ReviseDocs";
 import CommitteeMeeting from "../pages/committee/CommitteeMeeting";
@@ -282,6 +284,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ResolutionEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/acknowledgement-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AcknowledgementEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/leave-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<LeaveEditor />} />
           ) : (
             <Navigate to="/login" />
           )
