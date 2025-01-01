@@ -32,10 +32,11 @@ export default function EditMeeting() {
   const token = localStorage.getItem("refreshToken");
   const location = useLocation();
   const row = location.state?.row;
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    description: "",
     meetingType: "",
     date: "",
     startTime: "",
@@ -50,9 +51,13 @@ export default function EditMeeting() {
       },
     ],
     location: "",
+    standard_time: "",
     status: "scheduled",
   });
-  const navigate = useNavigate();
+  const timeZoneOptions = [
+    { value: "IST", label: "Indian Standard Time (IST)" },
+    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
+  ];
   useEffect(() => {
     const fetchClientList = async () => {
       try {
@@ -156,15 +161,25 @@ export default function EditMeeting() {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
+
+    const transformedParticipants = row?.participants.map((participant) => ({
+      director: participant?.director?.id,
+      isPresent: participant?.isPresent,
+    }));
+
     setFormData({
       title: row?.title,
       client_name: row.client_name?.id || "",
-      description: row.description,
       meetingType: "board_meeting",
       date: row.date.split("T")[0],
       startTime: row?.startTime,
       organizer: row.organizer?.role,
+
+      participants: transformedParticipants,
+      standard_time: row?.standard_time,
+
       participants: row?.participants,
+
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
@@ -390,6 +405,14 @@ export default function EditMeeting() {
 
     fetchDirectors(selectedOption?.value);
   };
+  const handleTimeZoneChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      standard_time: selectedOption.value,
+    });
+    console.log("Selected Time Zone:", selectedOption.value);
+  };
+  console.log(formData, "formdata");
   return (
     <>
       <div
@@ -426,20 +449,6 @@ export default function EditMeeting() {
                     )}
                     onChange={handleClientChange}
                     isClearable
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
-                <Form.Group controlId="description">
-                  <Form.Label className="f-label">Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData?.description}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
                   />
                 </Form.Group>
               </Col>
@@ -492,14 +501,16 @@ export default function EditMeeting() {
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
+
                   <Select
                     isMulti
+                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions?.length
+                      formData.participants.length === directorOptions.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
@@ -507,7 +518,9 @@ export default function EditMeeting() {
                         : directorOptions.filter((option) =>
                             formData.participants.some(
                               (participant) =>
+
                                 participant?.director?.id == option.value
+
                             )
                           )
                     }
@@ -632,6 +645,25 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
               <Col>
+                <Form.Group controlId="selectTimeZone">
+                  <Form.Label>Select Time Zone</Form.Label>
+
+                  <Select
+                    id="time-zone-select"
+                    options={timeZoneOptions}
+                    value={timeZoneOptions.find(
+                      (option) => option.value === formData?.standard_time
+                    )}
+                    onChange={handleTimeZoneChange}
+                    isSearchable
+                    placeholder="Choose Time Zone"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mt-2">
+              {" "}
+              <Col>
                 <Form.Group controlId="location">
                   <Form.Label>Location</Form.Label>
                   <Form.Control
@@ -669,7 +701,7 @@ export default function EditMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={3000} />
+      <ToastContainer autoClose={1000} />
     </>
   );
 }

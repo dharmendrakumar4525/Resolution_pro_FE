@@ -193,7 +193,27 @@ const NoticeEditor = () => {
 
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[1] || match[2];
+      if (placeholder == "today_date") {
+        function getCurrentDate() {
+          const today = new Date();
+          const dd = String(today.getDate()).padStart(2, "0");
+          const mm = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+          const yyyy = today.getFullYear();
 
+          return `${dd}/${mm}/${yyyy}`;
+        }
+
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          getCurrentDate()
+        );
+
+        // Mark as confirmed
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
       // Check if it's a system variable
       const systemVariable = variable[placeholder];
       // const systemVariable = rows.find((row) => row.name === placeholder);
@@ -244,7 +264,7 @@ const NoticeEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
+      // setEditorContent(result.value);
       setInitializedContent(result.value);
       setTitleToggle(!titleToggle);
     } catch (error) {
@@ -258,12 +278,11 @@ const NoticeEditor = () => {
     const handleMultipleFilesAddOn = async (dynamicResolution) => {
       try {
         let count = 5;
-        const fetchPromises = dynamicResolution.map(async (url) => {
-          const processedContent = [];
-
+        const fetchPromises = await dynamicResolution.map(async (url) => {
           if (url?.templateName) {
-            processedContent.push(count + ". " + url.templateName);
+            const content = `<p>${count}. ${url.templateName}</p>`;
             count++;
+            return content;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -271,27 +290,30 @@ const NoticeEditor = () => {
             );
           }
 
-          return processedContent.join("\n");
+          return "";
         });
         const results = await Promise.all(fetchPromises);
-        const combinedContent = results.join("\n");
-        let footerContent = `<p>For #{company_name}
+        const combinedContent = results.join("");
+        let footerContent = `<br/><p>Kindly make it convenient to attend the meeting.Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
+<br/><p>For #{company_name}</p><p></p>
 
-<br/>
-     Name: ${"name"}<br/>
-     Director<br/>
-     DIN: ${"din_pan"}<br/>
-     </p>`;
+<p>Name: \${name}</p>
+<p> Director</p>
+<p> DIN: \${din_pan}</p>
+`;
+
+        console.log(initializedContent, "hjkl");
         setEditorContent(initializedContent + combinedContent + footerContent);
       } catch (error) {
         console.error("Error combining content:", error);
       }
     };
-    setTimeout(() => {
-      handleMultipleFilesAddOn(dynamicResolution);
-    }, 2000);
-    processPlaceholders(dynamicResolution);
-  }, [dynamicResolution?.length]);
+    // processPlaceholders(dynamicResolution);
+
+    handleMultipleFilesAddOn(dynamicResolution);
+
+    console.log("useEffect=ret");
+  }, [initializedContent, dynamicResolution]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables

@@ -10,7 +10,11 @@ import {
   TableCell,
   TableRow,
   WidthType,
+  VerticalAlign,
+  AlignmentType,
+  HeightRule,
 } from "docx";
+
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -41,60 +45,11 @@ const AttendanceEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const [refresh, setRefresh] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const fetchMeetData = async (id) => {
-      try {
-        const response = await fetch(`${apiURL}/meeting`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        setMeetData(data.results);
-        const specificMeetInfo = data.results.find((item) => item.id === id);
 
-        if (specificMeetInfo) {
-          console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo);
-          setParticipants(specificMeetInfo.participants);
-          console.log(specificMeetInfo, "specific-data");
-        } else {
-          console.warn("No match found for the specified id.");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchMeetData(id);
-  }, [id, token]);
-  useEffect(() => {
-    const fetchData = async (clientID) => {
-      try {
-        const response = await fetch(
-          `${apiURL}/customer-maintenance/${clientID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-
-        setClientInfo(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData(meetInfo.client_name?.id);
-  }, [meetInfo?.client_name?.id, token]);
-  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -237,15 +192,52 @@ const AttendanceEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
+  const fetchMeetData = async (id) => {
+    try {
+      const response = await fetch(`${apiURL}/meeting`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setMeetData(data.results);
+      const specificMeetInfo = data.results.find((item) => item.id === id);
 
+      if (specificMeetInfo) {
+        console.log(specificMeetInfo, "Filtered meetInfo");
+        setMeetInfo(specificMeetInfo);
+        setClientInfo(specificMeetInfo.client_name);
+
+        setParticipants(specificMeetInfo.participants);
+        // setRefresh(!refresh)
+        handleFileLoad(fileUrl, specificMeetInfo);
+        console.log(specificMeetInfo, "specific-data");
+      } else {
+        console.warn("No match found for the specified id.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
+  const handleFileLoad = async (url, specificMeetInfo) => {
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      const tableHTML = `
+      console.log(meetInfo, clientInfo, "venue dhund");
+      let venue;
+      if (
+        specificMeetInfo?.variables?.venue ==
+        specificMeetInfo?.client_name?.registered_address
+      ) {
+        venue = `THE REGISTERED OFFICE OF THE COMPANY AT ${specificMeetInfo?.client_name?.registered_address}`;
+      } else {
+        venue = `${specificMeetInfo?.variables?.venue}`;
+      }
+      const tableHTML = `<br/>
       <table class="table table-bordered table-hover Master-table">
         <thead class="Master-Thead">
           <tr>
@@ -254,12 +246,12 @@ const AttendanceEditor = () => {
           </tr>
         </thead>
         <tbody>
-          ${participants
-            .map(
+          ${specificMeetInfo?.participants
+            ?.map(
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
-              <td>${participant?.isPresent ? "Present" : "Absent"}</td>
+              <td>${participant?.isPresent ? "" : "Absent"}</td>
             </tr>
           `
             )
@@ -268,87 +260,24 @@ const AttendanceEditor = () => {
       </table>
 <br/>
 <br/>
-<h5>Chairman</h5>
+<h5>Authenticated by</h5><p></p>
 
-    `;
-      setEditorContent(result.value + tableHTML);
+
+<h6>Name: \${name}</h6>
+<h6>Chairperson</h6>
+<h6> DIN: \${din_pan}</h6>
+`;
+
+      setEditorContent(result.value + venue + tableHTML);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  useEffect(() => {
-    const handleMultipleFilesAddOn = async (urls) => {
-      try {
-        // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
-
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
-          const processedContent = [];
-
-          if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
-
-          if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
-          }
-
-          return processedContent.join("\n");
-        });
-
-        const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
-        setEditorContent(initializedContent + combinedContent);
-      } catch (error) {
-        console.error("Error fetching or converting one or more files:", error);
-      }
-    };
-
-    handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
-  }, [selectedData]);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 6000);
-  }, [fileUrl, participants]);
-
-  // Load content on file URL change
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
+    fetchMeetData(id);
+    console.log(meetInfo, clientInfo, "venue");
+  }, [id, fileUrl, refresh]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -404,7 +333,10 @@ const AttendanceEditor = () => {
     const content = parser.parseFromString(htmlContent, "text/html");
     const elements = content.body.childNodes;
 
+    console.log(content, "cont-elements");
+    console.log(htmlContent, "elements");
     const children = Array.from(elements).map((element) => {
+      console.log(element.tagName, "tagname");
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -456,19 +388,36 @@ const AttendanceEditor = () => {
 
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
+        const rows = Array.from(element.rows).map((row, rowIndex) => {
+          const totalColumns = row.cells.length; // Get the total number of columns
+          const columnWidth = 100 / totalColumns;
+          const cells = Array.from(row.cells).map((cell, cellIndex) => {
             return new TableCell({
               children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
+                new Paragraph({
+                  children: [new TextRun(cell.textContent)],
+                  alignment: "center",
+                }),
               ],
-              width: { size: 1000, type: WidthType.AUTO },
+              margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
+              verticalAlign: "center",
+              width: { size: columnWidth, type: WidthType.PERCENTAGE }, // Adjust width dynamically
             });
           });
-          return new TableRow({ children: cells });
+          return new TableRow({
+            children: cells,
+            height:
+              rowIndex === 0
+                ? undefined
+                : { value: 1500, rule: HeightRule.EXACT }, // Skip height for the first row
+          });
         });
         return new Table({
           rows: rows,
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          // Make table width responsive
+          // alignment: AlignmentType.CENTER, // Center the table horizontally
+          margins: { top: 0, bottom: 0 }, // Reduce gaps above and below the table
         });
       } else {
         return new Paragraph({
@@ -481,8 +430,8 @@ const AttendanceEditor = () => {
   };
 
   const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
+    // const formattedContent = editorContent.replace(/\n/g, "<br>");
+    const parsedContent = parseHtmlToDocx(editorContent);
 
     const doc = new Document({
       sections: [
@@ -503,7 +452,8 @@ const AttendanceEditor = () => {
     setButtonLoading(true);
 
     const docBlob = await createWordDocument();
-
+    // saveAs(docBlob)
+    // return
     const formData = new FormData();
     formData.append("attendance_file", docBlob);
     try {

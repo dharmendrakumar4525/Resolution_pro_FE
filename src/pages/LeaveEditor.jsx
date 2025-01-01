@@ -21,7 +21,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
 import Select from "react-select";
 
-const ResolutionEditor = () => {
+const LeaveEditor = () => {
   const [rows, setRows] = useState([]);
   const [variable, setVariable] = useState({});
   const [resolutionList, setResolutionList] = useState([]);
@@ -39,10 +39,8 @@ const ResolutionEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
-  const resolTitle = location.state?.resolTitle;
-
+  const information = location.state?.leaveInfo;
   const [buttonLoading, setButtonLoading] = useState(false);
-
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
@@ -193,12 +191,29 @@ const ResolutionEditor = () => {
     while ((match = regex.exec(content)) !== null) {
       const placeholder = match[1] || match[2];
 
-      // Check if it's a system variable
       const systemVariable = variable[placeholder];
-      // const systemVariable = rows.find((row) => row.name === placeholder);
+      if (placeholder == "absent_director_name") {
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          information?.director?.name
+        );
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
+      if (placeholder == "absent_director_din") {
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          information?.director["din/pan"]
+        );
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+      }
       if (systemVariable) {
         console.log(systemVariable, "system-var");
-        // let res = systemVariable.mca_name;
         let value;
         value = systemVariable;
         updatedContent = updatedContent.replace(
@@ -211,11 +226,8 @@ const ResolutionEditor = () => {
           ...prevState,
           [placeholder]: true,
         }));
-
-        // const value = systemVariable.mca_name; // System variable value
       } else {
-        // Initialize inputFields for non-system placeholders
-        fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+        fields[placeholder] = inputFields[placeholder] || "";
       }
     }
 
@@ -235,11 +247,6 @@ const ResolutionEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 1000);
-  }, [fileUrl]);
 
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
@@ -248,46 +255,78 @@ const ResolutionEditor = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      // setEditorContent(result.value);
+      console.log(result, "123");
+      setEditorContent(result.value);
       setInitializedContent(result.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
   useEffect(() => {
-    const handleMultipleFilesAddOn = async () => {
+    const handleMultipleFilesAddOn = async (urls) => {
       try {
         // Add title at the top
-        const title =
-          "CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF #{company_name} AT THEIR MEETING HELD ON #{day_date}. ";
-        let titleContent = `<h3>${title}</h3>\n<br/>`;
-        let subTitle = `<h3>${resolTitle}</h3>`;
+        const title = urls?.[0]?.title || "Untitled";
+        let combinedContent = `<>${title}</>\n`;
 
-        let footerContent = `<br/><p>For #{company_name}</p>
+        // Fetch and process files concurrently
+        console.log(urls, "mk");
+        const fetchPromises = urls.map(async (url) => {
+          const processedContent = [];
 
-<br/>
-<p>
-  Name: \${name}</p>
- <p> Director</p>
- <p> DIN: \${din_pan}</p>
-`;
-        setEditorContent(
-          titleContent + subTitle + initializedContent + footerContent
-        );
+          if (url?.templateFile) {
+            console.log("Processing templateFile:", url.templateFile);
+            const response = await fetch(url.templateFile);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            processedContent.push(`${result.value}`);
+          } else {
+            console.warn(
+              "Skipped processing due to missing templateFile:",
+              url
+            );
+          }
+
+          if (url?.resolutionFile) {
+            console.log("Processing resolutionFile:", url.resolutionFile);
+            const response = await fetch(url.resolutionFile);
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch file from: ${url.resolutionFile}`
+              );
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            processedContent.push(`</br>${result.value}`);
+          } else {
+            console.warn(
+              "Skipped processing due to missing resolutionFile:",
+              url
+            );
+          }
+
+          return processedContent.join("\n");
+        });
+
+        const results = await Promise.all(fetchPromises);
+        combinedContent += results.join("\n");
+        setEditorContent(initializedContent + combinedContent);
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
     };
-    setTimeout(() => {
-      handleMultipleFilesAddOn();
-    }, 2000);
 
-    processPlaceholders();
-  }, [initializedContent]);
+    handleMultipleFilesAddOn(selectedData);
+    processPlaceholders(selectedData);
+  }, [selectedData]);
 
-  // Load content on file URL change
   useEffect(() => {
-    if (fileUrl) handleFileLoad(fileUrl);
+    setTimeout(() => {
+      if (fileUrl) handleFileLoad(fileUrl);
+    }, 6000);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
@@ -314,6 +353,19 @@ const ResolutionEditor = () => {
     );
 
     setEditorContent(updatedContent);
+  };
+
+  const handleConfirm = (placeholder) => {
+    const value = inputFields[placeholder] || placeholder;
+    const updatedContent = editorContent.replace(
+      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+      value
+    );
+    setEditorContent(updatedContent);
+    setConfirmedFields((prevState) => ({
+      ...prevState,
+      [placeholder]: true,
+    }));
   };
 
   const handleInputChange = (placeholder, value) => {
@@ -432,8 +484,9 @@ const ResolutionEditor = () => {
     const docBlob = await createWordDocument();
 
     const formData = new FormData();
-    formData.append("resolution_file", docBlob);
+    formData.append("loa_file", docBlob);
     formData.append("index", `${index}`);
+
     try {
       const response = await fetch(`${apiURL}/meeting/${id}`, {
         method: "PATCH",
@@ -460,7 +513,7 @@ const ResolutionEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Resolution Document</h1>
+      <h1>Leave of Absence Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
@@ -527,7 +580,7 @@ const ResolutionEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Resolution"
+                "Save Leave of Absence"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -544,4 +597,4 @@ const ResolutionEditor = () => {
   );
 };
 
-export default ResolutionEditor;
+export default LeaveEditor;
