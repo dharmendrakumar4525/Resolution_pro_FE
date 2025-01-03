@@ -59,7 +59,6 @@ export default function EditCommitteeMember() {
           },
         });
         const data = await response.json();
-
         if (data) {
           setFormData({
             clientName: data.client_name.id,

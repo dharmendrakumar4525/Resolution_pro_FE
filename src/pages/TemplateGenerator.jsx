@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Document,
@@ -23,6 +23,7 @@ import {
   Col,
 } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+import JoditEditor from "jodit-react";
 
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
@@ -54,6 +55,7 @@ const TemplateGenerator = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fileUrl = location.state;
+  const editor = useRef(null);
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -125,6 +127,7 @@ const TemplateGenerator = () => {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
+      // console.log(arrayBuffer, "arr-Buff");
       const mammothOptions = {
         styleMap: [
           "p[style-name='Heading 1'] => h1:fresh",
@@ -261,12 +264,14 @@ const TemplateGenerator = () => {
 
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
+    // const blob = new Blob([editorContent]);
+    // saveAs(blob, "editor-content.html"); // Use FileSaver.js's saveAs
 
-    // saveAs(docBlob, "mukul.docx")
     // return
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
+    // formData.append("file", blob);
 
     try {
       // Make a PATCH request with the document
@@ -323,6 +328,13 @@ const TemplateGenerator = () => {
           <h1 className="mb-4">Document Template Generator</h1>
 
           {/* CKEditor for writing content */}
+          {/* <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
+            }}
+          /> */}
           <CKEditor
             editor={ClassicEditor}
             data={editorContent}

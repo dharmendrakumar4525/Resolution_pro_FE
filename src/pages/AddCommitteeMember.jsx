@@ -14,7 +14,8 @@ export default function AddCommitteeMember({ onSave }) {
     clientName: "",
     committee: "",
     isEmail: false,
-    committeeMembers: [{ name: "", from: "", to: "", email: "" }], // Initial placeholder member
+    location: "",
+    committeeMembers: [{ name: "", from: "", to: "", email: "" }],
   });
   const [loading, setLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);

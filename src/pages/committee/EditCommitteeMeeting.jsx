@@ -21,7 +21,7 @@ export default function EditCommitteeMeeting() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/meeting");
+  const handleCloseAddModal = () => navigate("/committee-meeting");
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
@@ -43,6 +43,7 @@ export default function EditCommitteeMeeting() {
     organizer: user.id,
     committee_id: "",
     participants: [],
+    standard_time: "",
     other_participants: [],
     agendaItems: [
       {
@@ -114,6 +115,7 @@ export default function EditCommitteeMeeting() {
       );
       const data = await response.json();
       setCommitteeList(data.results);
+      console.log(data.results, "123");
     } catch (error) {
       console.error("Error fetching Agenda:", error);
     }
@@ -175,6 +177,10 @@ export default function EditCommitteeMeeting() {
     console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
+    const transformedParticipants = row?.participants.map((participant) => ({
+      director: participant?.director?.id,
+      isPresent: participant?.isPresent,
+    }));
     setFormData({
       title: row?.title,
       client_name: row.client_name?.id || "",
@@ -182,14 +188,16 @@ export default function EditCommitteeMeeting() {
       meetingType: "board_meeting",
       date: row.date.split("T")[0],
       startTime: row?.startTime,
+      standard_time: row?.standard_time,
+
       organizer: row.organizer?.role,
-      participants: row?.participants,
+      participants: transformedParticipants,
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
       })),
-      committee_id: row?.committee_id,
+      committee_id: row?.committee_id?.id,
       other_participants: row.other_participants.length
         ? row.other_participants
         : [],
@@ -200,10 +208,8 @@ export default function EditCommitteeMeeting() {
     }
   };
   useEffect(() => {
-
     handleEditClick(row);
-    fetchCommitteeList(formData?.client_name);
-
+    fetchCommitteeList(row?.client_name?.id);
   }, [row]);
   const handleAddParticipant = () => {
     setFormData((prevState) => ({
@@ -308,7 +314,7 @@ export default function EditCommitteeMeeting() {
     label: director.name,
   }));
   const CommitteeOptions = committeeList?.map((committee) => ({
-    value: committee.committee.id,
+    value: committee.id,
     label: committee.committee.name,
   }));
   const validateForm = () => {
@@ -409,8 +415,18 @@ export default function EditCommitteeMeeting() {
 
   const handleClientChange = (selectedOption) => {
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
-
     fetchDirectors(selectedOption?.value);
+  };
+  const timeZoneOptions = [
+    { value: "IST", label: "Indian Standard Time (IST)" },
+    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
+  ];
+  const handleTimeZoneChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      standard_time: selectedOption.value,
+    });
+    console.log("Selected Time Zone:", selectedOption.value);
   };
   return (
     <>
@@ -504,10 +520,12 @@ export default function EditCommitteeMeeting() {
                   <Form.Label>Committee</Form.Label>
                   <Select
                     options={CommitteeOptions}
+                    value={CommitteeOptions?.find(
+                      (option) => option.value === formData?.committee_id
+                    )}
                     onChange={(selectedOption) => {
                       const selectedCommittee = committeeList.find(
-                        (committee) =>
-                          committee.committee.id === selectedOption.value
+                        (committee) => committee.id === selectedOption.value
                       );
 
                       const members =
@@ -670,6 +688,24 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Group controlId="selectTimeZone">
+                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+
+                  <Select
+                    id="time-zone-select"
+                    options={timeZoneOptions}
+                    value={timeZoneOptions.find(
+                      (option) => option.value === formData?.standard_time
+                    )}
+                    onChange={handleTimeZoneChange}
+                    isSearchable
+                    placeholder="Choose Time Zone"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
               <Col>
                 <Form.Group controlId="location">
                   <Form.Label>Location</Form.Label>

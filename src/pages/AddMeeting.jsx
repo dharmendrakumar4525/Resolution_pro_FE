@@ -76,27 +76,6 @@ export default function AddMeeting() {
     { value: "UTC", label: "Coordinated Universal Time (UTC)" },
   ];
 
-  const fetchRegisteredAddress = async (cid) => {
-    try {
-      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      setFormData((prevData) => ({
-        ...prevData,
-
-        location: data.registered_address,
-      }));
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-    }
-  };
 
 
   useEffect(() => {

@@ -468,7 +468,7 @@ const NoticeEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}`);
+        navigate(`/documents/${id}?tab=notice`);
       } else {
         toast.error("Failed to save the document.");
       }

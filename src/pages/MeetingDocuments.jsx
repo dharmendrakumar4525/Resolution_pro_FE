@@ -19,6 +19,9 @@ import "react-toastify/dist/ReactToastify.css";
 const token = localStorage.getItem("refreshToken");
 
 export default function MeetingDocuments() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tab = searchParams.get("tab");
   const [rows, setRows] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [notice, setNotice] = useState({});
@@ -33,7 +36,7 @@ export default function MeetingDocuments() {
 
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
-  const [key, setKey] = useState("agenda"); // Default tab
+  const [key, setKey] = useState(tab || "agenda");
 
   const token = localStorage.getItem("refreshToken");
   const navigate = useNavigate();
@@ -340,7 +343,6 @@ export default function MeetingDocuments() {
             (k === "notice" ||
               k === "mom" ||
               k === "attendance" ||
-
               k == "resolution" ||
               k === "acknowledgement") &&
             !rows.some((row) => row?.fileName)
@@ -348,12 +350,6 @@ export default function MeetingDocuments() {
             toast.warning("Please save meeting agenda document first.");
           } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
             toast.warning("Please mark attendance first.");
-
-              k == "resolution") &&
-            meetData?.approval_status !== "approved"
-          ) {
-            toast.warning("Documents are available only after approval.");
-
           } else {
             setKey(k);
           }

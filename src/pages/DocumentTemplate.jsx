@@ -113,7 +113,7 @@ export default function DocumentTemplate() {
       templateName: "",
       fileName: "",
       by: user.id,
-      isTemplateNameEditable: true,
+      isTemplateNameEditable: false,
     });
     setOpenAddModal(true);
   };

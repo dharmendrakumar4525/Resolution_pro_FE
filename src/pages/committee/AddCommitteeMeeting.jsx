@@ -21,7 +21,7 @@ export default function AddCommitteeMeeting() {
   const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/meeting");
+  const handleCloseAddModal = () => navigate("/committee-meeting");
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
@@ -40,6 +40,7 @@ export default function AddCommitteeMeeting() {
     meetingType: "committee_meeting",
     date: "",
     startTime: "",
+    standard_time: "",
     organizer: user.id,
     committee_id: "",
     participants: [],
@@ -429,7 +430,7 @@ export default function AddCommitteeMeeting() {
     label: director.name,
   }));
   const CommitteeOptions = committeeList?.map((committee) => ({
-    value: committee.committee.id,
+    value: committee.id,
     label: committee.committee.name,
   }));
   const validateForm = () => {
@@ -486,7 +487,7 @@ export default function AddCommitteeMeeting() {
       }
 
       toast.success("Committee Meeting added successfully");
-      navigate("/committe-meeting");
+      navigate("/committee-meeting");
     } catch (error) {
       toast.error("Failed to add/edit item. Please try again.");
     } finally {
@@ -507,14 +508,43 @@ export default function AddCommitteeMeeting() {
     //   fetchDirectors(value);
     // }
   };
-
+  const fetchRegisteredAddress = async (cid) => {
+    try {
+      const response = await fetch(`${apiURL}/customer-maintenance/${cid}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setFormData((prevData) => ({
+        ...prevData,
+        location: data.registered_address,
+      }));
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
   const handleClientChange = (selectedOption) => {
     console.log(selectedOption, "selected");
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
     // if (name === "client_name" && value) {
     fetchCommitteeList(selectedOption?.value);
     fetchDirectors(selectedOption?.value);
+    fetchRegisteredAddress(selectedOption?.value);
+
     // }
+  };
+  const timeZoneOptions = [
+    { value: "IST", label: "Indian Standard Time (IST)" },
+    { value: "UTC", label: "Coordinated Universal Time (UTC)" },
+  ];
+  const handleTimeZoneChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      standard_time: selectedOption.value,
+    });
+    console.log("Selected Time Zone:", selectedOption.value);
   };
 
   return (
@@ -636,8 +666,7 @@ export default function AddCommitteeMeeting() {
                     options={CommitteeOptions}
                     onChange={(selectedOption) => {
                       const selectedCommittee = committeeList.find(
-                        (committee) =>
-                          committee.committee.id === selectedOption.value
+                        (committee) => committee.id === selectedOption.value
                       );
 
                       const members =
@@ -800,6 +829,21 @@ export default function AddCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Group controlId="selectTimeZone">
+                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+
+                  <Select
+                    id="time-zone-select"
+                    options={timeZoneOptions}
+                    onChange={handleTimeZoneChange}
+                    isSearchable
+                    placeholder="Choose Time Zone"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
               <Col>
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">Location</Form.Label>

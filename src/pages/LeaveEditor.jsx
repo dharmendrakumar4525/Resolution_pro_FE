@@ -497,7 +497,7 @@ const LeaveEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}`);
+        navigate(`/documents/${id}?tab=leaveOfAbsence`);
       } else {
         toast.error("Failed to save the document.");
       }

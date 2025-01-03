@@ -142,7 +142,6 @@ const DocumentEditor = () => {
         setVariable(data?.variables);
 
         setDirectorList(data?.participants);
-    
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -489,12 +488,10 @@ const DocumentEditor = () => {
             const title = url?.title || "Untitled";
             if (title === "For #{company_name}") {
               combinedContent += `<p>${title}</p>\n`;
-
             } else {
               combinedContent += `<p>${count}. ${title}</p>\n`;
               count++;
             }
-
           }
 
           if (url?.templateFile) {
@@ -769,22 +766,16 @@ const DocumentEditor = () => {
       setSelectedData(selectedAgendas);
       setPrevoiusSelectedOptions(newSelect);
       // handleAgendaItemChange()
-
     }, 3000);
-
   }, [resolutionList?.length, xresolution?.length]);
-
-
- 
 
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
-
+  }));
   const directorOptions = directorList?.map((director) => ({
     value: director?.director?.id,
     label: director?.director?.name,
-
   }));
 
   const saveResolutions = async () => {
@@ -929,7 +920,6 @@ const DocumentEditor = () => {
                 isMulti
                 onChange={handleAgendaItemChange}
                 isClearable
-
               />
             </Form.Group>
             <Form.Group controlId="directorList" className="mb-5">
@@ -938,7 +928,6 @@ const DocumentEditor = () => {
                 placeholder="Select Signatory Director"
                 onChange={handleSignatoryChange}
                 isClearable
-
               />
             </Form.Group>
             {/* {Object.keys(variable)?.length > 0 ? (
