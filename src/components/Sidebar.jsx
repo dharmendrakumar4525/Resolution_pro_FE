@@ -133,7 +133,10 @@ export default function Sidebar() {
                 <NavItem title="Committee Meeting" link="/committee-meeting" />
               )}
               {hasPermission("Meeting", "view") && (
-                <NavItem title="Shareholder Meeting" link="/meeting" />
+                <NavItem
+                  title="Shareholder Meeting"
+                  link="/shareholder-meeting"
+                />
               )}
               {hasPermission("Meeting", "view") && (
                 <NavItem title="CSR Meeting" link="/meeting" />

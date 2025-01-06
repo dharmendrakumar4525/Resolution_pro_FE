@@ -13,7 +13,7 @@ import {
   Tab,
 } from "react-bootstrap";
 import { saveAs } from "file-saver";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api"
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -56,7 +56,7 @@ export default function MeetingDocuments() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        const response = await fetch(`${apiURL}/shareholder-meeting/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -17,15 +17,15 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from "react-router-dom";
 import Select from "react-select";
 
-export default function EditCommitteeMeeting() {
+export default function EditShareholderMeeting() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/committee-meeting");
+  const handleCloseAddModal = () => navigate("/shareholder-meeting");
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
-  const [committeeList, setCommitteeList] = useState([]);
+  const [shareholderList, setShareholderList] = useState([]);
 
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
@@ -37,14 +37,15 @@ export default function EditCommitteeMeeting() {
   const [formData, setFormData] = useState({
     title: "",
     client_name: "",
-    meetingType: "",
+    meetingType: "shareholder_meeting",
     date: "",
     startTime: "",
     organizer: user.id,
-    committee_id: "",
     participants: [],
     standard_time: "",
     other_participants: [],
+    shareholder_participants: [],
+
     agendaItems: [
       {
         templateName: "",
@@ -67,6 +68,7 @@ export default function EditCommitteeMeeting() {
         });
         const data = await response.json();
         setClientList(data.docs);
+        console.log(data.docs, "ds");
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
@@ -102,10 +104,10 @@ export default function EditCommitteeMeeting() {
     fetchClientList();
     fetchAgendaList();
   }, []);
-  const fetchCommitteeList = async (clientId) => {
+  const fetchShareholderList = async (clientId) => {
     try {
       const response = await fetch(
-        `${apiURL}/committee-member?client_name=${clientId}`,
+        `${apiURL}/shareholder-data?company_id=${clientId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -114,10 +116,12 @@ export default function EditCommitteeMeeting() {
         }
       );
       const data = await response.json();
-      setCommitteeList(data.results);
-      console.log(data.results, "123");
+      setShareholderList(data.results);
+      console.log(data.results, "shre");
     } catch (error) {
-      console.error("Error fetching Agenda:", error);
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
   const fetchDirectors = async (clientId) => {
@@ -138,66 +142,46 @@ export default function EditCommitteeMeeting() {
     }
   };
 
-  const handleDeleteClick = async (row) => {
-    try {
-      const response = await fetch(`${apiURL}/meeting/${row.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
-      }
-
-      setRows((prevRows) => prevRows.filter((item) => item.id !== row.id));
-
-      toast.success("Item deleted successfully");
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      toast.error("Failed to delete item. Please try again.");
-    }
-  };
-
-  const handleDirectorSelection = (e) => {
-    const selectedDirectorId = e.target.value;
-    const selectedDirector = directorList.find(
-      (director) => director.id === selectedDirectorId
-    );
-    if (selectedDirector) {
-      setFormData((prevData) => ({
-        ...prevData,
-        participants: [...prevData.participants, selectedDirector],
-      }));
-    }
-  };
-
   const handleEditClick = (row) => {
-    console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
+    console.log(
+      row?.client_name?.id,
+      "rowwww",
+      new Date(row.date).toLocaleDateString()
+    );
     setEditingRow(row);
     setOpenAddModal(true);
     const transformedParticipants = row?.participants.map((participant) => ({
       director: participant?.director?.id,
       isPresent: participant?.isPresent,
     }));
+    const transformedShareholders = row?.shareholder_participants.map(
+      (shareholder) => ({
+        shareholder: shareholder?.shareholder?.id,
+        isPresent: shareholder?.isPresent,
+      })
+    );
+    console.log(
+      transformedShareholders,
+      "sharehi",
+      new Date(row.date).toLocaleDateString()
+    );
     setFormData({
       title: row?.title,
-      client_name: row.client_name?.id || "",
-      description: row.description,
-      meetingType: "committee_meeting",
+      client_name: row?.client_name?.id || "",
+      meetingType: "shareholder_meeting",
       date: row.date.split("T")[0],
       startTime: row?.startTime,
       standard_time: row?.standard_time,
 
       organizer: row.organizer?.role,
+      shareholder_participants: transformedShareholders,
+
       participants: transformedParticipants,
-      agendaItems: row.agendaItems.map((agendaItem) => ({
+      agendaItems: row.agendaItems?.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         templateFile: agendaItem.templateFile,
         meetingType: agendaItem.meetingType,
       })),
-      committee_id: row?.committee_id?.id,
       other_participants: row.other_participants.length
         ? row.other_participants
         : [],
@@ -205,11 +189,11 @@ export default function EditCommitteeMeeting() {
     });
     if (row.client_name?.id) {
       fetchDirectors(row.client_name.id);
+      fetchShareholderList(row.client_name.id);
     }
   };
   useEffect(() => {
     handleEditClick(row);
-    fetchCommitteeList(row?.client_name?.id);
   }, [row]);
   const handleAddParticipant = () => {
     setFormData((prevState) => ({
@@ -248,7 +232,7 @@ export default function EditCommitteeMeeting() {
       return;
     }
 
-    const agenda = agendaList.find(
+    const agenda = agendaList?.find(
       (item) => item.templateName === selectedOption.value
     );
 
@@ -264,7 +248,7 @@ export default function EditCommitteeMeeting() {
     }));
   };
 
-  const agendaOptions = agendaList.map((agenda) => ({
+  const agendaOptions = agendaList?.map((agenda) => ({
     value: agenda.templateName,
     label: agenda.templateName,
   }));
@@ -273,10 +257,11 @@ export default function EditCommitteeMeeting() {
     value: director.id,
     label: director.name,
   }));
-  const CommitteeOptions = committeeList?.map((committee) => ({
-    value: committee.id,
-    label: committee.committee.name,
+  const shareholderOptions = shareholderList?.map((shareholder) => ({
+    value: shareholder.id,
+    label: shareholder.name,
   }));
+
   const validateForm = () => {
     const { meetingType, date, startTime, location } = formData;
 
@@ -300,14 +285,14 @@ export default function EditCommitteeMeeting() {
 
       const sanitizedFormData = {
         ...formData,
-        other_participants: formData.other_participants.map(
+        other_participants: formData.other_participants?.map(
           ({ _id, ...rest }) => rest
         ),
       };
 
       let response;
       // Update an existing meeting
-      response = await fetch(`${apiURL}/committee-meeting/${editingRow.id}`, {
+      response = await fetch(`${apiURL}/shareholder-meeting/${editingRow.id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -315,18 +300,17 @@ export default function EditCommitteeMeeting() {
         },
         body: JSON.stringify(sanitizedFormData),
       });
-      if (response.ok) {
-        navigate("/committee-meeting");
-        toast.success("Meeting document edited successfully");
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         toast.error(errorData.message || "Error editing the meeting.");
         setButtonLoading(false);
         return;
       }
+      toast.success("Shareholder Meeting added successfully");
+      navigate("/shareholder-meeting");
     } catch (error) {
       toast.error(
-        "Failed to edit Committee Meeting Details. Please try again."
+        "Failed to edit Shareholder Meeting Details. Please try again."
       );
     } finally {
       setButtonLoading(false);
@@ -337,6 +321,7 @@ export default function EditCommitteeMeeting() {
     value: director?.id,
     label: director?.name,
   }));
+  console.log(clientList, "clientList");
   const clientOptions = clientList?.map((client) => ({
     value: client._id,
     label: client.company_name,
@@ -351,6 +336,7 @@ export default function EditCommitteeMeeting() {
   const handleClientChange = (selectedOption) => {
     setFormData({ ...formData, client_name: selectedOption?.value || "" });
     fetchDirectors(selectedOption?.value);
+    fetchShareholderList(selectedOption?.value);
   };
   const timeZoneOptions = [
     { value: "IST", label: "Indian Standard Time (IST)" },
@@ -366,11 +352,13 @@ export default function EditCommitteeMeeting() {
   return (
     <>
       <div
-        style={{ width: "50%", marginLeft: "15px" }}
+        style={{ marginLeft: "15px", marginRight: "15px" }}
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <h2 className="mb-3 mt-5">Edit Commitee Meeting</h2>
+        <ToastContainer autoClose={1000} />
+
+        <h2 className="mb-4 mt-3">Edit Shareholder Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
@@ -394,7 +382,7 @@ export default function EditCommitteeMeeting() {
                     id="client-name-select"
                     options={clientOptions}
                     placeholder="Select Client"
-                    value={clientOptions.find(
+                    value={clientOptions?.find(
                       (option) => option.value === formData.client_name
                     )}
                     onChange={handleClientChange}
@@ -402,43 +390,29 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Label>Meeting Documents</Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData?.agendaItems.length > 0
+                        ? {
+                            value: formData?.agendaItems[0].templateName,
+                            label: formData?.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
-            <Row></Row>
-
-            <Row className="mt-4 mb-3">
-              <Form.Label>Meeting Documents</Form.Label>
-
-              <Form.Group controlId="agendaItems">
-                <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Document"
-                  value={
-                    formData?.agendaItems.length > 0
-                      ? {
-                          value: formData?.agendaItems[0].templateName,
-                          label: formData?.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                />
-                {/* <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Documents"
-                  isMulti
-                  value={formData.agendaItems.map((item) => ({
-                    value: item.templateName,
-                    label: item.templateName,
-                  }))}
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                /> */}
-              </Form.Group>
-            </Row>
-
-            <Row>
+            <Row className="mt-4">
               <Col>
                 <Form.Group controlId="date">
                   <Form.Label>Date</Form.Label>
@@ -451,48 +425,95 @@ export default function EditCommitteeMeeting() {
                 </Form.Group>
               </Col>
               <Col>
-                <Form.Group controlId="committee" className="mt-2">
-                  <Form.Label>Committee</Form.Label>
+                <Form.Group controlId="shareholder" className="mt-2">
+                  <Form.Label>Shareholders</Form.Label>
+
                   <Select
-                    options={CommitteeOptions}
-                    value={CommitteeOptions?.find(
-                      (option) => option.value === formData?.committee_id
-                    )}
-                    onChange={(selectedOption) => {
-                      const selectedCommittee = committeeList.find(
-                        (committee) => committee.id === selectedOption.value
-                      );
-
-                      const members =
-                        selectedCommittee?.committee_members.map((member) => ({
-                          director: member.name.id,
-                          isPresent: false,
-                        })) || [];
-
-                      setFormData({
-                        ...formData,
-                        committee_id: selectedOption.value,
-                        participants: members,
-                      });
+                    isMulti
+                    required
+                    options={[
+                      { value: "selectAll", label: "Select All" },
+                      ...shareholderOptions,
+                    ]}
+                    value={
+                      formData.shareholder_participants.length ===
+                      shareholderList.length
+                        ? [
+                            { value: "selectAll", label: "Select All" },
+                            ...shareholderOptions,
+                          ]
+                        : shareholderOptions.filter((option) =>
+                            formData.shareholder_participants.some(
+                              (participant) =>
+                                participant.shareholder === option.value
+                            )
+                          )
+                    }
+                    onChange={(selectedOptions) => {
+                      if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.shareholder_participants.length !==
+                          shareholderOptions.length
+                      ) {
+                        setFormData({
+                          ...formData,
+                          shareholder_participants: shareholderOptions.map(
+                            (option) => ({
+                              shareholder: option.value,
+                              isPresent: false,
+                            })
+                          ),
+                        });
+                      } else if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.shareholder_participants.length ===
+                          shareholderOptions.length
+                      ) {
+                        setFormData({
+                          ...formData,
+                          shareholder_participants: [],
+                        });
+                      } else {
+                        // Normal selection without "Select All"
+                        setFormData({
+                          ...formData,
+                          shareholder_participants: selectedOptions
+                            .filter((option) => option.value !== "selectAll")
+                            .map((option) => ({
+                              shareholder: option.value,
+                              isPresent: false,
+                            })),
+                        });
+                      }
                     }}
                     isClearable
                     isSearchable
                   />
                 </Form.Group>
+
+                {shareholderList.length == 0 && (
+                  <p style={{ color: "red", marginTop: "10px" }}>
+                    Shareholder options are not available. Please add options
+                    before proceeding.
+                  </p>
+                )}
               </Col>
-            </Row>
-            <Row>
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
                   <Form.Label>Participants</Form.Label>
                   <Select
                     isMulti
+                    required
                     options={[
                       { value: "selectAll", label: "Select All" },
                       ...directorOptions,
                     ]}
                     value={
-                      formData.participants.length === directorOptions?.length
+                      formData.participants.length === directorOptions.length
                         ? [
                             { value: "selectAll", label: "Select All" },
                             ...directorOptions,
@@ -500,7 +521,7 @@ export default function EditCommitteeMeeting() {
                         : directorOptions.filter((option) =>
                             formData.participants.some(
                               (participant) =>
-                                participant?.director?.id == option.value
+                                participant.director === option.value
                             )
                           )
                     }
@@ -530,7 +551,6 @@ export default function EditCommitteeMeeting() {
                           participants: [],
                         });
                       } else {
-                        console.log(formData.participants, "d-1");
                         setFormData({
                           ...formData,
                           participants: selectedOptions
@@ -540,21 +560,27 @@ export default function EditCommitteeMeeting() {
                               isPresent: false,
                             })),
                         });
-                        console.log(formData.participants, "d-2");
                       }
                     }}
                     isClearable
                     isSearchable
                   />
                 </Form.Group>
+                {directorList.length == 0 && (
+                  <p style={{ color: "red", marginTop: "10px" }}>
+                    Director options are not available. Please add options
+                    before proceeding.
+                  </p>
+                )}
               </Col>
             </Row>
+            <Row></Row>
             <Col>
               <Form.Group className="mt-2" controlId="other-participants">
                 <Form.Label>Other Participants</Form.Label>
                 {formData?.other_participants?.map((participant, index) => (
                   <div key={index} className="participant-inputs">
-                    <Row>
+                    <Row className="mt-4">
                       <Col>
                         <Form.Control
                           type="text"
@@ -583,12 +609,8 @@ export default function EditCommitteeMeeting() {
                           placeholder="Enter Participant Email"
                         />
                       </Col>
-                    </Row>
-
-                    <Row>
                       <Col>
                         <Button
-                          className="mt-2"
                           type="button"
                           variant="danger"
                           onClick={() => handleRemoveParticipant(index)}
@@ -603,12 +625,12 @@ export default function EditCommitteeMeeting() {
             </Col>
             <Row>
               <Button
-                className="mt-2"
+                className="mt-3"
                 style={{ width: "300px", marginBottom: "30px" }}
                 type="button"
                 onClick={handleAddParticipant}
               >
-                Add Participant
+                Click to add more Participant
               </Button>
             </Row>
             <Row>
@@ -639,8 +661,6 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
               <Col>
                 <Form.Group controlId="location">
                   <Form.Label>Location</Form.Label>
@@ -654,13 +674,13 @@ export default function EditCommitteeMeeting() {
               </Col>
             </Row>
 
-            <div className="mt-2">
+            <div className="mt-3">
               <Button
                 variant="primary"
-                onClick={handleCloseAddModal}
+                onClick={() => navigate(-1)}
                 className="me-2"
               >
-                Cancel
+                Go Back
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
                 {buttonLoading ? (
@@ -679,7 +699,6 @@ export default function EditCommitteeMeeting() {
           </Form>
         </Modal.Body>
       </div>
-      <ToastContainer autoClose={3000} />
     </>
   );
 }

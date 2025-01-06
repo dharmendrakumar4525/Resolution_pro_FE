@@ -53,6 +53,10 @@ import CommitteeMeeting from "../pages/committee/CommitteeMeeting";
 import CommitteeDocuments from "../pages/committee/CommitteeDocuments";
 import AddCommitteeMeeting from "../pages/committee/AddCommitteeMeeting";
 import EditCommitteeMeeting from "../pages/committee/EditCommitteeMeeting";
+import AddShareholderMeeting from "../pages/shareholder/AddShareholderMeeting";
+import EditShareholderMeeting from "../pages/shareholder/EditShareholderMeeting";
+import ShareholderMeeting from "../pages/shareholder/ShareholderMeeting";
+import ShareholderDocuments from "../pages/shareholder/ShareholderDocuments";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -144,6 +148,46 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<CommitteeDocuments />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/add-shareholder-meet"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AddShareholderMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/edit-shareholder-meet/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<EditShareholderMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-meeting"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderMeeting />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-documents/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderDocuments />} />
           ) : (
             <Navigate to="/login" />
           )

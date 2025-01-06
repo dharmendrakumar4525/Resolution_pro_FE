@@ -106,9 +106,14 @@ export default function Shareholders() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add shareholder");
+          const errorMessage = await response.json();
+          toast.error(errorMessage.message);
+          setButtonLoading(false);
+
+          return;
         }
         const data = await response.json();
+
         setRows((prevRows) => [...prevRows, data]);
         toast.success("Shareholder added successfully");
       }
@@ -122,7 +127,7 @@ export default function Shareholders() {
         email: "",
       });
     } catch (error) {
-      toast.error("Failed to add/update shareholder. Please try again.");
+      toast.error(error.message);
     } finally {
       setButtonLoading(false); // Hide button spinner
     }
