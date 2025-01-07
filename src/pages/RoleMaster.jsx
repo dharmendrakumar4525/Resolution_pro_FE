@@ -191,7 +191,7 @@ export default function RoleMaster() {
           )}
         </div>
 
-        <Modal show={openModal} onHide={handleCloseModal}>
+        <Modal show={openModal} onHide={handleCloseModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit Role Master" : "Add Role Master"}
@@ -200,7 +200,9 @@ export default function RoleMaster() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="roleName">
-                <Form.Label>Role Master Name</Form.Label>
+                <Form.Label>
+                  Role Master Name<sup>*</sup>
+                </Form.Label>
                 <FormControl
                   value={formData.roleName}
                   onChange={handleChange}

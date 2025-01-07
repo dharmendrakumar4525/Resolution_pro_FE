@@ -234,14 +234,16 @@ export default function CustomerMaintenance() {
           </Alert>
         )}
 
-        <Modal show={openAddModal} onHide={handleCloseAddModal} className="p-6">
+        <Modal show={openAddModal} onHide={handleCloseAddModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>{editingRow ? "Edit User" : "Add User"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="name" className="mb-3">
-                <Form.Label>Name</Form.Label>
+                <Form.Label>
+                  Name<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.name}
@@ -252,7 +254,9 @@ export default function CustomerMaintenance() {
               </Form.Group>
 
               <Form.Group controlId="email" className="mb-3">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>
+                  Email<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="email"
                   value={formData.email}
@@ -263,7 +267,9 @@ export default function CustomerMaintenance() {
               </Form.Group>
 
               <Form.Group controlId="role" className="mb-3">
-                <Form.Label>Role</Form.Label>
+                <Form.Label>
+                  Role<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="role"
@@ -285,7 +291,14 @@ export default function CustomerMaintenance() {
               </Form.Group>
 
               <Form.Group controlId="password" className="mb-3">
-                <Form.Label>Password</Form.Label>
+                {!editingRow ? (
+                  <Form.Label>
+                    Password<sup>*</sup>
+                  </Form.Label>
+                ) : (
+                  <Form.Label>Password</Form.Label>
+                )}
+
                 <Form.Control
                   type="password"
                   value={formData.password}

@@ -122,7 +122,7 @@ const DocumentEditor = () => {
       try {
         let response;
         if (page == "committee") {
-          response = await fetch(`${apiURL}/committee-meeting`, {
+          response = await fetch(`${apiURL}/committee-meeting/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",

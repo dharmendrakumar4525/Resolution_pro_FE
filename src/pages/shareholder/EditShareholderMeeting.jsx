@@ -363,9 +363,11 @@ export default function EditShareholderMeeting() {
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
+                  <Form.Label>
+                    Title<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData?.title}
@@ -374,9 +376,11 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="client_name">
-                  <Form.Label>Client Name</Form.Label>
+                  <Form.Label>
+                    Client Name<sup>*</sup>
+                  </Form.Label>
                   <Select
                     isDisabled={true}
                     id="client-name-select"
@@ -390,8 +394,10 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Label>Meeting Documents</Form.Label>
+              <Col md={6} lg={4}>
+                <Form.Label>
+                  Meeting Documents<sup>*</sup>
+                </Form.Label>
 
                 <Form.Group controlId="agendaItems">
                   <Select
@@ -412,10 +418,12 @@ export default function EditShareholderMeeting() {
               </Col>
             </Row>
 
-            <Row className="mt-4">
-              <Col>
+            <Row className="mt-2">
+              <Col md={6} lg={4}>
                 <Form.Group controlId="date">
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label>
+                    Date<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="date"
                     value={formData?.date}
@@ -424,9 +432,11 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="shareholder" className="mt-2">
-                  <Form.Label>Shareholders</Form.Label>
+                  <Form.Label>
+                    Shareholders<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     isMulti
@@ -502,9 +512,11 @@ export default function EditShareholderMeeting() {
                   </p>
                 )}
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="participants" className="mt-2">
-                  <Form.Label>Participants</Form.Label>
+                  <Form.Label>
+                    Participants<sup>*</sup>
+                  </Form.Label>
                   <Select
                     isMulti
                     required
@@ -581,7 +593,7 @@ export default function EditShareholderMeeting() {
                 {formData?.other_participants?.map((participant, index) => (
                   <div key={index} className="participant-inputs">
                     <Row className="mt-4">
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="text"
                           value={participant.name || ""}
@@ -595,7 +607,7 @@ export default function EditShareholderMeeting() {
                           placeholder="Enter Participant Name"
                         />
                       </Col>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="email"
                           value={participant.email || ""}
@@ -609,7 +621,7 @@ export default function EditShareholderMeeting() {
                           placeholder="Enter Participant Email"
                         />
                       </Col>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Button
                           type="button"
                           variant="danger"
@@ -634,9 +646,11 @@ export default function EditShareholderMeeting() {
               </Button>
             </Row>
             <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="startTime">
-                  <Form.Label>Start Time</Form.Label>
+                  <Form.Label>
+                    Start Time<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="time"
                     value={formData?.startTime}
@@ -645,9 +659,11 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="selectTimeZone">
-                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+                  <Form.Label className="f-label">
+                    Select Time Zone<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     id="time-zone-select"
@@ -661,9 +677,11 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="location">
-                  <Form.Label>Location</Form.Label>
+                  <Form.Label>
+                    Location<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData?.location}

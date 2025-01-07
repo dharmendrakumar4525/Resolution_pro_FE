@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Row,
+  Col,
+  Container,
+  Spinner,
+} from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
@@ -71,7 +80,8 @@ export default function EditCommitteeMember() {
               to: member.to.split("T")[0],
             })),
           });
-          setDirectorList(data.committee_members);
+          // setDirectorList(data.committee_members);
+          fetchDirectors(data.client_name?.id);
         }
       } catch (error) {
         console.error("Error fetching committee member data:", error);
@@ -84,6 +94,24 @@ export default function EditCommitteeMember() {
     fetchCommitteeList();
     fetchCommitteeMember(id);
   }, [id]);
+
+  const fetchDirectors = async (clientId) => {
+    try {
+      const response = await fetch(
+        `${apiURL}/director-data/directors/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setDirectorList(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching directors:", error);
+    }
+  };
 
   // const fetchDirectors = async (clientId) => {
   //   try {
@@ -184,96 +212,122 @@ export default function EditCommitteeMember() {
       setButtonLoading(false);
     }
   };
-  console.log("object", formData.clientName);
+  console.log("object", directorList);
   return (
-    <div className="mt-4 ml-10" style={{ width: "50%", marginLeft: "15px" }}>
+    <div
+      className="mt-4 ml-10"
+      style={{ marginRight: "15px", marginLeft: "15px" }}
+    >
       <h2>Edit Committee Member</h2>
+
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="clientName" className="mt-4">
-          <Form.Label>Client Name</Form.Label>
-          <Form.Control
-            as="select"
-            name="clientName"
-            value={formData.clientName}
-            onChange={handleChange}
-          >
-            <option value="">Select Client</option>
-            {clientList.map((client) => (
-              <option key={client.id} value={client._id}>
-                {client.company_name}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-        <Form.Group controlId="committee" className="mt-3">
-          <Form.Label>Committee</Form.Label>
-          <Form.Control
-            as="select"
-            name="committee"
-            value={formData.committee}
-            onChange={handleChange}
-          >
-            <option value="">Select Committee</option>
-            {committeeList.map((committee) => (
-              <option key={committee.id} value={committee.id}>
-                {committee.name}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-        <Form.Group controlId="isEmail" className="mt-3">
-          <Form.Check
-            type="checkbox"
-            label="Send Email Notifications"
-            checked={formData.isEmail}
-            onChange={(e) =>
-              setFormData({ ...formData, isEmail: e.target.checked })
-            }
-          />
-        </Form.Group>
-        {formData.committeeMembers.map((member, index) => (
-          <div key={index}>
-            <Form.Group className="mt-3">
-              <Form.Label>Director</Form.Label>
+        <Row className="mt-4 mb-3">
+          <Col>
+            <Form.Group controlId="clientName">
+              <Form.Label>
+                Client Name<sup>*</sup>
+              </Form.Label>
               <Form.Control
                 as="select"
-                value={member.name}
-                onChange={(e) => {
-                  const selectedDirector = directorList.find(
-                    (director) => director.id === e.target.value
-                  );
-                  handleMemberChange(index, "name", selectedDirector.id);
-                  handleMemberChange(index, "email", selectedDirector.email);
-                }}
+                name="clientName"
+                value={formData.clientName}
+                onChange={handleChange}
+                disabled
               >
-                <option value="">Select Director</option>
-                {directorList.map((director) => (
-                  <option key={director.name.id} value={director.name.id}>
-                    {director.name.name}
+                <option value="">Select Client</option>
+                {clientList.map((client) => (
+                  <option key={client.id} value={client._id}>
+                    {client.company_name}
                   </option>
                 ))}
               </Form.Control>
             </Form.Group>
-            <Form.Group className="mt-2">
-              <Form.Label>From Date</Form.Label>
+          </Col>
+          <Col>
+            <Form.Group controlId="committee">
+              <Form.Label>
+                Committee<sup>*</sup>
+              </Form.Label>
               <Form.Control
-                type="date"
-                value={member.from}
-                onChange={(e) =>
-                  handleMemberChange(index, "from", e.target.value)
-                }
-              />
+                as="select"
+                name="committee"
+                value={formData.committee}
+                onChange={handleChange}
+              >
+                <option value="">Select Committee</option>
+                {committeeList.map((committee) => (
+                  <option key={committee.id} value={committee.id}>
+                    {committee.name}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
-            <Form.Group className="mt-2">
-              <Form.Label>To Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={member.to}
-                onChange={(e) =>
-                  handleMemberChange(index, "to", e.target.value)
-                }
-              />
-            </Form.Group>
+          </Col>
+        </Row>
+
+        {formData.committeeMembers.map((member, index) => (
+          <div key={index}>
+            <Row className="mt-2">
+              <Col>
+                <Form.Group>
+                  <Form.Label>
+                    Director<sup>*</sup>
+                  </Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={member.name}
+                    onChange={(e) => {
+                      const selectedDirector = directorList.find(
+                        (director) => director.id === e.target.value
+                      );
+                      handleMemberChange(index, "name", selectedDirector.id);
+                      handleMemberChange(
+                        index,
+                        "email",
+                        selectedDirector.email
+                      );
+                    }}
+                  >
+                    <option value="">Select Director</option>
+                    {directorList?.map((director) => (
+                      <option key={director.id} value={director.id}>
+                        {director?.name}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>
+                    From Date<sup>*</sup>
+                  </Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={member.from}
+                    onChange={(e) =>
+                      handleMemberChange(index, "from", e.target.value)
+                    }
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>To Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={member.to}
+                    onChange={(e) =>
+                      handleMemberChange(index, "to", e.target.value)
+                    }
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mt-2">
+              <Col></Col>
+            </Row>
+
             <Button
               className="mt-2"
               variant="danger"
@@ -281,20 +335,31 @@ export default function EditCommitteeMember() {
             >
               Remove Member
             </Button>
-            <hr />
           </div>
         ))}
         <div
-          className="d-flex justify-content-between mb-3"
-          style={{ width: "50%" }}
+          className="d-flex justify-content-between mb-3 mt-4"
+          style={{ width: "30%" }}
         >
           <Button onClick={addMember} variant="secondary">
-            Add Committee Member
-          </Button>
-          <Button variant="primary" type="submit" disabled={loading}>
-            {loading ? <Spinner animation="border" size="sm" /> : "Save"}
+            Add new Committee Member
           </Button>
         </div>
+        <Row>
+          <Col>
+            {" "}
+            <Button
+              variant="primary"
+              onClick={() => navigate(-1)}
+              style={{ marginRight: "20px" }}
+            >
+              Go Back
+            </Button>
+            <Button variant="secondary" type="submit" disabled={loading}>
+              {loading ? <Spinner animation="border" size="sm" /> : "Save"}
+            </Button>
+          </Col>
+        </Row>
       </Form>
       <ToastContainer />
     </div>

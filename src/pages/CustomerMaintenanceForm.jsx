@@ -116,7 +116,6 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleAuditorChange = (field, value) => {
-
     if (value == "") {
       value = null;
     }
@@ -242,7 +241,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="company_name">
-                <Form.Label>Company Name</Form.Label>
+                <Form.Label>
+                  Company Name<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.company_name}
@@ -254,7 +255,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="pan">
-                <Form.Label>PAN</Form.Label>
+                <Form.Label>
+                  PAN <sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.pan}
@@ -267,7 +270,9 @@ export default function CustomerMaintenanceForm() {
 
             <Col>
               <Form.Group controlId="registered_address">
-                <Form.Label>Registered Address</Form.Label>
+                <Form.Label>
+                  Registered Address<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.registered_address}
@@ -281,7 +286,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="registration_number">
-                <Form.Label>Registeration Number</Form.Label>
+                <Form.Label>
+                  Registeration Number<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.registration_number}
@@ -293,7 +300,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="roc_code">
-                <Form.Label>ROC Code</Form.Label>
+                <Form.Label>
+                  ROC Code<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.roc_code}
@@ -305,7 +314,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="company_subcategory">
-                <Form.Label>Company Subcategory</Form.Label>
+                <Form.Label>
+                  Company Subcategory<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.company_subcategory}
@@ -322,7 +333,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="authorised_capital_equity">
-                <Form.Label>Authorised Capital (Equity)</Form.Label>
+                <Form.Label>
+                  Authorised Capital (Equity)<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   value={formData?.authorised_capital_equity}
@@ -339,7 +352,9 @@ export default function CustomerMaintenanceForm() {
 
             <Col>
               <Form.Group controlId="authorised_capital_preference_capital">
-                <Form.Label>Authorised Capital (Preference)</Form.Label>
+                <Form.Label>
+                  Authorised Capital (Preference)<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   value={formData?.authorised_capital_preference_capital}
@@ -355,7 +370,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="paid_up_capital_equity">
-                <Form.Label>Paid Up Capital (Equity)</Form.Label>
+                <Form.Label>
+                  Paid Up Capital (Equity)<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   value={formData?.paid_up_capital_equity}
@@ -374,7 +391,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="paid_up_capital_preference_capital">
-                <Form.Label>Paid Up Capital (Preference)</Form.Label>
+                <Form.Label>
+                  Paid Up Capital (Preference)<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   value={formData?.paid_up_capital_preference_capital}
@@ -401,7 +420,9 @@ export default function CustomerMaintenanceForm() {
 
             <Col>
               <Form.Group controlId="class_of_company">
-                <Form.Label>Class of Company</Form.Label>
+                <Form.Label>
+                  Class of Company<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.class_of_company}
@@ -419,7 +440,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="cin">
-                <Form.Label>CIN</Form.Label>
+                <Form.Label>
+                  CIN<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData?.cin}
@@ -462,7 +485,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="alloted_manager">
-                <Form.Label>Client Manager</Form.Label>
+                <Form.Label>
+                  Client Manager<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   as="select"
                   value={formData?.alloted_manager?.id || ""}
@@ -514,7 +539,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3">
             <Col>
               <Form.Group controlId="date_of_incorporation">
-                <Form.Label>Date of Incorporation</Form.Label>
+                <Form.Label>
+                  Date of Incorporation<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="date"
                   value={formData?.date_of_incorporation.split("T")[0]}
@@ -526,7 +553,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="date_of_last_agm">
-                <Form.Label>Date of Last AGM</Form.Label>
+                <Form.Label>
+                  Date of Last AGM<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="date"
                   value={formData?.date_of_last_agm?.split("T")[0]}
@@ -536,7 +565,9 @@ export default function CustomerMaintenanceForm() {
             </Col>
             <Col>
               <Form.Group controlId="alloted_consultants">
-                <Form.Label>Client Consultant</Form.Label>
+                <Form.Label>
+                  Client Consultant<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   as="select"
                   required
@@ -568,7 +599,9 @@ export default function CustomerMaintenanceForm() {
           <Row className="mb-3" style={{ width: "34%" }}>
             <Col>
               <Form.Group controlId="email_id">
-                <Form.Label>Email Address</Form.Label>
+                <Form.Label>
+                  Email Address<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="email"
                   value={formData?.email_id}

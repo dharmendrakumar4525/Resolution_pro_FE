@@ -308,7 +308,7 @@ export default function AgendaTemplate() {
           )}
         </div>
 
-        <Modal show={openAddModal} onHide={handleCloseAddModal}>
+        <Modal show={openAddModal} onHide={handleCloseAddModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit" : "Add"} Agenda Template
@@ -319,7 +319,9 @@ export default function AgendaTemplate() {
               <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Template Name</Form.Label>
+                    <Form.Label className="f-label">
+                      Template Name<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.templateName}
@@ -330,7 +332,9 @@ export default function AgendaTemplate() {
                 </Col>
                 <Col md={6}>
                   <Form.Group controlId="title">
-                    <Form.Label className="f-label">Title</Form.Label>
+                    <Form.Label className="f-label">
+                      Title<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.title}
@@ -402,7 +406,9 @@ export default function AgendaTemplate() {
                 )}
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
-                    <Form.Label className="f-label">Meeting Type</Form.Label>
+                    <Form.Label className="f-label">
+                      Meeting Type<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.meetingType}
@@ -489,7 +495,7 @@ export default function AgendaTemplate() {
                   <th>Resolution Template</th>
                   <th>Status</th>
                   <th>By</th>
-                  <th>Creation date</th>
+                  {/* <th>Creation date</th> */}
 
                   <th>Actions</th>
                 </tr>
@@ -531,7 +537,7 @@ export default function AgendaTemplate() {
                     </td>
                     <td>{row?.status}</td>
                     <td>{row?.createdBy?.name}</td>
-                    <td>{new Date(row?.createdAt).toLocaleDateString()}</td>
+                    {/* <td>{new Date(row?.createdAt).toLocaleDateString()}</td> */}
                     <td>
                       {hasPermission("edit") && (
                         <Button

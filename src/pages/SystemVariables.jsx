@@ -204,7 +204,7 @@ export default function SystemVariables() {
           )}
         </div>
 
-        <Modal show={openModal} onHide={handleCloseModal}>
+        <Modal show={openModal} onHide={handleCloseModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit Variable" : "Add Variable"}
@@ -213,7 +213,9 @@ export default function SystemVariables() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="name">
-                <Form.Label>Variable Name</Form.Label>
+                <Form.Label>
+                  Variable Name<sup>*</sup>
+                </Form.Label>
                 <FormControl
                   name="name"
                   value={formData.name}
@@ -223,7 +225,9 @@ export default function SystemVariables() {
               </Form.Group>
 
               <Form.Group controlId="mca_name" className="mt-2">
-                <Form.Label>MCA Name</Form.Label>
+                <Form.Label>
+                  MCA Name<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   name="mca_name"
                   value={formData.mca_name}

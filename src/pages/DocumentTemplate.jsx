@@ -326,7 +326,7 @@ export default function DocumentTemplate() {
           )}
         </div>
 
-        <Modal show={openAddModal} onHide={handleCloseAddModal}>
+        <Modal show={openAddModal} onHide={handleCloseAddModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit" : "Add"} Document Template
@@ -337,7 +337,9 @@ export default function DocumentTemplate() {
               <Row>
                 <Col md={6}>
                   <Form.Group controlId="templateName">
-                    <Form.Label className="f-label">Template Name</Form.Label>
+                    <Form.Label className="f-label">
+                      Template Name<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.templateName}
@@ -378,7 +380,9 @@ export default function DocumentTemplate() {
               <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
-                    <Form.Label className="f-label">Meeting Type</Form.Label>
+                    <Form.Label className="f-label">
+                      Meeting Type<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       as="select"
                       value={formData.meetingType}
@@ -398,7 +402,9 @@ export default function DocumentTemplate() {
                 {editingRow && user?.role === "672c47c238903b464c9d2920" && (
                   <Col md={6}>
                     <Form.Group controlId="status">
-                      <Form.Label className="f-label">Status</Form.Label>
+                      <Form.Label className="f-label">
+                        Status<sup>*</sup>
+                      </Form.Label>
                       <Form.Control
                         as="select"
                         value={formData.status}

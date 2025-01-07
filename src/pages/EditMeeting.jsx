@@ -416,18 +416,20 @@ export default function EditMeeting() {
   return (
     <>
       <div
-        style={{ width: "50%", marginLeft: "15px" }}
+        style={{ marginRight: "15px", marginLeft: "15px" }}
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
-        <h2 className="mb-3 mt-5">Edit Meeting</h2>
+        <h2 className="mb-4 mt-3">Edit Meeting</h2>
 
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
+                  <Form.Label>
+                    Title<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData?.title}
@@ -436,11 +438,13 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="client_name">
-                  <Form.Label>Client Name</Form.Label>
+                  <Form.Label>
+                    Client Name<sup>*</sup>
+                  </Form.Label>
                   <Select
-                    isDisabled={true}
+                    isDisabled
                     id="client-name-select"
                     options={clientOptions}
                     placeholder="Select Client"
@@ -452,44 +456,36 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col md={6} lg={4}>
+                <Form.Label>
+                  Meeting Documents<sup>*</sup>
+                </Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData?.agendaItems.length > 0
+                        ? {
+                            value: formData?.agendaItems[0].templateName,
+                            label: formData?.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
-            <Row className="mt-4 mb-3">
-              <Form.Label>Meeting Documents</Form.Label>
-
-              <Form.Group controlId="agendaItems">
-                <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Document"
-                  value={
-                    formData?.agendaItems.length > 0
-                      ? {
-                          value: formData?.agendaItems[0].templateName,
-                          label: formData?.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                />
-                {/* <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Documents"
-                  isMulti
-                  value={formData.agendaItems.map((item) => ({
-                    value: item.templateName,
-                    label: item.templateName,
-                  }))}
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                /> */}
-              </Form.Group>
-            </Row>
-
-            <Row>
-              <Col>
+            <Row className="mt-3">
+              <Col md={6} lg={4}>
                 <Form.Group controlId="date">
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label>
+                    Date<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="date"
                     value={formData?.date}
@@ -498,9 +494,11 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={6}>
                 <Form.Group controlId="participants" className="mt-2">
-                  <Form.Label>Participants</Form.Label>
+                  <Form.Label>
+                    Participants<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     isMulti
@@ -518,9 +516,7 @@ export default function EditMeeting() {
                         : directorOptions.filter((option) =>
                             formData.participants.some(
                               (participant) =>
-
                                 participant?.director?.id == option.value
-
                             )
                           )
                     }
@@ -550,7 +546,7 @@ export default function EditMeeting() {
                           participants: [],
                         });
                       } else {
-                        console.log(formData.participants,"d-1")
+                        console.log(formData.participants, "d-1");
                         setFormData({
                           ...formData,
                           participants: selectedOptions
@@ -560,8 +556,7 @@ export default function EditMeeting() {
                               isPresent: false,
                             })),
                         });
-                        console.log(formData.participants,"d-2")
-
+                        console.log(formData.participants, "d-2");
                       }
                     }}
                     isClearable
@@ -570,13 +565,13 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
             </Row>
-            <Col>
+            <Row className="mt-3">
               <Form.Group className="mt-2" controlId="other-participants">
                 <Form.Label>Other Participants</Form.Label>
                 {formData?.other_participants?.map((participant, index) => (
                   <div key={index} className="participant-inputs">
                     <Row>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="text"
                           value={participant.name || ""}
@@ -590,7 +585,7 @@ export default function EditMeeting() {
                           placeholder="Enter Participant Name"
                         />
                       </Col>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="email"
                           value={participant.email || ""}
@@ -604,12 +599,8 @@ export default function EditMeeting() {
                           placeholder="Enter Participant Email"
                         />
                       </Col>
-                    </Row>
-
-                    <Row>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Button
-                          className="mt-2"
                           type="button"
                           variant="danger"
                           onClick={() => handleRemoveParticipant(index)}
@@ -621,21 +612,25 @@ export default function EditMeeting() {
                   </div>
                 ))}
               </Form.Group>
-            </Col>
-            <Row>
-              <Button
-                className="mt-2"
-                style={{ width: "300px", marginBottom: "30px" }}
-                type="button"
-                onClick={handleAddParticipant}
-              >
-                Add Participant
-              </Button>
             </Row>
             <Row>
               <Col>
+                <Button
+                  className="mt-2"
+                  style={{ width: "300px", marginBottom: "30px" }}
+                  type="button"
+                  onClick={handleAddParticipant}
+                >
+                  Click to Add More Participants
+                </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="startTime">
-                  <Form.Label>Start Time</Form.Label>
+                  <Form.Label>
+                    Start Time<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="time"
                     value={formData?.startTime}
@@ -644,9 +639,11 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="selectTimeZone">
-                  <Form.Label>Select Time Zone</Form.Label>
+                  <Form.Label>
+                    Select Time Zone<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     id="time-zone-select"
@@ -660,12 +657,11 @@ export default function EditMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row className="mt-2">
-              {" "}
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="location">
-                  <Form.Label>Location</Form.Label>
+                  <Form.Label>
+                    Location<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData?.location}
@@ -675,6 +671,7 @@ export default function EditMeeting() {
                 </Form.Group>
               </Col>
             </Row>
+            <Row className="mt-2"> </Row>
 
             <div className="mt-2">
               <Button
@@ -682,7 +679,7 @@ export default function EditMeeting() {
                 onClick={handleCloseAddModal}
                 className="me-2"
               >
-                Cancel
+                Go Back
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
                 {buttonLoading ? (

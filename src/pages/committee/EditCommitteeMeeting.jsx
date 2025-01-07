@@ -366,7 +366,7 @@ export default function EditCommitteeMeeting() {
   return (
     <>
       <div
-        style={{ width: "50%", marginLeft: "15px" }}
+        style={{ marginRight: "15px", marginLeft: "15px" }}
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
@@ -377,7 +377,9 @@ export default function EditCommitteeMeeting() {
             <Row>
               <Col>
                 <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
+                  <Form.Label>
+                    Title<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData?.title}
@@ -388,7 +390,9 @@ export default function EditCommitteeMeeting() {
               </Col>
               <Col>
                 <Form.Group controlId="client_name">
-                  <Form.Label>Client Name</Form.Label>
+                  <Form.Label>
+                    Client Name<sup>*</sup>
+                  </Form.Label>
                   <Select
                     isDisabled={true}
                     id="client-name-select"
@@ -402,46 +406,36 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col>
+                <Form.Label>
+                  Meeting Documents<sup>*</sup>
+                </Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData?.agendaItems.length > 0
+                        ? {
+                            value: formData?.agendaItems[0].templateName,
+                            label: formData?.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
-            <Row></Row>
-
-            <Row className="mt-4 mb-3">
-              <Form.Label>Meeting Documents</Form.Label>
-
-              <Form.Group controlId="agendaItems">
-                <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Document"
-                  value={
-                    formData?.agendaItems.length > 0
-                      ? {
-                          value: formData?.agendaItems[0].templateName,
-                          label: formData?.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                />
-                {/* <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Documents"
-                  isMulti
-                  value={formData.agendaItems.map((item) => ({
-                    value: item.templateName,
-                    label: item.templateName,
-                  }))}
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                /> */}
-              </Form.Group>
-            </Row>
-
-            <Row>
+            <Row className="mt-3">
               <Col>
                 <Form.Group controlId="date">
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label>
+                    Date<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="date"
                     value={formData?.date}
@@ -452,7 +446,9 @@ export default function EditCommitteeMeeting() {
               </Col>
               <Col>
                 <Form.Group controlId="committee" className="mt-2">
-                  <Form.Label>Committee</Form.Label>
+                  <Form.Label>
+                    Committee<sup>*</sup>
+                  </Form.Label>
                   <Select
                     options={CommitteeOptions}
                     value={CommitteeOptions?.find(
@@ -480,11 +476,11 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
               <Col>
                 <Form.Group controlId="participants" className="mt-2">
-                  <Form.Label>Participants</Form.Label>
+                  <Form.Label>
+                    Participants<sup>*</sup>
+                  </Form.Label>
                   <Select
                     isMulti
                     options={[
@@ -549,7 +545,8 @@ export default function EditCommitteeMeeting() {
                 </Form.Group>
               </Col>
             </Row>
-            <Col>
+
+            <div>
               <Form.Group className="mt-2" controlId="other-participants">
                 <Form.Label>Other Participants</Form.Label>
                 {formData?.other_participants?.map((participant, index) => (
@@ -583,38 +580,40 @@ export default function EditCommitteeMeeting() {
                           placeholder="Enter Participant Email"
                         />
                       </Col>
-                    </Row>
-
-                    <Row>
                       <Col>
-                        <Button
-                          className="mt-2"
-                          type="button"
-                          variant="danger"
-                          onClick={() => handleRemoveParticipant(index)}
-                        >
-                          Remove
-                        </Button>
+                        <Col>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            onClick={() => handleRemoveParticipant(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Col>
                       </Col>
                     </Row>
                   </div>
                 ))}
               </Form.Group>
-            </Col>
+            </div>
             <Row>
-              <Button
-                className="mt-2"
-                style={{ width: "300px", marginBottom: "30px" }}
-                type="button"
-                onClick={handleAddParticipant}
-              >
-                Add Participant
-              </Button>
+              <Col>
+                <Button
+                  className="mt-2"
+                  style={{ width: "300px", marginBottom: "30px" }}
+                  type="button"
+                  onClick={handleAddParticipant}
+                >
+                  Click to Add More Participants
+                </Button>
+              </Col>
             </Row>
             <Row>
               <Col>
                 <Form.Group controlId="startTime">
-                  <Form.Label>Start Time</Form.Label>
+                  <Form.Label>
+                    Start Time<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="time"
                     value={formData?.startTime}
@@ -625,7 +624,9 @@ export default function EditCommitteeMeeting() {
               </Col>
               <Col>
                 <Form.Group controlId="selectTimeZone">
-                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+                  <Form.Label className="f-label">
+                    Select Time Zone<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     id="time-zone-select"
@@ -639,13 +640,13 @@ export default function EditCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
               <Col>
                 <Form.Group controlId="location">
-                  <Form.Label>Location</Form.Label>
+                  <Form.Label>
+                    Location<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
-                    type="text"
+                    as="textarea"
                     value={formData?.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
@@ -660,7 +661,7 @@ export default function EditCommitteeMeeting() {
                 onClick={handleCloseAddModal}
                 className="me-2"
               >
-                Cancel
+                Go Back
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
                 {buttonLoading ? (

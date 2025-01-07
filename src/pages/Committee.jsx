@@ -171,7 +171,7 @@ export default function Committee() {
           )}
         </div>
 
-        <Modal show={openModal} onHide={handleCloseModal}>
+        <Modal show={openModal} onHide={handleCloseModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>
               {editingRow ? "Edit Committee Master" : "Add Committee Master"}
@@ -180,7 +180,9 @@ export default function Committee() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="committeeName">
-                <Form.Label>Committee Master Name</Form.Label>
+                <Form.Label>
+                  Committee Master Name<sup>*</sup>
+                </Form.Label>
                 <FormControl
                   value={formData.committeeName}
                   onChange={handleChange}

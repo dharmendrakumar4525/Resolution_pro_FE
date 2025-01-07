@@ -76,8 +76,6 @@ export default function AddMeeting() {
     { value: "UTC", label: "Coordinated Universal Time (UTC)" },
   ];
 
-
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -579,7 +577,7 @@ export default function AddMeeting() {
   return (
     <>
       <div
-        style={{ width: "50%", marginLeft: "15px" }}
+        style={{ marginRight: "15px", marginLeft: "15px" }}
         show={openAddModal}
         onHide={handleCloseAddModal}
       >
@@ -590,9 +588,11 @@ export default function AddMeeting() {
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="client_name">
-                  <Form.Label>Client Name</Form.Label>
+                  <Form.Label>
+                    Client Name<sup>*</sup>
+                  </Form.Label>
                   <Select
                     id="client-name-select"
                     options={clientOptions}
@@ -626,9 +626,11 @@ export default function AddMeeting() {
                   </Form.Control> */}
                 </Form.Group>
               </Col>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="title">
-                  <Form.Label>Title</Form.Label>
+                  <Form.Label>
+                    Title<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.title}
@@ -637,49 +639,38 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
+              <Col md={6} lg={4}>
+                <Form.Label>
+                  Meeting Documents<sup>*</sup>
+                </Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData.agendaItems.length > 0
+                        ? {
+                            value: formData.agendaItems[0].templateName,
+                            label: formData.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
-            <Row className="mt-2 mb-2">
-              <Form.Label>Meeting Documents</Form.Label>
-
-              <Form.Group controlId="agendaItems">
-                <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Document"
-                  value={
-                    formData.agendaItems.length > 0
-                      ? {
-                          value: formData.agendaItems[0].templateName,
-                          label: formData.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                />
-
-                {/* <Select
-                  options={agendaOptions}
-                  placeholder="Select Meeting Documents"
-                  isMulti
-                  value={
-                    formData.agendaItems.length > 0
-                      ? {
-                          value: formData.agendaItems[0].templateName,
-                          label: formData.agendaItems[0].templateName,
-                        }
-                      : null
-                  }
-                  onChange={handleAgendaItemChange}
-                  isClearable
-                /> */}
-              </Form.Group>
-            </Row>
+            <Row className="mt-2 mb-2"></Row>
 
             <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="date">
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label>
+                    Date<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="date"
                     value={formData?.date}
@@ -688,9 +679,11 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group controlId="participants" className="mt-2">
-                  <Form.Label>Participants</Form.Label>
+              <Col md={6} lg={6}>
+                <Form.Group controlId="participants">
+                  <Form.Label>
+                    Participants<sup>*</sup>
+                  </Form.Label>
                   <Select
                     isMulti
                     required
@@ -760,13 +753,13 @@ export default function AddMeeting() {
                 )}
               </Col>
             </Row>
-            <Col>
+            <Row>
               <Form.Group className="mt-2" controlId="other-participants">
                 <Form.Label>Other Participants</Form.Label>
                 {formData.other_participants.map((participant, index) => (
                   <div key={index} className="participant-inputs">
                     <Row className="mt-2">
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="text"
                           value={participant.name || ""}
@@ -780,7 +773,7 @@ export default function AddMeeting() {
                           placeholder="Enter Participant Name"
                         />
                       </Col>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Form.Control
                           type="email"
                           value={participant.email || ""}
@@ -794,12 +787,8 @@ export default function AddMeeting() {
                           placeholder="Enter Participant Email"
                         />
                       </Col>
-                    </Row>
-
-                    <Row>
-                      <Col>
+                      <Col md={6} lg={4}>
                         <Button
-                          className="mt-2"
                           type="button"
                           variant="danger"
                           onClick={() => handleRemoveParticipant(index)}
@@ -811,21 +800,25 @@ export default function AddMeeting() {
                   </div>
                 ))}
               </Form.Group>
-            </Col>
-            <Row>
-              <Button
-                className="mt-2"
-                style={{ width: "300px", marginBottom: "30px" }}
-                type="button"
-                onClick={handleAddParticipant}
-              >
-                Click to add more Participant
-              </Button>
             </Row>
             <Row>
-              <Col>
+              <Col lg={4}>
+                <Button
+                  className="mt-2"
+                  style={{ width: "300px", marginBottom: "30px" }}
+                  type="button"
+                  onClick={handleAddParticipant}
+                >
+                  Click to add more Participant
+                </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="startTime">
-                  <Form.Label className="f-label">Start Time</Form.Label>
+                  <Form.Label className="f-label">
+                    Start Time<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
                     type="time"
                     value={formData.startTime}
@@ -835,9 +828,11 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
 
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="selectTimeZone">
-                  <Form.Label className="f-label">Select Time Zone</Form.Label>
+                  <Form.Label className="f-label">
+                    Select Time Zone<sup>*</sup>
+                  </Form.Label>
 
                   <Select
                     id="time-zone-select"
@@ -848,13 +843,13 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
-              <Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="location">
-                  <Form.Label className="f-label">Location</Form.Label>
+                  <Form.Label className="f-label">
+                    Location<sup>*</sup>
+                  </Form.Label>
                   <Form.Control
-                    type="text"
+                    as="textarea"
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="Enter Location"
@@ -869,7 +864,7 @@ export default function AddMeeting() {
                 onClick={handleCloseAddModal}
                 className="me-2"
               >
-                Cancel
+                Go Back
               </Button>
               <Button variant="secondary" type="submit" className="ml-2">
                 {buttonLoading ? (
