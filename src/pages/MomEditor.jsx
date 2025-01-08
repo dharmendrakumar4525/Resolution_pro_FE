@@ -39,13 +39,23 @@ const MomEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page || "";
+
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
+        let url;
+        if (page == "committee") {
+          url = `${apiURL}/committee-meeting`;
+        } else if (page == "shareholder") {
+          url = `${apiURL}/shareholder-meeting`;
+        } else {
+          url = `${apiURL}/meeting`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -129,7 +139,15 @@ const MomEditor = () => {
     };
     const fetchVariables = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        let url;
+        if (page == "committee") {
+          url = `${apiURL}/committee-meeting/${id}`;
+        } else if (page == "shareholder") {
+          url = `${apiURL}/shareholder-meeting/${id}`;
+        } else {
+          url = `${apiURL}/meeting/${id}`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -478,7 +496,19 @@ const MomEditor = () => {
     const formData = new FormData();
     formData.append("mom_file", docBlob);
     try {
-      const response = await fetch(`${apiURL}/meeting/${id}`, {
+      let url;
+      let redirectedUrl;
+      if (page === "committee") {
+        url = `${apiURL}/committee-meeting/${id}`;
+        redirectedUrl = `/committee-documents/${id}?tab=mom`;
+      } else if (page === "shareholder") {
+        url = `${apiURL}/shareholder-meeting/${id}`;
+        redirectedUrl = `/shareholder-documents/${id}?tab=mom`;
+      } else {
+        url = `${apiURL}/meeting/${id}`;
+        redirectedUrl = `/documents/${id}?tab=mom`;
+      }
+      const response = await fetch(url, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -487,7 +517,7 @@ const MomEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}?tab=mom`);
+        navigate(redirectedUrl);
       } else {
         toast.error("Failed to save the document.");
       }

@@ -182,8 +182,9 @@ export default function SystemVariables() {
     setPage(newPage);
   };
   const userPermissions =
-    rolePermissions.find((perm) => perm.moduleName === "Template_group")
-      ?.childList || [];
+    rolePermissions.find(
+      (perm) => perm.moduleName === "Sytem_Variable_undefined"
+    )?.childList || [];
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
@@ -268,11 +269,12 @@ export default function SystemVariables() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : !hasPermission("view") ? (
-          <div className="text-center mt-5">
-            <h5>You do not have permission to view the data</h5>
-          </div>
-        ) : rows.length === 0 ? (
+        ) : // : !hasPermission("view") ? (
+        //   <div className="text-center mt-5">
+        //     <h5>You do not have permission to view the data</h5>
+        //   </div>
+        // )
+        rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -284,7 +286,7 @@ export default function SystemVariables() {
                   <th>Variable Name</th>
                   <th>Mca Name</th>
                   <th>Formula</th>
-                  <th>Actions</th>
+                  {hasPermission("edit") && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -293,8 +295,8 @@ export default function SystemVariables() {
                     <td>{row?.name}</td>
                     <td>{row?.mca_name}</td>
                     <td>{row?.formula || "---"}</td>
-                    <td>
-                      {hasPermission("edit") && (
+                    {hasPermission("edit") && (
+                      <td>
                         <Button
                           variant="outline-primary"
                           onClick={() => handleEditClick(row)}
@@ -302,16 +304,17 @@ export default function SystemVariables() {
                         >
                           <FaEdit />
                         </Button>
-                      )}
-                      {hasPermission("delete") && (
-                        <Button
-                          variant="outline-danger"
-                          onClick={() => handleDeleteClick(row)}
-                        >
-                          <FaTrash />
-                        </Button>
-                      )}
-                    </td>
+
+                        {hasPermission("delete") && (
+                          <Button
+                            variant="outline-danger"
+                            onClick={() => handleDeleteClick(row)}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

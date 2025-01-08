@@ -22,7 +22,7 @@ export default function Sidebar() {
   const { rolePermissions } = useAuth();
   console.log(rolePermissions, "rolePermi");
   const handleToggleSidebar = () => setShow(!show);
-
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const handleAccordionChange = (eventKey) => {
     setActiveKey(activeKey === eventKey ? "" : eventKey); // Toggle accordion open/close
   };
@@ -106,59 +106,46 @@ export default function Sidebar() {
               <h4 className="Project-Heading">Resolution Pro</h4>
             </NavLink>
 
-            {/* <CollapsableNavItem
-              eventKey="tables/"
-              title="Resolution"
-              icon={faTable}
-            >
-              {hasPermission("Members_resolution", "view") && (
-                <NavItem
-                  title="Members Resolution"
-                  link="/members-resolution"
-                />
-              )}
-              {hasPermission("Board_resolution", "view") && (
-                <NavItem title="Board Resolution" link="/board-resolution" />
-              )}
-            </CollapsableNavItem> */}
             <CollapsableNavItem
               eventKey="meeting-master/"
               title="Meetings"
               icon={faTable}
             >
-              {hasPermission("Meeting", "view") && (
+              {hasPermission("Board_Meeting", "view") && (
                 <NavItem title="Board Meeting" link="/meeting" />
               )}
-              {hasPermission("Meeting", "view") && (
+              {hasPermission("Committee_Meeting", "view") && (
                 <NavItem title="Committee Meeting" link="/committee-meeting" />
               )}
-              {hasPermission("Meeting", "view") && (
+              {hasPermission("Shareholder_Meeting", "view") && (
                 <NavItem
                   title="Shareholder Meeting"
                   link="/shareholder-meeting"
                 />
               )}
-              {hasPermission("Meeting", "view") && (
-                <NavItem title="CSR Meeting" link="/meeting" />
-              )}
             </CollapsableNavItem>
-            <CollapsableNavItem
-              eventKey="approval/"
-              title="Pending Approval"
-              icon={faPenToSquare}
-            >
-              {/* {hasPermission("Members_resolution", "view") && ( */}
-              <NavItem title="Approval" link="/approval-docs" />
-              <NavItem title="Revise" link="/revise-docs" />
-              {/* )} */}
-            </CollapsableNavItem>
+            {user?.role == "672c47c238903b464c9d2920" ||
+            user?.role == "672c47cb38903b464c9d2923" ? (
+              <CollapsableNavItem
+                eventKey="approval/"
+                title="Pending Approval"
+                icon={faPenToSquare}
+              >
+                {/* {hasPermission("Members_resolution", "view") && ( */}
+                <NavItem title="Approval" link="/approval-docs" />
+                <NavItem title="Revise" link="/revise-docs" />
+                {/* )} */}
+              </CollapsableNavItem>
+            ) : (
+              ""
+            )}
 
             <CollapsableNavItem
               eventKey="examples/"
               title="Master"
               icon={faFileAlt}
             >
-              {hasPermission("Customer_Maintenance", "view") && (
+              {hasPermission("Client_Record", "view") && (
                 <NavItem title="Client Records" link="/client-records" />
               )}
               {hasPermission("Committee", "view") && (
@@ -167,16 +154,15 @@ export default function Sidebar() {
               {hasPermission("Committee_Members", "view") && (
                 <NavItem title="Committee Members" link="/committee-members" />
               )}
-              {hasPermission("Meeting_agenda_template", "view") && (
+              {hasPermission("Document_Template", "view") && (
                 <NavItem title="Document Template" link="/document-template" />
               )}
-              <NavItem title="Agenda Template" link="/agenda-template" />
+              {hasPermission("Agenda_Template", "view") && (
+                <NavItem title="Agenda Template" link="/agenda-template" />
+              )}
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />
-              {/* )} */}
-              {/* {hasPermission("Template_group", "view") && (
-                <NavItem title="Template Group" link="/template-group" />
-              )} */}
+              {/* )}  */}
               {/* <NavItem title="Meeting Template" link="/meeting-template" /> */}
             </CollapsableNavItem>
             <CollapsableNavItem eventKey="users/" title="Users" icon={faUser}>

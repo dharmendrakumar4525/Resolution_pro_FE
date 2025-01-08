@@ -21,7 +21,7 @@ export default function AddCommitteeMeeting() {
   const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/committee-meeting");
+  const handleCloseAddModal = () => navigate(-1);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
@@ -111,19 +111,15 @@ export default function AddCommitteeMeeting() {
           },
         });
         const data = await response.json();
-        console.log("data", data);
-        const idsToSkip = [
-          "673efb66ace56b4760e37c61",
-          "673f2063640f38762b0450c4",
-          "673f2072640f38762b0450ca",
-          "67515198aa5dd74676e405be",
-          "6756b022696ba6002745bbeb",
-          "6756ab53696ba6002745bbe5",
-          "6756aaaa696ba6002745bbd9",
+        const idsToShow = [
+          "67624c4b0ad6adf0a26aceb5",
+          "67624fcd0ad6adf0a26aceeb",
         ];
 
         const usableAgendas = data.results.filter(
-          (item) => item.status === "usable" && !idsToSkip.includes(item.id)
+          (item) =>
+            item.meetingType == "committee_meeting" &&
+            idsToShow.includes(item.id)
         );
 
         setAgendaList(usableAgendas);
@@ -230,13 +226,6 @@ export default function AddCommitteeMeeting() {
     }));
   };
 
-  // const handleChange = (e) => {
-  //   const { id, name, value } = e.target;
-  //   setFormData({ ...formData, [id || name]: value });
-  //   if (name === "client_name" && value) {
-  //     fetchDirectors(value);
-  //   }
-  // };
   const handleAgendaItemChange = (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevData) => ({
@@ -273,7 +262,9 @@ export default function AddCommitteeMeeting() {
         const data = await response.json();
 
         setDocxUrl(data?.results);
-        if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+        if (
+          formData?.agendaItems[0]?.templateName == "Committee Agenda Physical"
+        ) {
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "673efb66ace56b4760e37c61"
           );
@@ -341,7 +332,9 @@ export default function AddCommitteeMeeting() {
               }));
             }
           }
-        } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
+        } else if (
+          formData?.agendaItems[0]?.templateName == "Committee Agenda Virtual"
+        ) {
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "6756aaaa696ba6002745bbd9"
           );

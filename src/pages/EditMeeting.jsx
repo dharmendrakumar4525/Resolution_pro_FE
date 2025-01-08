@@ -21,7 +21,7 @@ export default function EditMeeting() {
   const [rows, setRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/meeting");
+  const handleCloseAddModal = () => navigate(-1);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);

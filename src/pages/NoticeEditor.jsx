@@ -43,11 +43,21 @@ const NoticeEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const page = location.state?.page || "";
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
+        let url;
+        if (page === "committee") {
+          url = `${apiURL}/committee-meeting`;
+        } else if (page === "shareholder") {
+          url = `${apiURL}/shareholder-meeting`;
+        } else {
+          url = `${apiURL}/meeting`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -132,7 +142,15 @@ const NoticeEditor = () => {
     };
     const fetchVariables = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        let url;
+        if (page === "committee") {
+          url = `${apiURL}/committee-meeting/${id}`;
+        } else if (page === "shareholder") {
+          url = `${apiURL}/shareholder-meeting/${id}`;
+        } else {
+          url = `${apiURL}/meeting/${id}`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -451,6 +469,8 @@ const NoticeEditor = () => {
     value: resol.templateName,
     label: resol.templateName,
   }));
+  const previousPath = location.state?.from; // Get the previous path
+  console.log(previousPath, "previous");
   const saveDocument = async () => {
     setButtonLoading(true);
 
@@ -459,7 +479,19 @@ const NoticeEditor = () => {
     const formData = new FormData();
     formData.append("notes_file", docBlob);
     try {
-      const response = await fetch(`${apiURL}/meeting/${id}`, {
+      let url;
+      let redirectedUrl;
+      if (page === "committee") {
+        url = `${apiURL}/committee-meeting/${id}`;
+        redirectedUrl = `/committee-documents/${id}?tab=notice`;
+      } else if (page === "shareholder") {
+        url = `${apiURL}/shareholder-meeting/${id}`;
+        redirectedUrl = `/shareholder-documents/${id}?tab=notice`;
+      } else {
+        url = `${apiURL}/meeting/${id}`;
+        redirectedUrl = `/documents/${id}?tab=notice`;
+      }
+      const response = await fetch(url, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -468,7 +500,7 @@ const NoticeEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}?tab=notice`);
+        navigate(redirectedUrl);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -563,6 +595,13 @@ const NoticeEditor = () => {
               </p>
             )}
           </div>
+          <Button
+            className="mt-4"
+            variant="danger"
+            onClick={() => navigate(-1)}
+          >
+            Exit without Saving
+          </Button>
         </div>
       </div>
       <ToastContainer />

@@ -40,6 +40,7 @@ const ResolutionEditor = () => {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const resolTitle = location.state?.resolTitle;
+  const page = location.state?.page || "";
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
@@ -47,7 +48,15 @@ const ResolutionEditor = () => {
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        const response = await fetch(`${apiURL}/meeting`, {
+        let url;
+        if (page == "committee") {
+          url = `${apiURL}/committee-meeting`;
+        } else if (page == "shareholder") {
+          url = `${apiURL}/shareholder-meeting`;
+        } else {
+          url = `${apiURL}/meeting`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -131,7 +140,15 @@ const ResolutionEditor = () => {
     };
     const fetchVariables = async () => {
       try {
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        let url;
+        if (page == "committee") {
+          url = `${apiURL}/committee-meeting/${id}`;
+        } else if (page == "shareholder") {
+          url = `${apiURL}/shareholder-meeting/${id}`;
+        } else {
+          url = `${apiURL}/meeting/${id}`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -435,7 +452,19 @@ const ResolutionEditor = () => {
     formData.append("resolution_file", docBlob);
     formData.append("index", `${index}`);
     try {
-      const response = await fetch(`${apiURL}/meeting/${id}`, {
+      let url;
+      let redirectedUrl;
+      if (page === "committee") {
+        url = `${apiURL}/committee-meeting/${id}`;
+        redirectedUrl = `/committee-documents/${id}?tab=resolution`;
+      } else if (page === "shareholder") {
+        url = `${apiURL}/shareholder-meeting/${id}`;
+        redirectedUrl = `/shareholder-documents/${id}?tab=resolution`;
+      } else {
+        url = `${apiURL}/meeting/${id}`;
+        redirectedUrl = `/documents/${id}?tab=resolution`;
+      }
+      const response = await fetch(url, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -444,7 +473,7 @@ const ResolutionEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}`);
+        navigate(redirectedUrl);
       } else {
         toast.error("Failed to save the document.");
       }

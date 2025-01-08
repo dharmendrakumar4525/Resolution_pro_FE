@@ -262,9 +262,8 @@ export default function AgendaTemplate() {
     setPage(newPage);
   };
   const userPermissions =
-    rolePermissions.find(
-      (perm) => perm.moduleName === "Meeting_agenda_template"
-    )?.childList || [];
+    rolePermissions.find((perm) => perm.moduleName === "Agenda_Template")
+      ?.childList || [];
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);

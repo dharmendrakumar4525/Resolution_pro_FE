@@ -13,13 +13,13 @@ import {
   Tab,
 } from "react-bootstrap";
 import { saveAs } from "file-saver";
-import { apiURL } from "../../API/api"
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const token = localStorage.getItem("refreshToken");
 
-export default function MeetingDocuments() {
+export default function ShareholderDocuments() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const tab = searchParams.get("tab");
@@ -104,7 +104,7 @@ export default function MeetingDocuments() {
 
   const handleEditClick = (row, index) => {
     navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row?.templateFile}` },
+      state: { index, fileUrl: `${row?.templateFile}`, page: "shareholder" },
     });
   };
   const handleView = (row) => {
@@ -113,7 +113,7 @@ export default function MeetingDocuments() {
       return;
     }
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filedocx}` },
+      state: { fileUrl: `${row?.filedocx}`, page: "shareholder" },
     });
   };
   const sendApproval = async (meetData) => {
@@ -131,14 +131,20 @@ export default function MeetingDocuments() {
         },
         body: JSON.stringify(formData),
       });
-      const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ is_approved: false, approval_status: "review" }),
-      });
+      const patchResponse = await fetch(
+        `${apiURL}/shareholder-meeting/${meetData.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_approved: false,
+            approval_status: "review",
+          }),
+        }
+      );
       if (response.ok && patchResponse.ok) {
         setMeetData((prevData) => ({
           ...prevData,
@@ -157,6 +163,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -170,6 +177,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -191,6 +199,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -212,6 +221,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -221,6 +231,7 @@ export default function MeetingDocuments() {
         index,
         fileUrl: item?.templateFile,
         leaveInfo: item,
+        page: "shareholder",
       },
     });
   };
@@ -242,6 +253,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -255,6 +267,7 @@ export default function MeetingDocuments() {
       state: {
         index,
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -265,6 +278,7 @@ export default function MeetingDocuments() {
         index,
         fileUrl: row?.templateFile,
         resolTitle: row?.templateName,
+        page: "shareholder",
       },
     });
   };
@@ -277,6 +291,7 @@ export default function MeetingDocuments() {
     navigate(`/template-group-meeting-view/${id}`, {
       state: {
         fileUrl: url,
+        page: "shareholder",
       },
     });
   };
@@ -294,7 +309,7 @@ export default function MeetingDocuments() {
 
   const patchAttendance = async () => {
     try {
-      const url = `${apiURL}/meeting/${id}`;
+      const url = `${apiURL}/shareholder-meeting/${id}`;
       const transformedParticipants = participants.map((participant) => ({
         director: participant?.director?.id,
         isPresent: participant?.isPresent,
@@ -337,6 +352,140 @@ export default function MeetingDocuments() {
       console.error("File URL is not available");
     }
   };
+  const handleDownloadAllPdf = async (fileType) => {
+    const downloadLinks = [];
+    const formatDate = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Prepare download links for all sections if available
+    if (notice?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: notice?.fileName,
+        name: `SM_Notice_${meetData?.client_name?.name}_dated_${formatDate(
+          new Date()
+        )}.pdf`,
+      });
+    }
+    if (attendance?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: attendance?.fileName,
+        name: `Attendance_Sheet_of_SM_dated_${formatDate(new Date())}.pdf`,
+      });
+    }
+    if (minutes?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: minutes?.fileName,
+        name: `SM_MOM_dated_${formatDate(new Date())}.pdf`,
+      });
+    }
+    if (
+      Array.isArray(resolutions) &&
+      resolutions.length &&
+      fileType === "pdf"
+    ) {
+      resolutions.forEach((row, index) => {
+        if (row?.fileName) {
+          downloadLinks.push({
+            url: row?.fileName,
+            name: `SM_Resolution_${index + 1}_dated_${formatDate(
+              new Date()
+            )}.pdf`,
+          });
+        }
+      });
+    }
+
+    // Sequential download
+    for (const { url, name } of downloadLinks) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to download ${name}`);
+        }
+        const blob = await response.blob();
+        saveAs(blob, name); // Using saveAs for better compatibility
+      } catch (error) {
+        console.error("Download failed:", error);
+      }
+    }
+  };
+
+  const handleDownloadAllDocx = async () => {
+    const downloadDocxLinks = [];
+    const formatDate = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Prepare download links
+    if (notice?.filedocx) {
+      downloadDocxLinks.push({
+        url: notice?.filedocx,
+        name: `SM_Notice_${meetData?.client_name?.name}_dated_${formatDate(
+          new Date()
+        )}.docx`,
+      });
+    }
+    if (attendance?.filedocx) {
+      downloadDocxLinks.push({
+        url: attendance?.filedocx,
+        name: `Attendance_Sheet_of_SM_dated_${formatDate(new Date())}.docx`,
+      });
+    }
+    if (minutes?.filedocx) {
+      downloadDocxLinks.push({
+        url: minutes?.filedocx,
+        name: `SM_MOM_dated_${formatDate(new Date())}.docx`,
+      });
+    }
+    if (Array.isArray(resolutions) && resolutions.length) {
+      resolutions.forEach((row, index) => {
+        if (row?.filedocx) {
+          downloadDocxLinks.push({
+            url: row?.filedocx,
+            name: `SM_Resolution_${index + 1}_dated_${formatDate(
+              new Date()
+            )}.docx`,
+          });
+        }
+      });
+    }
+
+    // Sequential download
+    for (const { url, name } of downloadDocxLinks) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to download ${name}`);
+        }
+        const blob = await response.blob();
+        saveAs(blob, name);
+      } catch (error) {
+        console.error("Download failed:", error);
+      }
+    }
+  };
+
+  const allFilesAvailable = [
+    notice?.fileName,
+    attendance?.fileName,
+    minutes?.fileName,
+    ...resolutions.map((row) => row?.fileName),
+  ].every((file) => file); // Check if all files are available
+  const allDocxFilesAvailable = [
+    notice?.filedocx,
+    attendance?.filedocx,
+    minutes?.filedocx,
+    ...resolutions.map((row) => row?.filedocx),
+  ].every((file) => file); // Check if all files are available
 
   return (
     <>
@@ -378,6 +527,23 @@ export default function MeetingDocuments() {
               sendApproval={sendApproval}
             />
           )}
+          <div className="d-flex justify-content-end mb-3">
+            <Button
+              variant="primary"
+              disabled={!allFilesAvailable}
+              onClick={() => handleDownloadAllPdf("pdf")}
+              className="me-2"
+            >
+              Download All as PDF
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!allDocxFilesAvailable}
+              onClick={() => handleDownloadAllDocx("docx")}
+            >
+              Download All as DOCX
+            </Button>
+          </div>
         </Tab>
 
         <Tab eventKey="notice" title="Notice">
@@ -848,6 +1014,19 @@ export default function MeetingDocuments() {
           </div>
         </Tab>
       </Tabs>
+      <div
+        className="d-flex flex-column justify-content-end mt-3"
+        style={{ height: "100%" }}
+      >
+        <Button
+          variant="primary"
+          onClick={() => navigate(-1)}
+          className="align-self-start"
+        >
+          Go Back
+        </Button>
+      </div>
+
       <ToastContainer />
     </>
   );
@@ -878,7 +1057,7 @@ function TableContent({
   handleView,
   sendApproval,
 }) {
-  console.log(meetData);
+  console.log(meetData, "dsq");
   return (
     <div className="table-responsive mt-5">
       <Table bordered hover className="Master-table">
@@ -921,7 +1100,7 @@ function TableContent({
                   download="customFileName.docx"
                   rel="noopener noreferrer"
                   target="_blank"
-                  disabled={!row.is_active == true}
+                  disabled={meetData.approval_status !== "approved"}
                 >
                   <FaFileWord />
                 </Button>
@@ -934,7 +1113,7 @@ function TableContent({
                   href={`${row?.filedocx}`}
                   download="customFileName.docx"
                   rel="noopener noreferrer"
-                  disabled={!row.is_active == true}
+                  disabled={meetData.approval_status !== "approved"}
                 >
                   <FaFileWord />
                 </Button>

@@ -59,6 +59,13 @@ const DocumentEditor = () => {
               "Content-Type": "application/json",
             },
           });
+        } else if (page == "shareholder") {
+          response = await fetch(`${apiURL}/shareholder-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
         } else {
           response = await fetch(`${apiURL}/meeting`, {
             headers: {
@@ -123,6 +130,13 @@ const DocumentEditor = () => {
         let response;
         if (page == "committee") {
           response = await fetch(`${apiURL}/committee-meeting/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } else if (page == "shareholder") {
+          response = await fetch(`${apiURL}/shareholder-meeting/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -502,7 +516,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<div>${result.value}</div>\n`;
+            combinedContent += `<br/><div>${result.value}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -521,7 +535,7 @@ const DocumentEditor = () => {
             }
             const arrayBuffer = await response.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<div>${result.value}</div><br/>`;
+            combinedContent += `<br/><div>${result.value}</div><br/>`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
@@ -784,14 +798,30 @@ const DocumentEditor = () => {
         const filteredData = selectedData?.filter(
           (item) => item.title !== "For #{company_name}"
         );
+        let meetingType;
+        let url;
+        let redirectedUrl;
+        if (page == "committee") {
+          url = `${apiURL}/committee-meeting/${id}`;
+          redirectedUrl = `/committee-documents/${id}`;
+          meetingType = "committee_meeting";
+        } else if (page == "shareholder") {
+          url = `${apiURL}/shareholder-meeting/${id}`;
+          redirectedUrl = `/shareholder-documents/${id}`;
+          meetingType = "shareholder_meeting";
+        } else {
+          url = `${apiURL}/meeting/${id}`;
+          redirectedUrl = `/documents/${id}`;
+          meetingType = "board_meeting";
+        }
 
         const resolutions = filteredData?.map((item) => ({
           templateName: item.title || "",
           templateFile: item.resolutionFile || "",
-          meetingType: "board_meeting",
+          meetingType: meetingType,
         }));
 
-        const response = await fetch(`${apiURL}/meeting/${id}`, {
+        const response = await fetch(url, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -802,7 +832,7 @@ const DocumentEditor = () => {
 
         if (response.ok) {
           toast.success("Resolutions Saved");
-          navigate(`/documents/${id}`);
+          navigate(redirectedUrl);
         } else {
           console.error("Failed to save the resolutions.");
         }
@@ -823,10 +853,18 @@ const DocumentEditor = () => {
     formData.append("file", docBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
-    // formData.append("is_approved", true);
+    formData.append("is_approved", true);
     console.log(JSON.stringify(placeVar));
+    let url;
+    if (page == "committee") {
+      url = `${apiURL}/committee-meeting/${id}`;
+    } else if (page == "shareholder") {
+      url = `${apiURL}/shareholder-meeting/${id}`;
+    } else {
+      url = `${apiURL}/meeting/${id}`;
+    }
     try {
-      const response = await fetch(`${apiURL}/meeting/${id}`, {
+      const response = await fetch(url, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -994,6 +1032,7 @@ const DocumentEditor = () => {
 
           <div className="mt-4">
             <Button
+              variant="secondary"
               onClick={saveDocument}
               disabled={hasUnconfirmedPlaceholders}
             >
@@ -1016,6 +1055,13 @@ const DocumentEditor = () => {
               </p>
             )}
           </div>
+          <Button
+            className="mt-4"
+            variant="danger"
+            onClick={() => navigate(-1)}
+          >
+            Exit without Saving
+          </Button>
         </div>
       </div>
       <ToastContainer />

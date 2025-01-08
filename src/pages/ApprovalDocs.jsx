@@ -73,34 +73,40 @@ export default function ApprovalDocs() {
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
         <h4 className="h4-heading-style">Approval</h4>
       </div>
-      <Table bordered hover className="Master-table">
-        <thead className="Master-Thead">
-          <tr>
-            <th style={{ width: "30%" }}>Company Name</th>
-            <th style={{ width: "30%" }}>Meeting Name</th>
-            <th style={{ width: "30%" }}>Meeting Type</th>
-            <th>View</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={row?.id}>
-              <td>{row?.company_id?.company_name}</td>
-              <td>{row?.meeting_id?.title}</td>
-              <td>{row?.meeting_type}</td>
-
-              <td>
-                <Button
-                  variant="outline-primary"
-                  onClick={() => handleView(row)}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
+      {rows.length === 0 ? (
+        <div className="text-center mt-5">
+          <h5>No data available</h5>
+        </div>
+      ) : (
+        <Table bordered hover className="Master-table">
+          <thead className="Master-Thead">
+            <tr>
+              <th style={{ width: "30%" }}>Company Name</th>
+              <th style={{ width: "30%" }}>Meeting Name</th>
+              <th style={{ width: "30%" }}>Meeting Type</th>
+              <th>View</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row?.id}>
+                <td>{row?.company_id?.company_name}</td>
+                <td>{row?.meeting_id?.title}</td>
+                <td>{row?.meeting_type}</td>
+
+                <td>
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => handleView(row)}
+                  >
+                    <FaFileWord />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
 
       <ToastContainer />
     </>

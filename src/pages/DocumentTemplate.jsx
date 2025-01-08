@@ -280,9 +280,8 @@ export default function DocumentTemplate() {
     setPage(newPage);
   };
   const userPermissions =
-    rolePermissions.find(
-      (perm) => perm.moduleName === "Meeting_agenda_template"
-    )?.childList || [];
+    rolePermissions.find((perm) => perm.moduleName === "Document_Template")
+      ?.childList || [];
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
@@ -545,7 +544,7 @@ export default function DocumentTemplate() {
           </>
         )}
       </Container>
-      <ToastContainer />
+      <ToastContainer autoClose={1000} />
     </>
   );
 }

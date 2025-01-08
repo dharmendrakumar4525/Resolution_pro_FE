@@ -15,6 +15,7 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 const themeColors = {
   primary: "#2e3650",
@@ -34,6 +35,7 @@ const Home = () => {
   });
   const token = localStorage.getItem("refreshToken");
   const user = JSON.parse(localStorage.getItem("user")) || {};
+  const { rolePermissions } = useAuth();
 
   const [managers, setManagers] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -53,42 +55,6 @@ const Home = () => {
   };
   // New state to track selected resolution type
   const [selectedResolutionType, setSelectedResolutionType] = useState("");
-
-  // Fetch resolutions for admin if no manager or company is selected
-  // useEffect(() => {
-
-  //   if (!selectedManager && !selectedCompany && user.role === "admin") {
-  //     const fetchAdminResolutions = async () => {
-  //       try {
-  //         const response = await fetch(`${apiURL}/resolutions/dashboard/${user.id}`);
-  //         const data = await response.json();
-  //         const companyResolutions = data.data.resolutiondata[selectedCompany] || [];
-
-  //         console.log(data.data.resolutiondata,"hello");
-
-  //         // Assuming data comes in similar structure as before
-  //         const adminResolutions = data.data.resolutiondata || [];
-
-  //         setResolutions(adminResolutions);
-
-  //         // Count resolutions by status
-  //         const draftResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "created").length;
-  //         const completedResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "completed").length;
-  //         const inProcessResolutions = companyResolutions.filter(res => res.status.toLowerCase() === "review").length;
-  //         const totalCount = draftResolutions + completedResolutions + inProcessResolutions;
-
-  //         setDraftCount(draftResolutions);
-  //         setCompletedCount(completedResolutions);
-  //         setInProcessCount(inProcessResolutions);
-  //         setTotalResolutions(totalCount);
-  //       } catch (error) {
-  //         toast.error("Error fetching resolutions for admin");
-  //       }
-  //     };
-
-  //     fetchAdminResolutions();
-  //   }
-  // }, [selectedManager, selectedCompany, user.role, user.id]);
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -253,6 +219,19 @@ const Home = () => {
     if (selectedResolutionType === "total") return true; // Return all resolutions for "Total Resolutions"
     return false;
   });
+  const getUserPermissions = (moduleName) => {
+    return (
+      rolePermissions.find((perm) => perm.moduleName === moduleName)
+        ?.childList || []
+    );
+  };
+
+  const hasPermission = (moduleName, action) => {
+    const userPermissions = getUserPermissions(moduleName);
+    return userPermissions.some(
+      (perm) => perm.value === action && perm.isSelected
+    );
+  };
 
   return (
     <Container fluid className="mt-5">
@@ -269,30 +248,30 @@ const Home = () => {
         </Modal.Header>
         <Modal.Body>
           <ListGroup>
-            <ListGroup.Item
-              action
-              onClick={() => handleNavigate("/meeting/add-form")}
-            >
-              Board Meeting
-            </ListGroup.Item>
-            <ListGroup.Item
-              action
-              onClick={() => handleNavigate("/meeting/add-form")}
-            >
-              Committee Meeting
-            </ListGroup.Item>
-            <ListGroup.Item
-              action
-              onClick={() => handleNavigate("/meeting/add-form")}
-            >
-              Shareholder Meeting
-            </ListGroup.Item>
-            <ListGroup.Item
-              action
-              onClick={() => handleNavigate("/meeting/add-form")}
-            >
-              CSR Meeting
-            </ListGroup.Item>
+            {hasPermission("Board_Meeting", "add") && (
+              <ListGroup.Item
+                action
+                onClick={() => handleNavigate("/meeting/add-form")}
+              >
+                Board Meeting
+              </ListGroup.Item>
+            )}
+            {hasPermission("Committee_Meeting", "add") && (
+              <ListGroup.Item
+                action
+                onClick={() => handleNavigate("/add-committee-meet")}
+              >
+                Committee Meeting
+              </ListGroup.Item>
+            )}
+            {hasPermission("Shareholder_Meeting", "add") && (
+              <ListGroup.Item
+                action
+                onClick={() => handleNavigate("/add-shareholder-meet")}
+              >
+                Shareholder Meeting
+              </ListGroup.Item>
+            )}
           </ListGroup>
         </Modal.Body>
       </Modal>

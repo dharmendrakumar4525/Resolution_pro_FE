@@ -102,8 +102,8 @@ export default function ShareholderMeeting() {
     navigate(`/shareholder-documents/${row?.id}`);
   };
   const userPermissions =
-    rolePermissions.find((perm) => perm.moduleName === "Meeting")?.childList ||
-    [];
+    rolePermissions.find((perm) => perm.moduleName === "Shareholder_Meeting")
+      ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
@@ -165,27 +165,31 @@ export default function ShareholderMeeting() {
                       <td>{new Date(row?.date).toLocaleDateString()}</td>
 
                       <td>
-                        <Button
-                          disabled={row?.approval_status == "approved"}
-                          variant="outline-secondary"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRedirectEdit(row);
-                          }}
-                          className="me-2"
-                        >
-                          <FaEdit />
-                        </Button>
-                        <Button
-                          disabled={row?.approval_status == "approved"}
-                          variant="outline-danger"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(row);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
+                        {hasPermission("edit") && (
+                          <Button
+                            disabled={row?.approval_status == "approved"}
+                            variant="outline-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRedirectEdit(row);
+                            }}
+                            className="me-2"
+                          >
+                            <FaEdit />
+                          </Button>
+                        )}
+                        {hasPermission("delete") && (
+                          <Button
+                            disabled={row?.approval_status == "approved"}
+                            variant="outline-danger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(row);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   </OverlayTrigger>

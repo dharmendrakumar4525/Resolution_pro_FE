@@ -60,7 +60,7 @@ const TemplateGenerator = () => {
     const fetchData = async (pageNo) => {
       try {
         const response = await fetch(
-          `${apiURL}/system-variable?page=${pageNo}&limit=7`,
+          `${apiURL}/system-variable?page=${pageNo}&limit=15`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

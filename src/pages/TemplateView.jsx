@@ -376,12 +376,13 @@ const TemplateViewer = () => {
             }}
           />
         </div>
-        {page == "approval" && (
+
+        {page == "approval" ? (
           <form onSubmit={(e) => handleSubmit(e)} className="mt-4">
             {/* Select Field */}
             <div className="mb-3">
               <label htmlFor="decision" className="form-label">
-                Decision
+                Decision<sup>*</sup>
               </label>
               <select
                 id="decision"
@@ -399,7 +400,13 @@ const TemplateViewer = () => {
 
             <div className="mb-3">
               <label htmlFor="remarks" className="form-label">
-                Remarks
+                {formData?.decision == "revise" ? (
+                  <>
+                    Remarks<sup>*</sup>
+                  </>
+                ) : (
+                  `Remarks`
+                )}
               </label>
               <textarea
                 id="remarks"
@@ -415,7 +422,22 @@ const TemplateViewer = () => {
             <button type="submit" className="btn btn-primary">
               Submit
             </button>
+            <Button
+              className="mt-4"
+              variant="danger"
+              onClick={() => navigate(-1)}
+            >
+              Exit without Approval
+            </Button>
           </form>
+        ) : (
+          <Button
+            variant="primary"
+            onClick={() => navigate(-1, { state: { tab: "notice" } })}
+            style={{ marginRight: "20px" }}
+          >
+            Go Back
+          </Button>
         )}
       </div>
     </Container>

@@ -21,7 +21,7 @@ export default function AddShareholderMeeting() {
   const [docxUrl, setDocxUrl] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const handleOpenAddModal = () => setOpenAddModal(true);
-  const handleCloseAddModal = () => navigate("/shareholder-meeting");
+  const handleCloseAddModal = () => navigate(-1);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
@@ -648,7 +648,10 @@ export default function AddShareholderMeeting() {
                     value={
                       formData.shareholder_participants.length ===
                       shareholderList.length
-                        ? [{ value: "selectAll", label: "Select All" }]
+                        ? [
+                            { value: "selectAll", label: "Select All" },
+                            ...shareholderOptions,
+                          ]
                         : shareholderOptions.filter((option) =>
                             formData.shareholder_participants.some(
                               (participant) =>

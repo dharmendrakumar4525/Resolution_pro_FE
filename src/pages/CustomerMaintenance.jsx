@@ -77,7 +77,6 @@ export default function CustomerMaintenance() {
       try {
         const url =
           userRole === "672c47cb38903b464c9d2923"
-
             ? `${apiURL}/customer-maintenance?alloted_manager=${userManagerId}&page=${pageNo}&limit=10`
             : `${apiURL}/customer-maintenance?page=${pageNo}&limit=10`;
 
@@ -191,7 +190,7 @@ export default function CustomerMaintenance() {
     }
   };
   const userPermissions =
-    rolePermissions.find((perm) => perm.moduleName === "Customer_Maintenance")
+    rolePermissions.find((perm) => perm.moduleName === "Client_Record")
       ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);

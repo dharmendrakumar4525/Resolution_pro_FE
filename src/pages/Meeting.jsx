@@ -182,8 +182,8 @@ export default function Meeting() {
     navigate(`/documents/${row?.id}`);
   };
   const userPermissions =
-    rolePermissions.find((perm) => perm.moduleName === "Meeting")?.childList ||
-    [];
+    rolePermissions.find((perm) => perm.moduleName === "Board_Meeting")
+      ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
@@ -193,7 +193,7 @@ export default function Meeting() {
         <ToastContainer />
 
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
-          <h4 className="h4-heading-style">Meeting</h4>
+          <h4 className="h4-heading-style">Board Meeting</h4>
           {hasPermission("add") && (
             <Button
               variant="primary"
@@ -247,27 +247,31 @@ export default function Meeting() {
                       <td>{new Date(row?.date).toLocaleDateString()}</td>
 
                       <td>
-                        <Button
-                          disabled={row?.approval_status == "approved"}
-                          variant="outline-secondary"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRedirectEdit(row);
-                          }}
-                          className="me-2"
-                        >
-                          <FaEdit />
-                        </Button>
-                        <Button
-                          disabled={row?.approval_status == "approved"}
-                          variant="outline-danger"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(row);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
+                        {hasPermission("edit") && (
+                          <Button
+                            disabled={row?.approval_status == "approved"}
+                            variant="outline-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRedirectEdit(row);
+                            }}
+                            className="me-2"
+                          >
+                            <FaEdit />
+                          </Button>
+                        )}
+                        {hasPermission("delete") && (
+                          <Button
+                            disabled={row?.approval_status == "approved"}
+                            variant="outline-danger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(row);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   </OverlayTrigger>

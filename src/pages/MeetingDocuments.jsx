@@ -337,6 +337,138 @@ export default function MeetingDocuments() {
       console.error("File URL is not available");
     }
   };
+  const handleDownloadAllPdf = async (fileType) => {
+    const downloadLinks = [];
+    const formatDate = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Prepare download links for all sections if available
+    if (notice?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: notice?.fileName,
+        name: `BM_Notice_${meetData?.client_name?.name}_dated_${formatDate(
+          new Date()
+        )}.pdf`,
+      });
+    }
+    if (attendance?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: attendance?.fileName,
+        name: `Attendance_Sheet_of_BM_dated_${formatDate(new Date())}.pdf`,
+      });
+    }
+    if (minutes?.fileName && fileType === "pdf") {
+      downloadLinks.push({
+        url: minutes?.fileName,
+        name: `MOM_dated_${formatDate(new Date())}.pdf`,
+      });
+    }
+    if (
+      Array.isArray(resolutions) &&
+      resolutions.length &&
+      fileType === "pdf"
+    ) {
+      resolutions.forEach((row, index) => {
+        if (row?.fileName) {
+          downloadLinks.push({
+            url: row?.fileName,
+            name: `Resolution_${index + 1}_dated_${formatDate(new Date())}.pdf`,
+          });
+        }
+      });
+    }
+
+    // Sequential download
+    for (const { url, name } of downloadLinks) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to download ${name}`);
+        }
+        const blob = await response.blob();
+        saveAs(blob, name); // Using saveAs for better compatibility
+      } catch (error) {
+        console.error("Download failed:", error);
+      }
+    }
+  };
+
+  const handleDownloadAllDocx = async () => {
+    const downloadDocxLinks = [];
+    const formatDate = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Prepare download links
+    if (notice?.filedocx) {
+      downloadDocxLinks.push({
+        url: notice?.filedocx,
+        name: `BM_Notice_${meetData?.client_name?.name}_dated_${formatDate(
+          new Date()
+        )}.docx`,
+      });
+    }
+    if (attendance?.filedocx) {
+      downloadDocxLinks.push({
+        url: attendance?.filedocx,
+        name: `Attendance_Sheet_of_BM_dated_${formatDate(new Date())}.docx`,
+      });
+    }
+    if (minutes?.filedocx) {
+      downloadDocxLinks.push({
+        url: minutes?.filedocx,
+        name: `MOM_dated_${formatDate(new Date())}.docx`,
+      });
+    }
+    if (Array.isArray(resolutions) && resolutions.length) {
+      resolutions.forEach((row, index) => {
+        if (row?.filedocx) {
+          downloadDocxLinks.push({
+            url: row?.filedocx,
+            name: `Resolution_${index + 1}_dated_${formatDate(
+              new Date()
+            )}.docx`,
+          });
+        }
+      });
+    }
+
+    // Sequential download
+    for (const { url, name } of downloadDocxLinks) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to download ${name}`);
+        }
+        const blob = await response.blob();
+        saveAs(blob, name);
+      } catch (error) {
+        console.error("Download failed:", error);
+      }
+    }
+  };
+
+  const allFilesAvailable = [
+    notice?.fileName,
+    attendance?.fileName,
+    minutes?.fileName,
+    ...resolutions.map((row) => row?.fileName),
+  ].every((file) => file); // Check if all files are available
+  const allDocxFilesAvailable = [
+    notice?.filedocx,
+    attendance?.filedocx,
+    minutes?.filedocx,
+    ...resolutions.map((row) => row?.filedocx),
+  ].every((file) => file); // Check if all files are available
 
   return (
     <>
@@ -378,6 +510,23 @@ export default function MeetingDocuments() {
               sendApproval={sendApproval}
             />
           )}
+          <div className="d-flex justify-content-end mb-3">
+            <Button
+              variant="primary"
+              disabled={!allFilesAvailable}
+              onClick={() => handleDownloadAllPdf("pdf")}
+              className="me-2"
+            >
+              Download All as PDF
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!allDocxFilesAvailable}
+              onClick={() => handleDownloadAllDocx("docx")}
+            >
+              Download All as DOCX
+            </Button>
+          </div>
         </Tab>
 
         <Tab eventKey="notice" title="Notice">
@@ -848,6 +997,19 @@ export default function MeetingDocuments() {
           </div>
         </Tab>
       </Tabs>
+      <div
+        className="d-flex flex-column justify-content-end mt-3"
+        style={{ height: "100%" }}
+      >
+        <Button
+          variant="primary"
+          onClick={() => navigate(-1)}
+          className="align-self-start"
+        >
+          Go Back
+        </Button>
+      </div>
+
       <ToastContainer />
     </>
   );
@@ -878,7 +1040,7 @@ function TableContent({
   handleView,
   sendApproval,
 }) {
-  console.log(meetData);
+  console.log(meetData, "dsq");
   return (
     <div className="table-responsive mt-5">
       <Table bordered hover className="Master-table">
@@ -921,7 +1083,7 @@ function TableContent({
                   download="customFileName.docx"
                   rel="noopener noreferrer"
                   target="_blank"
-                  disabled={!row.is_active == true}
+                  disabled={meetData.approval_status !== "approved"}
                 >
                   <FaFileWord />
                 </Button>
@@ -934,7 +1096,7 @@ function TableContent({
                   href={`${row?.filedocx}`}
                   download="customFileName.docx"
                   rel="noopener noreferrer"
-                  disabled={!row.is_active == true}
+                  disabled={meetData.approval_status !== "approved"}
                 >
                   <FaFileWord />
                 </Button>
