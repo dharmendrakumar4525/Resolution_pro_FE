@@ -116,10 +116,8 @@ export default function AddCommitteeMeeting() {
           "67624fcd0ad6adf0a26aceeb",
         ];
 
-        const usableAgendas = data.results.filter(
-          (item) =>
-            item.meetingType == "committee_meeting" &&
-            idsToShow.includes(item.id)
+        const usableAgendas = data.results.filter((item) =>
+          idsToShow.includes(item.id)
         );
 
         setAgendaList(usableAgendas);
@@ -266,7 +264,7 @@ export default function AddCommitteeMeeting() {
           formData?.agendaItems[0]?.templateName == "Committee Agenda Physical"
         ) {
           const noticeTemplate = data?.results?.find(
-            (item) => item.id === "673efb66ace56b4760e37c61"
+            (item) => item.id === "67624a370ad6adf0a26acea7"
           );
 
           if (noticeTemplate) {
@@ -279,7 +277,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "673f2063640f38762b0450c4"
+            (item) => item.id === "67624da00ad6adf0a26acec9"
           );
 
           if (momTemplate) {
@@ -292,7 +290,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
+            (item) => item.id === "67624e1b0ad6adf0a26acedc"
           );
 
           if (attendanceTemplate) {
@@ -305,7 +303,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "67515198aa5dd74676e405be"
+            (item) => item.id === "677e7cfde5450b6017e9e4fc"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);
@@ -336,7 +334,7 @@ export default function AddCommitteeMeeting() {
           formData?.agendaItems[0]?.templateName == "Committee Agenda Virtual"
         ) {
           const noticeTemplate = data?.results?.find(
-            (item) => item.id === "6756aaaa696ba6002745bbd9"
+            (item) => item.id === "67624e660ad6adf0a26acee5"
           );
 
           if (noticeTemplate) {
@@ -349,7 +347,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "6756ab53696ba6002745bbe5"
+            (item) => item.id === "677e7d61e5450b6017e9e50a"
           );
 
           if (momTemplate) {
@@ -362,7 +360,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
+            (item) => item.id === "67624e1b0ad6adf0a26acedc"
           );
 
           if (attendanceTemplate) {
@@ -375,7 +373,7 @@ export default function AddCommitteeMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "6756b022696ba6002745bbeb"
+            (item) => item.id === "677e7e48e5450b6017e9e52a"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);

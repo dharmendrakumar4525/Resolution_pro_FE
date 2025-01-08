@@ -43,7 +43,7 @@ export default function DocumentTemplate() {
     fileName: "",
     status: "",
     by: user.id,
-    isTemplateNameEditable: false,
+    isTemplateNameNonEditable: false,
   });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
@@ -113,7 +113,7 @@ export default function DocumentTemplate() {
       templateName: "",
       fileName: "",
       by: user.id,
-      isTemplateNameEditable: false,
+      isTemplateNameNonEditable: false,
     });
     setOpenAddModal(true);
   };
@@ -186,6 +186,8 @@ export default function DocumentTemplate() {
     const idsToSkipTemplateNameEdit = [
       "674869ef2be3f7ca95d98465",
       "6756aac6696ba6002745bbdf",
+      "67624c4b0ad6adf0a26aceb5",
+      "67624fcd0ad6adf0a26aceeb",
     ];
 
     setEditingRow(row);
@@ -196,7 +198,7 @@ export default function DocumentTemplate() {
       fileName: row?.fileName,
       status: row?.status,
       by: row?.by?.id,
-      isTemplateNameEditable: idsToSkipTemplateNameEdit.includes(row?.id),
+      isTemplateNameNonEditable: idsToSkipTemplateNameEdit.includes(row?.id),
     });
   };
 
@@ -344,7 +346,7 @@ export default function DocumentTemplate() {
                       value={formData.templateName}
                       onChange={handleChange}
                       placeholder="Enter Template Name"
-                      disabled={formData.isTemplateNameEditable}
+                      disabled={formData.isTemplateNameNonEditable}
                     />
                   </Form.Group>
                 </Col>
