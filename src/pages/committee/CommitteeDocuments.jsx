@@ -82,7 +82,7 @@ export default function CommitteeDocuments() {
     const fetchLeaveAgendaUrl = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/meeting-agenda-template/676a5898db544a64c6baa096`,
+          `${apiURL}/meeting-agenda-template/677e7cb8e5450b6017e9e4f1`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -321,7 +321,7 @@ export default function CommitteeDocuments() {
         .map((participant) => ({
           director: participant?.director?.id,
           templateName: `Leave of Absence`,
-          meetingType: "board_meeting",
+          meetingType: "committee_meeting",
           templateFile: leaveUrl,
         }));
 

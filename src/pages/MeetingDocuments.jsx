@@ -469,25 +469,29 @@ export default function MeetingDocuments() {
     minutes?.filedocx,
     ...resolutions.map((row) => row?.filedocx),
   ].every((file) => file); // Check if all files are available
+  const approvalTabs = [
+    "notice",
+    "mom",
+    "attendance",
+    "resolution",
+    "acknowledgement",
+  ];
 
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mt-3 mb-5 head-box">
         <h4 className="h4-heading-style">Meeting Info</h4>
       </div>
+
       <Tabs
         id="controlled-tab-example"
         activeKey={key}
         onSelect={(k) => {
           if (
-            (k === "notice" ||
-              k === "mom" ||
-              k === "attendance" ||
-              k == "resolution" ||
-              k === "acknowledgement") &&
-            !rows.some((row) => row?.fileName)
+            approvalTabs.includes(k) &&
+            meetData.approval_status !== "approved"
           ) {
-            toast.warning("Please save meeting agenda document first.");
+            toast.warning("Need approval to see saved documents.");
           } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
             toast.warning("Please mark attendance first.");
           } else {

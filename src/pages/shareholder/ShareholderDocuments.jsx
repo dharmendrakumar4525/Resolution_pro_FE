@@ -319,7 +319,7 @@ export default function ShareholderDocuments() {
         .map((participant) => ({
           director: participant?.director?.id,
           templateName: `Leave of Absence`,
-          meetingType: "board_meeting",
+          meetingType: "shareholder_meeting",
           templateFile: leaveUrl,
         }));
 
