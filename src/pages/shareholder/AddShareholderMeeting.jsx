@@ -65,7 +65,7 @@ export default function AddShareholderMeeting() {
     },
     acknowledgement: {
       templateName: "Acknowledgement",
-      meetingType: "committee_meeting",
+      meetingType: "shareholder_meeting",
       templateFile: "",
     },
   });
