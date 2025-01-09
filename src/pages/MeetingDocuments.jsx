@@ -562,6 +562,7 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() => handleNoticeView(notice?.filedocx, 1)}
+                      disabled={!notice?.filedocx}
                     >
                       <FaFileWord />
                     </Button>
@@ -631,6 +632,7 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() => handleMOMView(minutes?.filedocx, 11)}
+                      disabled={!minutes?.filedocx}
                     >
                       <FaFileWord />
                     </Button>
@@ -735,6 +737,7 @@ export default function MeetingDocuments() {
                       onClick={() =>
                         handleAttendanceView(attendance?.filedocx, 1)
                       }
+                      disabled={!attendance?.filedocx}
                     >
                       <FaFileWord />
                     </Button>
@@ -807,6 +810,7 @@ export default function MeetingDocuments() {
                       <Button
                         variant="outline-primary"
                         onClick={() => handleAbsenceView(item?.filedocx, index)}
+                        disabled={!item?.filedocx}
                       >
                         <FaFileWord />
                       </Button>
@@ -878,6 +882,7 @@ export default function MeetingDocuments() {
                       <Button
                         variant="outline-primary"
                         onClick={() => handleResolView(row?.filedocx)}
+                        disabled={!row?.filedocx}
                       >
                         <FaFileWord />
                       </Button>
@@ -954,6 +959,7 @@ export default function MeetingDocuments() {
                       onClick={() =>
                         handleAcknowledgementView(acknowledgement?.filedocx, 11)
                       }
+                      disabled={!acknowledgement?.filedocx}
                     >
                       <FaFileWord />
                     </Button>
@@ -1071,6 +1077,7 @@ function TableContent({
                 <Button
                   variant="outline-primary"
                   onClick={() => handleView(row)}
+                  disabled={!row?.filedocx}
                 >
                   <FaFileWord />
                 </Button>

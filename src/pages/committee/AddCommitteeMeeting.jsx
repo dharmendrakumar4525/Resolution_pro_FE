@@ -63,6 +63,11 @@ export default function AddCommitteeMeeting() {
       meetingType: "committee_meeting",
       templateFile: "",
     },
+    acknowledgement: {
+      templateName: "Acknowledgement",
+      meetingType: "committee_meeting",
+      templateFile: "",
+    },
   });
 
   useEffect(() => {
@@ -263,6 +268,19 @@ export default function AddCommitteeMeeting() {
         if (
           formData?.agendaItems[0]?.templateName == "Committee Agenda Physical"
         ) {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "677e7c67e5450b6017e9e4e3"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "67624a370ad6adf0a26acea7"
           );
@@ -333,6 +351,19 @@ export default function AddCommitteeMeeting() {
         } else if (
           formData?.agendaItems[0]?.templateName == "Committee Agenda Virtual"
         ) {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "677e7dade5450b6017e9e516"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "67624e660ad6adf0a26acee5"
           );
