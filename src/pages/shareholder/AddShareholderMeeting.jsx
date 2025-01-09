@@ -63,6 +63,11 @@ export default function AddShareholderMeeting() {
       meetingType: "shareholder_meeting",
       templateFile: "",
     },
+    acknowledgement: {
+      templateName: "Acknowledgement",
+      meetingType: "committee_meeting",
+      templateFile: "",
+    },
   });
 
   useEffect(() => {
@@ -273,6 +278,19 @@ export default function AddShareholderMeeting() {
 
         setDocxUrl(data?.results);
         if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "676a5881db544a64c6baa090"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "673efb66ace56b4760e37c61"
           );
@@ -341,6 +359,19 @@ export default function AddShareholderMeeting() {
             }
           }
         } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "676a5881db544a64c6baa090"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
           const noticeTemplate = data?.results?.find(
             (item) => item.id === "6756aaaa696ba6002745bbd9"
           );
