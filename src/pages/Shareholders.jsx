@@ -135,7 +135,7 @@ export default function Shareholders() {
 
   const handleDeleteClick = async (row) => {
     try {
-      await fetch(`${apiURL}/director-data/${row?.id}`, {
+      await fetch(`${apiURL}/shareholder-data/${row?.id}`, {
         method: "DELETE",
 
         headers: {
