@@ -394,8 +394,8 @@ export default function DocumentTemplate() {
                       <option value="committee_meeting">
                         Committee Meeting
                       </option>
-                      <option value="annual_general_meeting">
-                        Annual General Meeting
+                      <option value="shareholder_meeting">
+                        Shareholder Meeting
                       </option>
                     </Form.Control>
                   </Form.Group>
@@ -487,6 +487,7 @@ export default function DocumentTemplate() {
         )}
       </td> */}
                     <td>{row?.templateName}</td>
+                    <td>{row?.id}</td>
                     <td>{row?.meetingType}</td>
                     <td>
                       <button

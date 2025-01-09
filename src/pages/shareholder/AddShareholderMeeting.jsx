@@ -118,8 +118,8 @@ export default function AddShareholderMeeting() {
         const data = await response.json();
         console.log("data", data);
         const idsToShow = [
-          "674869ef2be3f7ca95d98465",
-          "6756aac6696ba6002745bbdf",
+          "677f7e3d2522b858279b624a",
+          "677f7e642522b858279b6250",
         ];
 
         const usableAgendas = data.results.filter((item) =>
@@ -277,9 +277,11 @@ export default function AddShareholderMeeting() {
         const data = await response.json();
 
         setDocxUrl(data?.results);
-        if (formData?.agendaItems[0]?.templateName == "BM Agenda Physical") {
+        if (
+          formData?.agendaItems[0]?.templateName == "Shareholder Meeting Agenda"
+        ) {
           const acknowledgementTemplate = data?.results?.find(
-            (item) => item.id === "676a5881db544a64c6baa090"
+            (item) => item.id === "677f7ecd2522b858279b6268"
           );
           console.log(acknowledgementTemplate, "a123");
           if (acknowledgementTemplate) {
@@ -292,7 +294,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const noticeTemplate = data?.results?.find(
-            (item) => item.id === "673efb66ace56b4760e37c61"
+            (item) => item.id === "677f7e7e2522b858279b6256"
           );
 
           if (noticeTemplate) {
@@ -305,7 +307,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "673f2063640f38762b0450c4"
+            (item) => item.id === "677f7fc32522b858279b6288"
           );
 
           if (momTemplate) {
@@ -318,7 +320,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
+            (item) => item.id === "677f7eb92522b858279b6262"
           );
 
           if (attendanceTemplate) {
@@ -331,7 +333,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "67515198aa5dd74676e405be"
+            (item) => item.id === "677f80282522b858279b6294"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);
@@ -358,9 +360,12 @@ export default function AddShareholderMeeting() {
               }));
             }
           }
-        } else if (formData?.agendaItems[0]?.templateName == "VC_BM_Agenda") {
+        } else if (
+          formData?.agendaItems[0]?.templateName ==
+          "Shareholder Meeting Agenda virtual"
+        ) {
           const acknowledgementTemplate = data?.results?.find(
-            (item) => item.id === "676a5881db544a64c6baa090"
+            (item) => item.id === "677f7ef72522b858279b6277"
           );
           console.log(acknowledgementTemplate, "a123");
           if (acknowledgementTemplate) {
@@ -373,7 +378,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const noticeTemplate = data?.results?.find(
-            (item) => item.id === "6756aaaa696ba6002745bbd9"
+            (item) => item.id === "677f7e982522b858279b625c"
           );
 
           if (noticeTemplate) {
@@ -386,7 +391,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "6756ab53696ba6002745bbe5"
+            (item) => item.id === "677f87d7d3115f06a4c3717a"
           );
 
           if (momTemplate) {
@@ -399,7 +404,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const attendanceTemplate = data?.results?.find(
-            (item) => item.id === "673f2072640f38762b0450ca"
+            (item) => item.id === "677f7eb92522b858279b6262"
           );
 
           if (attendanceTemplate) {
@@ -412,7 +417,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "6756b022696ba6002745bbeb"
+            (item) => item.id === "677f80882522b858279b629d"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);

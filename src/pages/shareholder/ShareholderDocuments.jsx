@@ -31,6 +31,7 @@ export default function ShareholderDocuments() {
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [shareholderParticipants, setShareolderParticipants] = useState([]);
   const [leaveUrl, setLeaveUrl] = useState("");
   const [participantAttendance, setParticipantAttendance] = useState([]);
   const [leaveOfAbsence, setLeaveOfAbsence] = useState([]);
@@ -67,6 +68,7 @@ export default function ShareholderDocuments() {
         setMeetData(data);
         console.log(data, "agena");
         setParticipants(data?.participants || []);
+        setShareolderParticipants(data?.shareholder_participants || []);
         setNotice(data?.notes || {});
         setMinutes(data?.mom || {});
         setAcknowledgement(data?.acknowledgement || {});
@@ -82,7 +84,7 @@ export default function ShareholderDocuments() {
     const fetchLeaveAgendaUrl = async () => {
       try {
         const response = await fetch(
-          `${apiURL}/meeting-agenda-template/676a5898db544a64c6baa096`,
+          `${apiURL}/meeting-agenda-template/677f7ff12522b858279b628e`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -306,6 +308,16 @@ export default function ShareholderDocuments() {
     );
     setParticipants(updatedParticipants);
   };
+  const handleShareholderCheckboxChange = (e, participant) => {
+    const isChecked = e.target.checked;
+
+    const updatedParticipants = shareholderParticipants.map((p) =>
+      p.shareholder.id === participant.shareholder.id
+        ? { ...p, isPresent: isChecked }
+        : p
+    );
+    setShareolderParticipants(updatedParticipants);
+  };
 
   const patchAttendance = async () => {
     try {
@@ -336,7 +348,38 @@ export default function ShareholderDocuments() {
       });
 
       if (response.ok) {
-        toast.success("Attendance updated successfully");
+        toast.success("Director Attendance updated successfully");
+        setRefresh(!refresh);
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      toast.error("Error updating attendance:", error);
+    }
+  };
+  const patchShareholderAttendance = async () => {
+    try {
+      const url = `${apiURL}/shareholder-meeting/${id}`;
+      const transformedShareholderParticipants = shareholderParticipants.map(
+        (participant) => ({
+          shareholder: participant?.shareholder?.id,
+          isPresent: participant?.isPresent,
+        })
+      );
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shareholder_participants: transformedShareholderParticipants,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Shareholder Attendance updated successfully");
         setRefresh(!refresh);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -697,7 +740,7 @@ export default function ShareholderDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
+                  <th>Director Name</th>
                   <th>Present in the Meeting</th>
                 </tr>
               </thead>
@@ -723,6 +766,39 @@ export default function ShareholderDocuments() {
               onClick={patchAttendance}
             >
               Mark Attendance
+            </Button>
+            <br />
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th>Shareholder Name</th>
+                  <th>Present in the Meeting</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shareholderParticipants?.map((participant, index) => (
+                  <tr key={index}>
+                    <td>{participant?.shareholder?.name}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent}
+                        onChange={(e) =>
+                          handleShareholderCheckboxChange(e, participant)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Button
+              className="mb-4 mt-2"
+              style={{ alignContent: "right" }}
+              onClick={patchShareholderAttendance}
+            >
+              Mark Shareholder Attendance
             </Button>
             <br />
             <Table bordered hover className="Master-table">
