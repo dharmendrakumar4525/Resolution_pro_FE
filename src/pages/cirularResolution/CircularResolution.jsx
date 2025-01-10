@@ -379,7 +379,7 @@ export default function CircularResolution() {
                   </Form.Group>
                 </Col>
               </Row>
-              <Row className="mb-2">
+              <Row className="mb-3">
                 <Col>
                   <Form.Group controlId="meetingType">
                     <Form.Label className="f-label">
@@ -432,44 +432,45 @@ export default function CircularResolution() {
                     </Col>
                   </>
                 )}
-
-                {editingRow && user?.role === "672c47c238903b464c9d2920" && (
-                  <Row>
+              </Row>
+              {editingRow && user?.role === "672c47c238903b464c9d2920" && (
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="status">
+                      <Form.Label className="f-label">
+                        Status<sup>*</sup>
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={formData.status}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="sent_for_approval">
+                          Sent for Approval
+                        </option>
+                        <option value="rejected">Rejected</option>
+                        <option value="approved">Approved</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                  {formData?.status === "approved" && (
                     <Col md={6}>
-                      <Form.Group controlId="status">
-                        <Form.Label className="f-label">Status</Form.Label>
+                      <Form.Group controlId="approved_at">
+                        <Form.Label className="f-label">
+                          Approved Date<sup>*</sup>
+                        </Form.Label>
                         <Form.Control
-                          as="select"
-                          value={formData.status}
+                          type="date"
+                          value={formData.approved_at || ""}
                           onChange={handleChange}
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="sent_for_approval">
-                            Sent for Approval
-                          </option>
-                          <option value="rejected">Rejected</option>
-                          <option value="approved">Approved</option>
-                        </Form.Control>
+                        />
                       </Form.Group>
                     </Col>
-                    {formData?.status === "approved" && (
-                      <Col md={6}>
-                        <Form.Group controlId="approved_at">
-                          <Form.Label className="f-label">
-                            Approved Date
-                          </Form.Label>
-                          <Form.Control
-                            type="date"
-                            value={formData.approved_at || ""}
-                            onChange={handleChange}
-                          />
-                        </Form.Group>
-                      </Col>
-                    )}
-                  </Row>
-                )}
-              </Row>
+                  )}
+                </Row>
+              )}
 
               <Button
                 variant="primary"
