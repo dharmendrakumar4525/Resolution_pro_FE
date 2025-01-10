@@ -160,6 +160,12 @@ export default function Sidebar() {
               {hasPermission("Agenda_Template", "view") && (
                 <NavItem title="Agenda Template" link="/agenda-template" />
               )}
+              {/* {hasPermission("Document_Template", "view") && ( */}
+              <NavItem
+                title="Circular Resolution"
+                link="/circular-resolution"
+              />
+              {/* )} */}
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />
               {/* )}  */}

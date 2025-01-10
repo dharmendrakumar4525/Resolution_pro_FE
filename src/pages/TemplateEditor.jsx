@@ -41,6 +41,8 @@ const DocumentEditor = () => {
   const location = useLocation();
   const { id } = useParams();
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [circleResolution, setCircleResolution] = useState([]);
+  const [prevCSR, setPrevCSR] = useState([]);
 
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
@@ -51,51 +53,102 @@ const DocumentEditor = () => {
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
-        let response;
+        let url;
+        let meetingType;
         if (page == "committee") {
-          response = await fetch(`${apiURL}/committee-meeting`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/committee-meeting`;
+          meetingType = "committee_meeting";
         } else if (page == "shareholder") {
-          response = await fetch(`${apiURL}/shareholder-meeting`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/shareholder-meeting`;
+          meetingType = "shareholder_meeting";
         } else {
-          response = await fetch(`${apiURL}/meeting`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/meeting`;
+          meetingType = "board_meeting";
         }
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
         setMeetData(data.results);
         const specificMeetInfo = data.results.find((item) => item.id === id);
 
         if (specificMeetInfo) {
-          const targetDate = new Date(specificMeetInfo?.createdAt);
+          const targetDate = new Date(specificMeetInfo?.date);
           console.log(targetDate, "target");
+          const committeeResponse = await fetch(`${apiURL}/committee-meeting`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          const committeeData = await committeeResponse.json();
+          const closestPreviousCSRMeeting = committeeData?.results.filter(
+            (meeting) =>
+              new Date(meeting.date) < targetDate &&
+              meeting?.client_name?.id == specificMeetInfo?.client_name?.id
+          );
+          console.log(closestPreviousCSRMeeting, "w2");
+          const newCSRDate = closestPreviousCSRMeeting.reduce((prev, curr) => {
+            const prevDate = prev ? new Date(prev.date) : new Date(0);
+            const currDate = new Date(curr.date);
+            return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
+          }, null);
+          // console.log(newCSRDate,"w2")
+          if (newCSRDate != null) {
+            setPrevCSR([...prevCSR, newCSRDate]);
+          }
 
           // // Find the closest previous meeting
           const closestPreviousMeeting = data?.results.filter(
             (meeting) =>
-              new Date(meeting.createdAt) < targetDate &&
+              new Date(meeting.date) < targetDate &&
               meeting?.client_name?.id == specificMeetInfo?.client_name?.id
           );
           const newDate = closestPreviousMeeting.reduce((prev, curr) => {
-            const prevDate = prev ? new Date(prev.createdAt) : new Date(0);
-            const currDate = new Date(curr.createdAt);
+            const prevDate = prev ? new Date(prev.date) : new Date(0);
+            const currDate = new Date(curr.date);
             return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
           }, null);
+          const circularResolutionsResponse = await fetch(
+            `${apiURL}/circular-resolution?client_name=${specificMeetInfo?.client_name?.id}&meeting_type=${meetingType}&status=approved`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const circularResolutions = await circularResolutionsResponse?.json();
+          let filteredCircularResolutions;
+
+          if (closestPreviousMeeting) {
+            console.log(closestPreviousMeeting, "closestPrev");
+            // Filter resolutions between the previous and current meeting dates
+            const previousDate = new Date(closestPreviousMeeting[0]?.date);
+            const currMeetDate = new Date(specificMeetInfo?.date);
+            console.log(
+              closestPreviousMeeting,
+              currMeetDate,
+              circularResolutions.results,
+              "12qw"
+            );
+            filteredCircularResolutions = circularResolutions.results.filter(
+              (resolution) =>
+                new Date(resolution?.approved_at) > previousDate &&
+                new Date(resolution?.approved_at) <= currMeetDate
+            );
+          } else {
+            // For the first meeting, return all resolutions
+            filteredCircularResolutions = circularResolutions;
+          }
+          setCircleResolution(filteredCircularResolutions);
+
           setMeetInfo(specificMeetInfo);
           setPreviousMeet(newDate?.date);
-
+          console.log(newDate?.date, "prev-1");
           setClientInfo(specificMeetInfo?.client_name);
         } else {
           console.warn("No match found for the specified id.");
@@ -193,9 +246,10 @@ const DocumentEditor = () => {
       console.error("Meeting with the provided id not found.");
       return;
     }
-
+    console.log(currentMeeting, "curr-meet");
     // Extract client_name.id and createdAt from the current meeting
     const { client_name, createdAt: currentCreatedAt } = currentMeeting;
+    console.log(currentCreatedAt, "curr-meet-2");
 
     if (!client_name || !client_name.id) {
       console.error(
@@ -208,7 +262,7 @@ const DocumentEditor = () => {
     const previousMeetings = meetData.filter(
       (meeting) =>
         meeting.client_name.id === client_name.id && // Same client
-        new Date(meeting.createdAt) < new Date(currentCreatedAt) // Created before the current meeting
+        new Date(meeting.date) < new Date(currentMeeting?.date) // Created before the current meeting
     );
 
     const count = previousMeetings.length + 1;
@@ -478,7 +532,7 @@ const DocumentEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
-
+  console.log(prevCSR, "abc");
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
@@ -496,7 +550,59 @@ const DocumentEditor = () => {
 
   useEffect(() => {
     const handleMultipleFilesAddOn = async (urls) => {
-      let count = 5; // Start count from 7
+      let count = 5;
+      let csrCount = 1;
+      let csrContent = "";
+
+      function getFormattedDate(dateString) {
+        const dateObj = new Date(dateString);
+        const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+        const year = dateObj.getFullYear();
+        return `${day}/${month}/${year}`; // Fo
+        // const result = `${day}/${month}/${year}`;
+      }
+      if (page == "board") {
+        if (prevCSR.length >= 1) {
+          let formattedDate = getFormattedDate(prevCSR[0]?.date);
+          csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
+
+        The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
+          count++;
+        }
+      }
+      if (circleResolution.length >= 1) {
+        csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
+
+        As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
+
+        for (const url of circleResolution) {
+          if (url?.title) {
+            const title = url?.title || "Untitled";
+
+            csrContent += `<p>${count}.${csrCount}. ${title}</p>`;
+            csrCount++;
+          }
+
+          if (url?.fileName) {
+            const response = await fetch(url.fileName);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch file from: ${url?.fileName}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            csrContent += `<div>${result.value}</div>\n`;
+          } else {
+            console.warn(
+              "Skipped processing due to missing templateFile:",
+              url
+            );
+          }
+        }
+        count++;
+      } else {
+      }
+
       try {
         let combinedContent = "";
 
@@ -556,7 +662,9 @@ const DocumentEditor = () => {
  <h6> DIN: \${din_pan}</h6>
 `;
 
-        setEditorContent(initializedContent + combinedContent + footerContent);
+        setEditorContent(
+          initializedContent + csrContent + combinedContent + footerContent
+        );
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
@@ -564,7 +672,7 @@ const DocumentEditor = () => {
 
     handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
-  }, [selectedData]);
+  }, [selectedData, prevCSR]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -716,7 +824,7 @@ const DocumentEditor = () => {
 
     return children;
   };
-
+  console.log(circleResolution, "circle");
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
     const parsedContent = parseHtmlToDocx(formattedContent);
@@ -949,6 +1057,20 @@ const DocumentEditor = () => {
             editor={ClassicEditor}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
+            config={{
+              toolbar: [
+                "heading",
+                "|",
+                "bold",
+                "italic",
+                "link",
+                "|",
+                "bulletedList",
+                "numberedList",
+                "blockQuote",
+                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
+              ],
+            }}
           />
         </div>
         <div className="rightContainer">

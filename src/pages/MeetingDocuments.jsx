@@ -104,7 +104,7 @@ export default function MeetingDocuments() {
 
   const handleEditClick = (row, index) => {
     navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row?.templateFile}` },
+      state: { index, fileUrl: `${row?.templateFile}`, page: "board" },
     });
   };
   const handleView = (row) => {

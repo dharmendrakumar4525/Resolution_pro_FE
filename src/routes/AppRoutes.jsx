@@ -57,6 +57,8 @@ import AddShareholderMeeting from "../pages/shareholder/AddShareholderMeeting";
 import EditShareholderMeeting from "../pages/shareholder/EditShareholderMeeting";
 import ShareholderMeeting from "../pages/shareholder/ShareholderMeeting";
 import ShareholderDocuments from "../pages/shareholder/ShareholderDocuments";
+import CircularResolution from "../pages/cirularResolution/CircularResolution";
+import CircularResolutionGenerator from "../pages/cirularResolution/CircularResolutionGenerator";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -258,6 +260,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ResolutionTemplateGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/circular-resolution-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CircularResolutionGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -478,6 +490,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<DocumentTemplate />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/circular-resolution"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CircularResolution />} />
           ) : (
             <Navigate to="/login" />
           )
