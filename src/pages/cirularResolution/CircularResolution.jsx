@@ -214,6 +214,8 @@ export default function CircularResolution() {
       status: row?.status,
       title: row?.title,
       client_name: row?.client_name?.id,
+      approved_at: row?.approved_at.split("T")[0],
+      approval_by: row?.approval_by || user.id,
     });
   };
 
@@ -231,6 +233,10 @@ export default function CircularResolution() {
 
       if (editingRow) {
         requestData.append("status", formData.status);
+        if (formData.status == "approved") {
+          requestData.append("approved_at", formData.approved_at);
+          requestData.append("approval_by", formData.approval_by);
+        }
         response = await fetch(
           `${apiURL}/circular-resolution/${editingRow?.id}`,
           {
