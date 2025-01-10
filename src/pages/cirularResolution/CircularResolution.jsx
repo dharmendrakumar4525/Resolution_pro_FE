@@ -299,12 +299,12 @@ export default function CircularResolution() {
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
-  // const userPermissions =
-  //   rolePermissions.find((perm) => perm.moduleName === "Agenda_Template")
-  //     ?.childList || [];
+  const userPermissions =
+    rolePermissions.find((perm) => perm.moduleName === "Circular_Resolution")
+      ?.childList || [];
 
-  // const hasPermission = (action) =>
-  //   userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const hasPermission = (action) =>
+    userPermissions.some((perm) => perm.value === action && perm.isSelected);
 
   return (
     <>
@@ -334,15 +334,15 @@ export default function CircularResolution() {
               </Form.Select>
             </Form>
           )}
-          {/* {hasPermission("add") && ( */}
-          <Button
-            variant="primary"
-            className="btn-box"
-            onClick={handleOpenAddModal}
-          >
-            <FaPlus style={{ marginRight: "8px" }} /> Add
-          </Button>
-          {/* )} */}
+          {hasPermission("add") && (
+            <Button
+              variant="primary"
+              className="btn-box"
+              onClick={handleOpenAddModal}
+            >
+              <FaPlus style={{ marginRight: "8px" }} /> Add
+            </Button>
+          )}
         </div>
 
         <Modal show={openAddModal} onHide={handleCloseAddModal} centered>
@@ -508,12 +508,11 @@ export default function CircularResolution() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           </div>
-        ) : // : !hasPermission("view") ? (
-        //   <div className="text-center mt-5">
-        //     <h5>You do not have permission to view the data</h5>
-        //   </div>
-        // )
-        rows.length === 0 ? (
+        ) : !hasPermission("view") ? (
+          <div className="text-center mt-5">
+            <h5>You do not have permission to view the data</h5>
+          </div>
+        ) : rows.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -548,19 +547,23 @@ export default function CircularResolution() {
                       </button>
                     </td>
                     <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => handleEditClick(row)}
-                        className="me-2"
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        onClick={() => handleDeleteClick(row)}
-                      >
-                        <FaTrash />
-                      </Button>
+                      {hasPermission("edit") && (
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleEditClick(row)}
+                          className="me-2"
+                        >
+                          <FaEdit />
+                        </Button>
+                      )}
+                      {hasPermission("delete") && (
+                        <Button
+                          variant="outline-danger"
+                          onClick={() => handleDeleteClick(row)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

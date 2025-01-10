@@ -144,10 +144,12 @@ export default function Sidebar() {
               title="Circular Resolution"
               icon={faFileAlt}
             >
-              <NavItem
-                title="Circular Resolution"
-                link="/circular-resolution"
-              />
+              {hasPermission("Circular_Resolution", "view") && (
+                <NavItem
+                  title="Circular Resolution"
+                  link="/circular-resolution"
+                />
+              )}
             </CollapsableNavItem>
 
             <CollapsableNavItem
