@@ -139,6 +139,16 @@ export default function Sidebar() {
             ) : (
               ""
             )}
+            <CollapsableNavItem
+              eventKey="circular-resolution/"
+              title="Circular Resolution"
+              icon={faFileAlt}
+            >
+              <NavItem
+                title="Circular Resolution"
+                link="/circular-resolution"
+              />
+            </CollapsableNavItem>
 
             <CollapsableNavItem
               eventKey="examples/"
@@ -161,10 +171,7 @@ export default function Sidebar() {
                 <NavItem title="Agenda Template" link="/agenda-template" />
               )}
               {/* {hasPermission("Document_Template", "view") && ( */}
-              <NavItem
-                title="Circular Resolution"
-                link="/circular-resolution"
-              />
+
               {/* )} */}
               {/* {hasPermission("Template_group", "view") && ( */}
               <NavItem title="System Variables" link="/system-variables" />

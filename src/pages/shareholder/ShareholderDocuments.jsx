@@ -529,6 +529,13 @@ export default function ShareholderDocuments() {
     minutes?.filedocx,
     ...resolutions.map((row) => row?.filedocx),
   ].every((file) => file); // Check if all files are available
+  const approvalTabs = [
+    "notice",
+    "mom",
+    "attendance",
+    "resolution",
+    "acknowledgement",
+  ];
 
   return (
     <>
@@ -540,14 +547,10 @@ export default function ShareholderDocuments() {
         activeKey={key}
         onSelect={(k) => {
           if (
-            (k === "notice" ||
-              k === "mom" ||
-              k === "attendance" ||
-              k == "resolution" ||
-              k === "acknowledgement") &&
-            !rows.some((row) => row?.fileName)
+            approvalTabs.includes(k) &&
+            meetData.approval_status !== "approved"
           ) {
-            toast.warning("Please save meeting agenda document first.");
+            toast.warning("Need approval to see saved documents.");
           } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
             toast.warning("Please mark attendance first.");
           } else {
