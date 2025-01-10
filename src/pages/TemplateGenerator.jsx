@@ -355,7 +355,7 @@ const TemplateGenerator = () => {
             }}
           />
 
-          <Button variant="success" onClick={saveDocument} className="mt-5">
+          <Button variant="secondary" onClick={saveDocument} className="mt-5">
             {buttonLoading ? (
               <Spinner
                 as="span"
@@ -370,7 +370,7 @@ const TemplateGenerator = () => {
           </Button>
         </div>
         <div className="rightContainer">
-          <h4 className="h4-heading-style">System Variables</h4>
+          <h4 className="h4-heading-style mt-3">System Variables</h4>
 
           {loading ? (
             <div className="text-center mt-2">
@@ -379,7 +379,7 @@ const TemplateGenerator = () => {
               </Spinner>
             </div>
           ) : (
-            <div className="table-responsive mt-5">
+            <div className="table-responsive mt-4">
               <table className="Master-table p-5">
                 <tbody>
                   {rows?.map((row) => (
@@ -410,6 +410,9 @@ const TemplateGenerator = () => {
               </Pagination>
             </div>
           )}
+          <Button variant="danger" onClick={() => navigate(-1)}>
+            Exit Without Saving
+          </Button>
         </div>
       </div>
     </Container>
