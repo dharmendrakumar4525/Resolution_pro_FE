@@ -59,7 +59,7 @@ export default function ApprovalDocs() {
       toast.warn("Please save the related document first");
       return;
     }
-    navigate(`/template-group-meeting-view/${row.id}`, {
+    navigate(`/template-group-meeting-view/${row._id}`, {
       state: {
         fileUrl: `${row?.meeting_id?.agendaItems[0]?.filedocx}`,
         page: "approval",

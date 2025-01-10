@@ -79,6 +79,14 @@ const TemplateViewer = () => {
         reason: formData?.remarks,
       };
       try {
+        let url;
+        if (meetData?.meetingType == "committee_meeting") {
+          url = `${apiURL}/committee-meeting/${meetData.id}`;
+        } else if (meetData?.meetingType == "shareholder_meeting") {
+          url = `${apiURL}/shareholder-meeting/${meetData.id}`;
+        } else {
+          url = `${apiURL}/meeting/${meetData.id}`;
+        }
         const response = await fetch(`${apiURL}/meeting-revise`, {
           method: "POST",
           headers: {
@@ -87,7 +95,7 @@ const TemplateViewer = () => {
           },
           body: JSON.stringify(RefusalData),
         });
-        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+        const patchResponse = await fetch(url, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,7 +106,7 @@ const TemplateViewer = () => {
           }),
         });
         const patchApprovalResponse = await fetch(
-          `${apiURL}/meeting-approval/${approvalData.id}`,
+          `${apiURL}/meeting-approval/${approvalData._id}`,
           {
             method: "PATCH",
             headers: {
@@ -121,7 +129,15 @@ const TemplateViewer = () => {
       }
     } else if (formData.decision == "accept") {
       try {
-        const patchResponse = await fetch(`${apiURL}/meeting/${meetData.id}`, {
+        let url;
+        if (meetData?.meetingType == "committee_meeting") {
+          url = `${apiURL}/committee-meeting/${meetData.id}`;
+        } else if (meetData?.meetingType == "shareholder_meeting") {
+          url = `${apiURL}/shareholder-meeting/${meetData.id}`;
+        } else {
+          url = `${apiURL}/meeting/${meetData.id}`;
+        }
+        const patchResponse = await fetch(url, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -133,7 +149,7 @@ const TemplateViewer = () => {
           }),
         });
         const patchApprovalResponse = await fetch(
-          `${apiURL}/meeting-approval/${approvalData.id}`,
+          `${apiURL}/meeting-approval/${approvalData._id}`,
           {
             method: "PATCH",
             headers: {

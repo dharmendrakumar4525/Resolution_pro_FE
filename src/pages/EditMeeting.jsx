@@ -153,7 +153,6 @@ export default function EditMeeting() {
   };
 
   const handleEditClick = (row) => {
-    console.log(row, "rowwww", new Date(row.date).toLocaleDateString());
     setEditingRow(row);
     setOpenAddModal(true);
 
@@ -172,8 +171,6 @@ export default function EditMeeting() {
 
       participants: transformedParticipants,
       standard_time: row?.standard_time,
-
-      participants: row?.participants,
 
       agendaItems: row.agendaItems.map((agendaItem) => ({
         templateName: agendaItem.templateName,

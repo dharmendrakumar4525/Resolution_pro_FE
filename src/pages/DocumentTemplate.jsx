@@ -188,6 +188,8 @@ export default function DocumentTemplate() {
       "6756aac6696ba6002745bbdf",
       "67624c4b0ad6adf0a26aceb5",
       "67624fcd0ad6adf0a26aceeb",
+      "677f7e3d2522b858279b624a",
+      "677f7e642522b858279b6250",
     ];
 
     setEditingRow(row);
@@ -487,7 +489,6 @@ export default function DocumentTemplate() {
         )}
       </td> */}
                     <td>{row?.templateName}</td>
-                    <td>{row?.id}</td>
                     <td>{row?.meetingType}</td>
                     <td>
                       <button

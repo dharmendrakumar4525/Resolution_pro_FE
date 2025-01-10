@@ -83,8 +83,8 @@ export default function EditShareholderMeeting() {
         });
         const data = await response.json();
         const idsToShow = [
-          "674869ef2be3f7ca95d98465",
-          "6756aac6696ba6002745bbdf",
+          "677f7e3d2522b858279b624a",
+          "677f7e642522b858279b6250",
         ];
 
         const usableAgendas = data.results.filter((item) =>
