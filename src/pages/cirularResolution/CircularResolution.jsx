@@ -214,7 +214,7 @@ export default function CircularResolution() {
       status: row?.status,
       title: row?.title,
       client_name: row?.client_name?.id,
-      approved_at: row?.approved_at.split("T")[0],
+      approved_at: row?.approved_at?.split("T")[0],
       approval_by: row?.approval_by || user.id,
     });
   };
@@ -387,7 +387,7 @@ export default function CircularResolution() {
               </Row>
               <Row className="mb-3">
                 <Col>
-                  <Form.Group controlId="meetingType">
+                  <Form.Group controlId="meeting_type">
                     <Form.Label className="f-label">
                       Meeting Type<sup>*</sup>
                     </Form.Label>
