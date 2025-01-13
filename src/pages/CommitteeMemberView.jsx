@@ -74,7 +74,6 @@ export default function ViewCommitteeMember() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
-                  <th>Email</th>
                   <th>Designation</th>
                 </tr>
               </thead>
@@ -82,7 +81,6 @@ export default function ViewCommitteeMember() {
                 {rows?.map((row) => (
                   <tr key={row?.id}>
                     <td>{row?.name?.name}</td>
-                    <td>{row?.email}</td>
                     <td>{row?.name?.designation}</td>
                   </tr>
                 ))}

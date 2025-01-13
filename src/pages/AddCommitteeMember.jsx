@@ -84,6 +84,11 @@ export default function AddCommitteeMember({ onSave }) {
       console.error("Error fetching directors:", error);
     }
   };
+  console.log(directorList,"dirr")
+  const directorOptions = directorList.map((director) => ({
+    value: director.id,
+    label: director.name,
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -115,36 +120,16 @@ export default function AddCommitteeMember({ onSave }) {
       toast.error("Please fill atleast 1 Member Details");
     }
   };
-  const validateForm = () => {
-    const { clientName, committee, committeeMembers } = formData;
-
-    // Check if main fields are filled
-    if (!clientName || !committee) {
-      toast.error("Please fill out all required fields.");
-      return false;
-    }
-
-    // Check if each committee member has complete details
-    for (let member of committeeMembers) {
-      if (!member.name || !member.from || !member.to || !member.email) {
-        toast.error("Please fill out all fields for each committee member.");
-        return false;
-      }
-    }
-
-    return true;
-  };
+ 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
     setLoading(true);
     setButtonLoading(true);
     try {
       const payload = {
         client_name: formData.clientName,
         committee: formData.committee,
-        is_email: formData.isEmail,
         committee_members: formData.committeeMembers,
       };
 
@@ -234,81 +219,82 @@ export default function AddCommitteeMember({ onSave }) {
             </Form.Group>
           </Col>
         </Row>
+        
+              <Row className="mb-3">
+                <Col md={6}>
+                <Form.Group controlId="participants">
+                  <Form.Label>
+                    Participants<sup>*</sup>
+                  </Form.Label>
+                  <Select
+                    isMulti
+                    required
+                    options={[
+                      { value: "selectAll", label: "Select All" },
+                      ...directorOptions,
+                    ]}
+                    value={
+                      formData?.committeeMembers?.length === directorOptions?.length
+                        ? [
+                            { value: "selectAll", label: "Select All" },
+                            ...directorOptions,
+                          ]
+                        : directorOptions.filter((option) =>
+                            formData.committeeMembers.some(
+                              (participant) =>
+                                participant.name?.id === option.value
+                            )
+                          )
+                    }
+                    onChange={(selectedOptions) => {
+                      if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.committeeMembers.length !== directorOptions?.length
+                      ) {
+                        // Select all participants
+                        setFormData({
+                          ...formData,
+                          committeeMembers: directorOptions?.map((option) => ({
+                            name: option.value
+                          })),
+                        });
+                      } else if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectAll"
+                        ) &&
+                        formData.committeeMembers.length === directorOptions.length
+                      ) {
+                        setFormData({
+                          ...formData,
+                          committeeMembers: [],
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          committeeMembers: selectedOptions
+                            .filter((option) => option.value !== "selectAll")
+                            .map((option) => ({
+                              name: option.value,
+                            })),
+                        });
+                      }
+                    }}
+                    isClearable
+                    isSearchable
+                  />
+                </Form.Group>
+                {directorList.length == 0 && (
+                  <p style={{ color: "red", marginTop: "10px" }}>
+                    Director options are not available. Please add options
+                    before proceeding.
+                  </p>
+                )}
+                </Col>
+              </Row>
 
-        {formData.committeeMembers.map((member, index) => (
-          <Row key={index}>
-            <Col md={6} lg={4}>
-              <Form.Group className="mt-3">
-                <Form.Label>
-                  Director<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  value={member.name}
-                  onChange={(e) => {
-                    const selectedDirector = directorList.find(
-                      (director) => director.id === e.target.value
-                    );
-                    handleMemberChange(index, "name", selectedDirector.id);
-                    handleMemberChange(index, "email", selectedDirector.email);
-                  }}
-                >
-                  <option value="">Select Director</option>
-                  {directorList.map((director) => (
-                    <option key={director.id} value={director.id}>
-                      {director.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-            <Col md={6} lg={4}>
-              <Form.Group className="mt-3">
-                <Form.Label>
-                  From Date<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="date"
-                  value={member.from}
-                  onChange={(e) =>
-                    handleMemberChange(index, "from", e.target.value)
-                  }
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6} lg={4}>
-              <Form.Group className="mt-3">
-                <Form.Label>To Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={member.to}
-                  onChange={(e) =>
-                    handleMemberChange(index, "to", e.target.value)
-                  }
-                />
-              </Form.Group>
-            </Col>
-
-            <Col md={6} lg={4}>
-              <Button
-                className="mt-2"
-                variant="danger"
-                onClick={() => removeMember(index)}
-              >
-                Remove Member
-              </Button>
-            </Col>
-          </Row>
-        ))}
-
-        <div
-          className="d-flex justify-content-between mb-3 mt-5"
-          style={{ width: "30%" }}
-        >
-          <Button onClick={addMember} variant="secondary">
-            Add new Committee Member
-          </Button>
-        </div>
+     
         <Row>
           <Col>
             {" "}

@@ -13,6 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "react-select";
 
 export default function EditCommitteeMember() {
   const { id } = useParams();
@@ -25,7 +26,6 @@ export default function EditCommitteeMember() {
   const [formData, setFormData] = useState({
     clientName: "",
     committee: "",
-    isEmail: false,
     committeeMembers: [],
   });
   const token = localStorage.getItem("refreshToken");
@@ -68,16 +68,14 @@ export default function EditCommitteeMember() {
           },
         });
         const data = await response.json();
+        // const data=dataj.results
+        console.log(data, "dataa");
         if (data) {
           setFormData({
             clientName: data.client_name.id,
             committee: data.committee.id,
-            isEmail: data.is_email,
             committeeMembers: data.committee_members.map((member) => ({
               name: member.name.id,
-              email: member.name.email,
-              from: member.from.split("T")[0],
-              to: member.to.split("T")[0],
             })),
           });
           // setDirectorList(data.committee_members);
@@ -112,6 +110,10 @@ export default function EditCommitteeMember() {
       console.error("Error fetching directors:", error);
     }
   };
+  const directorOptions = directorList.map((director) => ({
+    value: director.id,
+    label: director.name,
+  }));
 
   // const fetchDirectors = async (clientId) => {
   //   try {
@@ -264,87 +266,79 @@ export default function EditCommitteeMember() {
             </Form.Group>
           </Col>
         </Row>
+        <Row className="mb-3">
+          <Col>
+            <Form.Group controlId="participants">
+              <Form.Label>
+                Participants<sup>*</sup>
+              </Form.Label>
+              <Select
+                isMulti
+                required
+                options={[
+                  { value: "selectAll", label: "Select All" },
+                  ...directorOptions,
+                ]}
+                value={
+                  formData?.committeeMembers?.length === directorOptions?.length
+                    ? [
+                        { value: "selectAll", label: "Select All" },
+                        ...directorOptions,
+                      ]
+                    : directorOptions.filter((option) =>
+                        formData.committeeMembers.some(
+                          (participant) => participant.name?.id === option.value
+                        )
+                      )
+                }
+                onChange={(selectedOptions) => {
+                  if (
+                    selectedOptions.some(
+                      (option) => option.value === "selectAll"
+                    ) &&
+                    formData.committeeMembers.length !== directorOptions?.length
+                  ) {
+                    // Select all participants
+                    setFormData({
+                      ...formData,
+                      committeeMembers: directorOptions?.map((option) => ({
+                        name: option.value,
+                      })),
+                    });
+                  } else if (
+                    selectedOptions.some(
+                      (option) => option.value === "selectAll"
+                    ) &&
+                    formData.committeeMembers.length === directorOptions.length
+                  ) {
+                    setFormData({
+                      ...formData,
+                      committeeMembers: [],
+                    });
+                  } else {
+                    setFormData({
+                      ...formData,
+                      committeeMembers: selectedOptions
+                        .filter((option) => option.value !== "selectAll")
+                        .map((option) => ({
+                          name: option.value,
+                        })),
+                    });
+                  }
+                }}
+                isClearable
+                isSearchable
+              />
+            </Form.Group>
+            {directorList.length == 0 && (
+              <p style={{ color: "red", marginTop: "10px" }}>
+                Director options are not available. Please add options before
+                proceeding.
+              </p>
+            )}
+          </Col>
+        </Row>
 
-        {formData.committeeMembers.map((member, index) => (
-          <div key={index}>
-            <Row className="mt-2">
-              <Col>
-                <Form.Group>
-                  <Form.Label>
-                    Director<sup>*</sup>
-                  </Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={member.name}
-                    onChange={(e) => {
-                      const selectedDirector = directorList.find(
-                        (director) => director.id === e.target.value
-                      );
-                      handleMemberChange(index, "name", selectedDirector.id);
-                      handleMemberChange(
-                        index,
-                        "email",
-                        selectedDirector.email
-                      );
-                    }}
-                  >
-                    <option value="">Select Director</option>
-                    {directorList?.map((director) => (
-                      <option key={director.id} value={director.id}>
-                        {director?.name}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-              <Col>
-                <Form.Group>
-                  <Form.Label>
-                    From Date<sup>*</sup>
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={member.from}
-                    onChange={(e) =>
-                      handleMemberChange(index, "from", e.target.value)
-                    }
-                  />
-                </Form.Group>
-              </Col>
-              <Col>
-                <Form.Group>
-                  <Form.Label>To Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={member.to}
-                    onChange={(e) =>
-                      handleMemberChange(index, "to", e.target.value)
-                    }
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row className="mt-2">
-              <Col></Col>
-            </Row>
-
-            <Button
-              className="mt-2"
-              variant="danger"
-              onClick={() => removeMember(index)}
-            >
-              Remove Member
-            </Button>
-          </div>
-        ))}
-        <div
-          className="d-flex justify-content-between mb-3 mt-4"
-          style={{ width: "30%" }}
-        >
-          <Button onClick={addMember} variant="secondary">
-            Add new Committee Member
-          </Button>
-        </div>
         <Row>
           <Col>
             {" "}
