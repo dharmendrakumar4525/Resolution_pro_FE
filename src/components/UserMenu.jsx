@@ -51,7 +51,7 @@ const UserMenu = () => {
             {user.email || "user@example.com"}
           </small>
         </Dropdown.ItemText>
-        <Dropdown.ItemText>-9:43</Dropdown.ItemText>
+        <Dropdown.ItemText>12:00</Dropdown.ItemText>
         <Dropdown.Divider />
         <Dropdown.Item onClick={handleLogoutClick}>
           <FaSignOutAlt className="me-2" /> Logout

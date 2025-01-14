@@ -541,8 +541,9 @@ const DocumentEditor = () => {
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       // setEditorContent(result.value);
-      // console.log("object", result.value);
+      console.log("res-21", result.value);
       setInitializedContent(result.value);
+
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -605,7 +606,7 @@ const DocumentEditor = () => {
 
       try {
         let combinedContent = "";
-
+console.log(initializedContent,"ini-2")
         for (const url of urls) {
           if (url?.title) {
             const title = url?.title || "Untitled";
@@ -663,7 +664,7 @@ const DocumentEditor = () => {
 `;
 
         setEditorContent(
-          initializedContent + csrContent + combinedContent + footerContent
+           csrContent + combinedContent + footerContent
         );
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
