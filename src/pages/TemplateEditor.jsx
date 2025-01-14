@@ -160,7 +160,7 @@ const DocumentEditor = () => {
           filteredCircularResolutions = circularResolutions.results;
         }
 
-        // setCircleResolution(filteredCircularResolutions);
+        setCircleResolution(filteredCircularResolutions);
         setMeetInfo(specificMeetInfo);
         setPreviousMeet(newDate?.date || null);
         setClientInfo(specificMeetInfo.client_name);
@@ -543,7 +543,6 @@ const DocumentEditor = () => {
       // setEditorContent(result.value);
       console.log("res-21", result.value);
       setInitializedContent(result.value);
-
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -606,7 +605,7 @@ const DocumentEditor = () => {
 
       try {
         let combinedContent = "";
-console.log(initializedContent,"ini-2")
+        console.log(initializedContent, "ini-2");
         for (const url of urls) {
           if (url?.title) {
             const title = url?.title || "Untitled";
@@ -663,9 +662,19 @@ console.log(initializedContent,"ini-2")
  <h6> DIN: \${din_pan}</h6>
 `;
 
-        setEditorContent(
-           csrContent + combinedContent + footerContent
+        console.log(
+          initializedContent +
+            "i" +
+            csrContent +
+            "i" +
+            combinedContent +
+            "i" +
+            footerContent
         );
+        setEditorContent(
+          initializedContent + csrContent + combinedContent + footerContent
+        );
+        console.log(editorContent, "i1");
       } catch (error) {
         console.error("Error fetching or converting one or more files:", error);
       }
@@ -673,7 +682,7 @@ console.log(initializedContent,"ini-2")
 
     handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
-  }, [selectedData, prevCSR]);
+  }, [selectedData, prevCSR, circleResolution]);
 
   useEffect(() => {
     setTimeout(() => {
