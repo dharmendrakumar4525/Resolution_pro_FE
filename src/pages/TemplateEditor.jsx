@@ -160,7 +160,7 @@ const DocumentEditor = () => {
           filteredCircularResolutions = circularResolutions.results;
         }
 
-        setCircleResolution(filteredCircularResolutions);
+        // setCircleResolution(filteredCircularResolutions);
         setMeetInfo(specificMeetInfo);
         setPreviousMeet(newDate?.date || null);
         setClientInfo(specificMeetInfo.client_name);
