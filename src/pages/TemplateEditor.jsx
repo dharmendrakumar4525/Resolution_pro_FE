@@ -55,104 +55,115 @@ const DocumentEditor = () => {
       try {
         let url;
         let meetingType;
-        if (page == "committee") {
+
+        // Determine the URL and meeting type based on the page
+        if (page === "committee") {
           url = `${apiURL}/committee-meeting`;
           meetingType = "committee_meeting";
-        } else if (page == "shareholder") {
+        } else if (page === "shareholder") {
           url = `${apiURL}/shareholder-meeting`;
           meetingType = "shareholder_meeting";
         } else {
           url = `${apiURL}/meeting`;
           meetingType = "board_meeting";
         }
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        };
+
+        // Fetch meeting data
+        const response = await fetch(url, { headers });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch meeting data: ${response.status}`);
+        }
         const data = await response.json();
         setMeetData(data.results);
+
+        // Find specific meeting info by ID
         const specificMeetInfo = data.results.find((item) => item.id === id);
-
-        if (specificMeetInfo) {
-          const targetDate = new Date(specificMeetInfo?.date);
-          console.log(targetDate, "target");
-          const committeeResponse = await fetch(`${apiURL}/committee-meeting`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-          const committeeData = await committeeResponse.json();
-          const closestPreviousCSRMeeting = committeeData?.results.filter(
-            (meeting) =>
-              new Date(meeting.date) < targetDate &&
-              meeting?.client_name?.id == specificMeetInfo?.client_name?.id
-          );
-          console.log(closestPreviousCSRMeeting, "w2");
-          const newCSRDate = closestPreviousCSRMeeting.reduce((prev, curr) => {
-            const prevDate = prev ? new Date(prev.date) : new Date(0);
-            const currDate = new Date(curr.date);
-            return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
-          }, null);
-          // console.log(newCSRDate,"w2")
-          if (newCSRDate != null) {
-            setPrevCSR([...prevCSR, newCSRDate]);
-          }
-
-          // // Find the closest previous meeting
-          const closestPreviousMeeting = data?.results.filter(
-            (meeting) =>
-              new Date(meeting.date) < targetDate &&
-              meeting?.client_name?.id == specificMeetInfo?.client_name?.id
-          );
-          const newDate = closestPreviousMeeting.reduce((prev, curr) => {
-            const prevDate = prev ? new Date(prev.date) : new Date(0);
-            const currDate = new Date(curr.date);
-            return currDate > prevDate ? curr : prev; // Find the latest of the earlier dates
-          }, null);
-          const circularResolutionsResponse = await fetch(
-            `${apiURL}/circular-resolution?client_name=${specificMeetInfo?.client_name?.id}&meeting_type=${meetingType}&status=approved`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const circularResolutions = await circularResolutionsResponse?.json();
-          let filteredCircularResolutions;
-
-          if (closestPreviousMeeting) {
-            console.log(closestPreviousMeeting, "closestPrev");
-            // Filter resolutions between the previous and current meeting dates
-            const previousDate = new Date(closestPreviousMeeting[0]?.date);
-            const currMeetDate = new Date(specificMeetInfo?.date);
-            console.log(
-              closestPreviousMeeting,
-              currMeetDate,
-              circularResolutions.results,
-              "12qw"
-            );
-            filteredCircularResolutions = circularResolutions.results.filter(
-              (resolution) =>
-                new Date(resolution?.approved_at) > previousDate &&
-                new Date(resolution?.approved_at) <= currMeetDate
-            );
-          } else {
-            // For the first meeting, return all resolutions
-            filteredCircularResolutions = circularResolutions;
-          }
-          setCircleResolution(filteredCircularResolutions);
-
-          setMeetInfo(specificMeetInfo);
-          setPreviousMeet(newDate?.date);
-          console.log(newDate?.date, "prev-1");
-          setClientInfo(specificMeetInfo?.client_name);
-        } else {
+        if (!specificMeetInfo) {
           console.warn("No match found for the specified id.");
+          return;
         }
+
+        const targetDate = new Date(specificMeetInfo.date);
+
+        // Fetch committee meeting data
+        const committeeResponse = await fetch(`${apiURL}/committee-meeting`, {
+          headers,
+        });
+        if (!committeeResponse.ok) {
+          throw new Error(
+            `Failed to fetch committee data: ${committeeResponse.status}`
+          );
+        }
+        const committeeData = await committeeResponse.json();
+
+        // Find the closest previous CSR meeting
+        const closestPreviousCSRMeeting = committeeData.results.filter(
+          (meeting) =>
+            new Date(meeting.date) < targetDate &&
+            meeting?.client_name?.id === specificMeetInfo?.client_name?.id
+        );
+
+        const newCSRDate = closestPreviousCSRMeeting.reduce((prev, curr) => {
+          const prevDate = prev ? new Date(prev.date) : new Date(0);
+          const currDate = new Date(curr.date);
+          return currDate > prevDate ? curr : prev;
+        }, null);
+
+        if (newCSRDate) {
+          setPrevCSR((prevCSR) => [...prevCSR, newCSRDate]);
+        }
+
+        // Find the closest previous meeting
+        const closestPreviousMeeting = data.results.filter(
+          (meeting) =>
+            new Date(meeting.date) < targetDate &&
+            meeting?.client_name?.id === specificMeetInfo?.client_name?.id
+        );
+
+        const newDate = closestPreviousMeeting.reduce((prev, curr) => {
+          const prevDate = prev ? new Date(prev.date) : new Date(0);
+          const currDate = new Date(curr.date);
+          return currDate > prevDate ? curr : prev;
+        }, null);
+
+        // Fetch circular resolutions
+        const circularResolutionsResponse = await fetch(
+          `${apiURL}/circular-resolution?client_name=${specificMeetInfo.client_name.id}&meeting_type=${meetingType}&status=approved`,
+          { headers }
+        );
+
+        if (!circularResolutionsResponse.ok) {
+          throw new Error(
+            `Failed to fetch circular resolutions: ${circularResolutionsResponse.status}`
+          );
+        }
+
+        const circularResolutions = await circularResolutionsResponse.json();
+
+        let filteredCircularResolutions = [];
+        if (closestPreviousMeeting.length > 0) {
+          const previousDate = new Date(closestPreviousMeeting[0].date);
+          const currMeetDate = new Date(specificMeetInfo.date);
+
+          filteredCircularResolutions = circularResolutions.results.filter(
+            (resolution) =>
+              new Date(resolution.approved_at) > previousDate &&
+              new Date(resolution.approved_at) <= currMeetDate
+          );
+        } else {
+          // For the first meeting, return all resolutions
+          filteredCircularResolutions = circularResolutions.results;
+        }
+
+        setCircleResolution(filteredCircularResolutions);
+        setMeetInfo(specificMeetInfo);
+        setPreviousMeet(newDate?.date || null);
+        setClientInfo(specificMeetInfo.client_name);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -180,34 +191,24 @@ const DocumentEditor = () => {
     };
     const fetchVariables = async () => {
       try {
-        let response;
+        let url;
         if (page == "committee") {
-          response = await fetch(`${apiURL}/committee-meeting/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/committee-meeting/${id}`;
         } else if (page == "shareholder") {
-          response = await fetch(`${apiURL}/shareholder-meeting/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/shareholder-meeting/${id}`;
         } else {
-          response = await fetch(`${apiURL}/meeting/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          url = `${apiURL}/meeting/${id}`;
         }
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
 
         setXResolutions(data?.resolutions);
         setVariable(data?.variables);
-
         setDirectorList(data?.participants);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -246,10 +247,9 @@ const DocumentEditor = () => {
       console.error("Meeting with the provided id not found.");
       return;
     }
-    console.log(currentMeeting, "curr-meet");
+
     // Extract client_name.id and createdAt from the current meeting
     const { client_name, createdAt: currentCreatedAt } = currentMeeting;
-    console.log(currentCreatedAt, "curr-meet-2");
 
     if (!client_name || !client_name.id) {
       console.error(
@@ -532,7 +532,7 @@ const DocumentEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
-  console.log(prevCSR, "abc");
+
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
@@ -824,7 +824,7 @@ const DocumentEditor = () => {
 
     return children;
   };
-  console.log(circleResolution, "circle");
+
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
     const parsedContent = parseHtmlToDocx(formattedContent);
@@ -893,7 +893,6 @@ const DocumentEditor = () => {
       // handleAgendaItemChange()
     }, 3000);
   }, [resolutionList?.length, xresolution?.length]);
-
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
