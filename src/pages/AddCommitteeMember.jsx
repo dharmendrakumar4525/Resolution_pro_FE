@@ -25,7 +25,7 @@ export default function AddCommitteeMember({ onSave }) {
     committee: "",
     isEmail: false,
     location: "",
-    committeeMembers: [{ name: "", from: "", to: "", email: "" }],
+    committeeMembers: [],
   });
   const [loading, setLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -84,7 +84,7 @@ export default function AddCommitteeMember({ onSave }) {
       console.error("Error fetching directors:", error);
     }
   };
-  console.log(directorList,"dirr")
+  console.log(directorList, "dirr");
   const directorOptions = directorList.map((director) => ({
     value: director.id,
     label: director.name,
@@ -120,7 +120,6 @@ export default function AddCommitteeMember({ onSave }) {
       toast.error("Please fill atleast 1 Member Details");
     }
   };
- 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -219,82 +218,80 @@ export default function AddCommitteeMember({ onSave }) {
             </Form.Group>
           </Col>
         </Row>
-        
-              <Row className="mb-3">
-                <Col md={6}>
-                <Form.Group controlId="participants">
-                  <Form.Label>
-                    Participants<sup>*</sup>
-                  </Form.Label>
-                  <Select
-                    isMulti
-                    required
-                    options={[
-                      { value: "selectAll", label: "Select All" },
-                      ...directorOptions,
-                    ]}
-                    value={
-                      formData?.committeeMembers?.length === directorOptions?.length
-                        ? [
-                            { value: "selectAll", label: "Select All" },
-                            ...directorOptions,
-                          ]
-                        : directorOptions.filter((option) =>
-                            formData.committeeMembers.some(
-                              (participant) =>
-                                participant.name?.id === option.value
-                            )
-                          )
-                    }
-                    onChange={(selectedOptions) => {
-                      if (
-                        selectedOptions.some(
-                          (option) => option.value === "selectAll"
-                        ) &&
-                        formData.committeeMembers.length !== directorOptions?.length
-                      ) {
-                        // Select all participants
-                        setFormData({
-                          ...formData,
-                          committeeMembers: directorOptions?.map((option) => ({
-                            name: option.value
-                          })),
-                        });
-                      } else if (
-                        selectedOptions.some(
-                          (option) => option.value === "selectAll"
-                        ) &&
-                        formData.committeeMembers.length === directorOptions.length
-                      ) {
-                        setFormData({
-                          ...formData,
-                          committeeMembers: [],
-                        });
-                      } else {
-                        setFormData({
-                          ...formData,
-                          committeeMembers: selectedOptions
-                            .filter((option) => option.value !== "selectAll")
-                            .map((option) => ({
-                              name: option.value,
-                            })),
-                        });
-                      }
-                    }}
-                    isClearable
-                    isSearchable
-                  />
-                </Form.Group>
-                {directorList.length == 0 && (
-                  <p style={{ color: "red", marginTop: "10px" }}>
-                    Director options are not available. Please add options
-                    before proceeding.
-                  </p>
-                )}
-                </Col>
-              </Row>
 
-     
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group controlId="participants">
+              <Form.Label>
+                Participants<sup>*</sup>
+              </Form.Label>
+              <Select
+                isMulti
+                required
+                options={[
+                  { value: "selectAll", label: "Select All" },
+                  ...directorOptions,
+                ]}
+                value={
+                  formData?.committeeMembers?.length === directorOptions?.length
+                    ? [
+                        { value: "selectAll", label: "Select All" },
+                        ...directorOptions,
+                      ]
+                    : directorOptions.filter((option) =>
+                        formData.committeeMembers.some(
+                          (participant) => participant?.name === option.value
+                        )
+                      )
+                }
+                onChange={(selectedOptions) => {
+                  if (
+                    selectedOptions.some(
+                      (option) => option.value === "selectAll"
+                    ) &&
+                    formData.committeeMembers.length !== directorOptions?.length
+                  ) {
+                    // Select all participants
+                    setFormData({
+                      ...formData,
+                      committeeMembers: directorOptions?.map((option) => ({
+                        name: option.value,
+                      })),
+                    });
+                  } else if (
+                    selectedOptions.some(
+                      (option) => option.value === "selectAll"
+                    ) &&
+                    formData.committeeMembers.length === directorOptions.length
+                  ) {
+                    setFormData({
+                      ...formData,
+                      committeeMembers: [],
+                    });
+                  } else {
+                    setFormData({
+                      ...formData,
+                      committeeMembers: selectedOptions
+                        .filter((option) => option.value !== "selectAll")
+                        .map((option) => ({
+                          name: option.value,
+                        })),
+                    });
+                  }
+                }}
+                isClearable
+                isSearchable
+              />
+            </Form.Group>
+            {directorList.length == 0 && (
+              <p style={{ color: "red", marginTop: "10px" }}>
+                Director options are not available. Please add options before
+                proceeding.
+              </p>
+            )}
+          </Col>
+        </Row>
+
         <Row>
           <Col>
             {" "}

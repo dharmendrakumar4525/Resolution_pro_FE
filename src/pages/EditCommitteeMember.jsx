@@ -172,7 +172,7 @@ export default function EditCommitteeMember() {
 
     // Check if each committee member has complete details
     for (let member of committeeMembers) {
-      if (!member.name || !member.from || !member.to || !member.email) {
+      if (!member.name) {
         toast.error("Please fill out all fields for each committee member.");
         return false;
       }
@@ -187,6 +187,11 @@ export default function EditCommitteeMember() {
     setLoading(true);
     setButtonLoading(true);
     try {
+      const payload = {
+        client_name: formData.clientName,
+        committee: formData.committee,
+        committee_members: formData.committeeMembers,
+      };
       // PATCH request to update the committee member
       const response = await fetch(`${apiURL}/committee-member/${id}`, {
         method: "PATCH",
@@ -194,7 +199,7 @@ export default function EditCommitteeMember() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -287,7 +292,7 @@ export default function EditCommitteeMember() {
                       ]
                     : directorOptions.filter((option) =>
                         formData.committeeMembers.some(
-                          (participant) => participant.name?.id === option.value
+                          (participant) => participant?.name === option.value
                         )
                       )
                 }
