@@ -164,6 +164,7 @@ const DocumentEditor = () => {
         setMeetInfo(specificMeetInfo);
         setPreviousMeet(newDate?.date || null);
         setClientInfo(specificMeetInfo.client_name);
+        handleMultipleFilesAddOn(selectedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -547,142 +548,134 @@ const DocumentEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
+  const handleMultipleFilesAddOn = async (urls) => {
+    let count = 5;
+    let csrCount = 1;
+    let csrContent = "";
 
-  useEffect(() => {
-    const handleMultipleFilesAddOn = async (urls) => {
-      let count = 5;
-      let csrCount = 1;
-      let csrContent = "";
+    function getFormattedDate(dateString) {
+      const dateObj = new Date(dateString);
+      const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+      const year = dateObj.getFullYear();
+      return `${day}/${month}/${year}`; // Fo
+      // const result = `${day}/${month}/${year}`;
+    }
+    if (page == "board") {
+      if (prevCSR.length >= 1) {
+        let formattedDate = getFormattedDate(prevCSR[0]?.date);
+        csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
 
-      function getFormattedDate(dateString) {
-        const dateObj = new Date(dateString);
-        const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
-        const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
-        const year = dateObj.getFullYear();
-        return `${day}/${month}/${year}`; // Fo
-        // const result = `${day}/${month}/${year}`;
-      }
-      if (page == "board") {
-        if (prevCSR.length >= 1) {
-          let formattedDate = getFormattedDate(prevCSR[0]?.date);
-          csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
-
-        The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
-          count++;
-        }
-      }
-      if (circleResolution.length >= 1) {
-        csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
-
-        As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
-
-        for (const url of circleResolution) {
-          if (url?.title) {
-            const title = url?.title || "Untitled";
-
-            csrContent += `<p>${count}.${csrCount}. ${title}</p>`;
-            csrCount++;
-          }
-
-          if (url?.fileName) {
-            const response = await fetch(url.fileName);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url?.fileName}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            csrContent += `<div>${result.value}</div>\n`;
-          } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
-        }
+      The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
         count++;
-      } else {
       }
+    }
+    if (circleResolution.length >= 1) {
+      csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
 
-      try {
-        let combinedContent = "";
-        console.log(initializedContent, "ini-2");
-        for (const url of urls) {
-          if (url?.title) {
-            const title = url?.title || "Untitled";
-            if (title === "For #{company_name}") {
-              combinedContent += `<p>${title}</p>\n`;
-            } else {
-              combinedContent += `<br/><p>${count}. ${title}</p>\n`;
-              count++;
-            }
+      As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
+
+      for (const url of circleResolution) {
+        if (url?.title) {
+          const title = url?.title || "Untitled";
+
+          csrContent += `<p>${count}.${csrCount}. ${title}</p>`;
+          csrCount++;
+        }
+
+        if (url?.fileName) {
+          const response = await fetch(url.fileName);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file from: ${url?.fileName}`);
           }
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          csrContent += `<div>${result.value}</div>\n`;
+        } else {
+          console.warn("Skipped processing due to missing templateFile:", url);
+        }
+      }
+      count++;
+    } else {
+    }
 
-          if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<br/><div>${result.value}</div>\n`;
+    try {
+      let combinedContent = "";
+      console.log(initializedContent, "ini-2");
+      for (const url of urls) {
+        if (url?.title) {
+          const title = url?.title || "Untitled";
+          if (title === "For #{company_name}") {
+            combinedContent += `<p>${title}</p>\n`;
           } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
-
-          // Add resolution file content if available
-          if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<br/><div>${result.value}</div>`;
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
+            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+            count++;
           }
         }
-        let footerContent = `
-        <br/><p>For #{company_name}</p><p></p>
+
+        if (url?.templateFile) {
+          console.log("Processing templateFile:", url.templateFile);
+          const response = await fetch(url.templateFile);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+          }
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          combinedContent += `<br/><div>${result.value}</div>\n`;
+        } else {
+          console.warn("Skipped processing due to missing templateFile:", url);
+        }
+
+        // Add resolution file content if available
+        if (url?.resolutionFile) {
+          console.log("Processing resolutionFile:", url.resolutionFile);
+          const response = await fetch(url.resolutionFile);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file from: ${url.resolutionFile}`);
+          }
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          combinedContent += `<br/><div>${result.value}</div>`;
+        } else {
+          console.warn(
+            "Skipped processing due to missing resolutionFile:",
+            url
+          );
+        }
+      }
+      let footerContent = `
+      <br/><p>For #{company_name}</p><p></p>
 
 
 <h6>
-  Name: \${name}</h6>
- <h6> Director</h6>
- <h6> DIN: \${din_pan}</h6>
+Name: \${name}</h6>
+<h6> Director</h6>
+<h6> DIN: \${din_pan}</h6>
 `;
 
-        console.log(
-          initializedContent +
-            "i" +
-            csrContent +
-            "i" +
-            combinedContent +
-            "i" +
-            footerContent
-        );
-        setEditorContent(
-          initializedContent + csrContent + combinedContent + footerContent
-        );
-        console.log(editorContent, "i1");
-      } catch (error) {
-        console.error("Error fetching or converting one or more files:", error);
-      }
-    };
-
-    handleMultipleFilesAddOn(selectedData);
+      console.log(
+        initializedContent +
+          "ikea1" +
+          csrContent +
+          "ikea2" +
+          combinedContent +
+          "ikea3" +
+          footerContent
+      );
+      setEditorContent(
+        initializedContent + csrContent + combinedContent + footerContent
+      );
+      console.log(editorContent, "ikea");
+    } catch (error) {
+      console.error("Error fetching or converting one or more files:", error);
+    }
+  };
+  useEffect(() => {
+    if (selectedData) {
+      handleMultipleFilesAddOn(selectedData);
+    }
     processPlaceholders(editorContent);
-  }, [selectedData, prevCSR, circleResolution]);
+  }, [selectedData, prevCSR, circleResolution, initializedContent]);
 
   useEffect(() => {
     setTimeout(() => {
