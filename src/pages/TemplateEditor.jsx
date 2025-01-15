@@ -29,7 +29,7 @@ const DocumentEditor = () => {
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
-  const [meetInfo, setMeetInfo] = useState([]);
+  const [meetInfo, setMeetInfo] = useState({});
   const [previousMeet, setPreviousMeet] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState([]);
@@ -79,16 +79,18 @@ const DocumentEditor = () => {
           throw new Error(`Failed to fetch meeting data: ${response.status}`);
         }
         const data = await response.json();
-        setMeetData(data.results);
+        setMeetData(data?.results);
 
         // Find specific meeting info by ID
-        const specificMeetInfo = data.results.find((item) => item.id === id);
+        const specificMeetInfo = data?.results.find((item) => item.id === id);
+        console.log(specificMeetInfo, "meetData");
         if (!specificMeetInfo) {
           console.warn("No match found for the specified id.");
           return;
         }
+        setMeetInfo(specificMeetInfo);
 
-        const targetDate = new Date(specificMeetInfo.date);
+        const targetDate = new Date(specificMeetInfo?.date);
 
         // Fetch committee meeting data
         const committeeResponse = await fetch(`${apiURL}/committee-meeting`, {
@@ -102,13 +104,13 @@ const DocumentEditor = () => {
         const committeeData = await committeeResponse.json();
 
         // Find the closest previous CSR meeting
-        const closestPreviousCSRMeeting = committeeData.results.filter(
+        const closestPreviousCSRMeeting = committeeData?.results.filter(
           (meeting) =>
             new Date(meeting.date) < targetDate &&
             meeting?.client_name?.id === specificMeetInfo?.client_name?.id
         );
 
-        const newCSRDate = closestPreviousCSRMeeting.reduce((prev, curr) => {
+        const newCSRDate = closestPreviousCSRMeeting?.reduce((prev, curr) => {
           const prevDate = prev ? new Date(prev.date) : new Date(0);
           const currDate = new Date(curr.date);
           return currDate > prevDate ? curr : prev;
@@ -119,15 +121,15 @@ const DocumentEditor = () => {
         }
 
         // Find the closest previous meeting
-        const closestPreviousMeeting = data.results.filter(
+        const closestPreviousMeeting = data?.results.filter(
           (meeting) =>
             new Date(meeting.date) < targetDate &&
             meeting?.client_name?.id === specificMeetInfo?.client_name?.id
         );
 
         const newDate = closestPreviousMeeting.reduce((prev, curr) => {
-          const prevDate = prev ? new Date(prev.date) : new Date(0);
-          const currDate = new Date(curr.date);
+          const prevDate = prev ? new Date(prev?.date) : new Date(0);
+          const currDate = new Date(curr?.date);
           return currDate > prevDate ? curr : prev;
         }, null);
 
@@ -147,32 +149,30 @@ const DocumentEditor = () => {
 
         let filteredCircularResolutions = [];
         if (closestPreviousMeeting.length > 0) {
-          const previousDate = new Date(closestPreviousMeeting[0].date);
-          const currMeetDate = new Date(specificMeetInfo.date);
+          const previousDate = new Date(closestPreviousMeeting[0]?.date);
+          const currMeetDate = new Date(specificMeetInfo?.date);
 
-          filteredCircularResolutions = circularResolutions.results.filter(
+          filteredCircularResolutions = circularResolutions?.results.filter(
             (resolution) =>
               new Date(resolution.approved_at) > previousDate &&
               new Date(resolution.approved_at) <= currMeetDate
           );
         } else {
           // For the first meeting, return all resolutions
-          filteredCircularResolutions = circularResolutions.results;
+          filteredCircularResolutions = circularResolutions?.results;
         }
-
-        setCircleResolution(filteredCircularResolutions);
-        setMeetInfo(specificMeetInfo);
+        console.log(specificMeetInfo, "test-in");
         setPreviousMeet(newDate?.date || null);
-        setClientInfo(specificMeetInfo.client_name);
-        handleMultipleFilesAddOn(selectedData);
+        setClientInfo(specificMeetInfo?.client_name);
+        setCircleResolution(filteredCircularResolutions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
+    handleFileLoad(fileUrl);
 
     fetchMeetData(id);
   }, [id, token]);
-  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -276,138 +276,170 @@ const DocumentEditor = () => {
 
   // Helper function to process placeholders
   const processPlaceholders = (content) => {
-    const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
-    let match;
-    let updatedContent = content;
-    const fields = {};
-    let xValues;
-    while ((match = regex.exec(content)) !== null) {
-      const placeholder = match[2];
-      const placeholder2 = match[1] || match[2];
+    console.log("content-out", content, meetInfo);
+    if (content) {
+      const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
+      let match;
+      let updatedContent = content;
+      const fields = {};
+      let xValues;
+      while ((match = regex.exec(content)) !== null) {
+        console.log("content-out-match", match);
 
-      if (variable !== {}) {
-        const filledVariable = variable[placeholder2];
+        const placeholder = match[2];
+        const placeholder2 = match[1] || match[2];
 
-        xValues = filledVariable;
-      }
-      // Check if it's a system variable
-      const systemVariable = rows?.find((row) => row?.name === placeholder);
-      if (systemVariable) {
-        console.log(systemVariable, "system-var");
-        let res = systemVariable.mca_name;
+        if (variable !== {}) {
+          const filledVariable = variable[placeholder2];
 
-        let formulaRes = systemVariable.formula;
-        let value;
-        function getOrdinalSuffix(number) {
-          const suffixes = ["TH", "ST", "ND", "RD"];
-          const value = number % 100;
-          return (
-            number +
-            (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-          );
+          xValues = filledVariable;
         }
-        if (res == "count") {
-          const selectedId = id; // Replace with the id of the current meeting
-          const previousMeetingsCount = countPreviousMeetings(
-            meetData,
-            selectedId
-          );
+        // Check if it's a system variable
+        const systemVariable = rows?.find((row) => row?.name === placeholder);
+        if (systemVariable) {
+          console.log(systemVariable, "system-var");
+          let res = systemVariable.mca_name;
 
-          let result = getOrdinalSuffix(previousMeetingsCount);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res == "current_year") {
-          function getCurrentFinancialYear() {
-            const today = new Date();
-            const year = today.getFullYear();
-
-            if (today.getMonth() + 1 >= 4) {
-              return `${year}-${year + 1}`;
-            } else {
-              return `${year - 1}-${year}`;
-            }
+          let formulaRes = systemVariable.formula;
+          let value;
+          function getOrdinalSuffix(number) {
+            const suffixes = ["TH", "ST", "ND", "RD"];
+            const value = number % 100;
+            return (
+              number +
+              (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
+            );
           }
+          if (res == "count") {
+            const selectedId = id; // Replace with the id of the current meeting
+            const previousMeetingsCount = countPreviousMeetings(
+              meetData,
+              selectedId
+            );
 
-          let result = getCurrentFinancialYear();
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res == "date") {
-          function getFormattedDate(dateString) {
-            const dateObj = new Date(dateString);
-
-            const day = dateObj.toLocaleDateString("en-US", {
-              weekday: "long",
-            });
-            const month = dateObj.toLocaleDateString("en-US", {
-              month: "long",
-            });
-            const date = dateObj.getDate();
-            const year = dateObj.getFullYear();
-
-            return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
-          }
-
-          let result = getFormattedDate(meetInfo[res]);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (
-          res == "prev_board_meeting" ||
-          res == "prev_committee_meeting"
-        ) {
-          if (previousMeet == undefined) {
-            console.log(previousMeet, res, "res-123", systemVariable);
-            if (variable !== {}) {
-              fields[placeholder] = variable[placeholder] || "";
-            } else {
-              fields[placeholder] = inputFields[placeholder] || "";
-            }
-
-            // Preserve or initialize
-          } else {
-            const dateObj = new Date(previousMeet);
-            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
-            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
-            const year = dateObj.getFullYear();
-            // return `${day}/${month}/${year}`; // Fo
-            const result = `${day}/${month}/${year}`;
+            let result = getOrdinalSuffix(previousMeetingsCount);
             value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res == "current_year") {
+            function getCurrentFinancialYear() {
+              const today = new Date();
+              const year = today.getFullYear();
+
+              if (today.getMonth() + 1 >= 4) {
+                return `${year}-${year + 1}`;
+              } else {
+                return `${year - 1}-${year}`;
+              }
+            }
+
+            let result = getCurrentFinancialYear();
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res == "date") {
+            function getFormattedDate(dateString) {
+              const dateObj = new Date(dateString);
+
+              const day = dateObj.toLocaleDateString("en-US", {
+                weekday: "long",
+              });
+              const month = dateObj.toLocaleDateString("en-US", {
+                month: "long",
+              });
+              const date = dateObj.getDate();
+              const year = dateObj.getFullYear();
+
+              return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
+            }
+
+            let result = getFormattedDate(meetInfo[res]);
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (
+            res == "prev_board_meeting" ||
+            res == "prev_committee_meeting"
+          ) {
+            if (previousMeet == undefined) {
+              console.log(previousMeet, res, "res-123", systemVariable);
+              if (variable !== {}) {
+                fields[placeholder] = variable[placeholder] || "";
+              } else {
+                fields[placeholder] = inputFields[placeholder] || "";
+              }
+
+              // Preserve or initialize
+            } else {
+              const dateObj = new Date(previousMeet);
+              const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+              const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+              const year = dateObj.getFullYear();
+              // return `${day}/${month}/${year}`; // Fo
+              const result = `${day}/${month}/${year}`;
+              value = result;
+              updatedContent = updatedContent.replace(
+                new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+                value
+              );
+              setConfirmedFields((prevState) => ({
+                ...prevState,
+                [placeholder]: true,
+              }));
+              setPlaceVar((prevData) => ({
+                ...prevData,
+                [systemVariable.name]: value,
+              }));
+            }
+          } else if (res == "startTime") {
+            const timeParts = meetInfo[res]?.split(":");
+            console.log(timeParts, "tp");
+            if (timeParts == undefined) {
+              return (fields[placeholder] = inputFields[placeholder] || ""); // Preserve or initialize
+            }
+            const hours = parseInt(timeParts[0], 10);
+            const minutes = timeParts[1];
+            const amPm = hours >= 12 ? "PM" : "AM";
+
+            const formattedHours = hours % 12 || 12;
+            const result = `${formattedHours}:${minutes} ${amPm} ${meetInfo?.standard_time}`;
+            console.log(result, "time-23");
+            value = result;
+
             updatedContent = updatedContent.replace(
               new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
               value
@@ -420,105 +452,82 @@ const DocumentEditor = () => {
               ...prevData,
               [systemVariable.name]: value,
             }));
+          } else if (formulaRes == "date") {
+            console.log(res, "response1234");
+            function getFormattedDate(dateString) {
+              const dateObj = new Date(dateString);
+              const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
+              const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+              const year = dateObj.getFullYear();
+              return `${day}/${month}/${year}`; // Format as dd/mm/yyyy
+            }
+            let result = getFormattedDate(clientInfo[res]);
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res in clientInfo) {
+            console.log(clientInfo, "clientid");
+            value = clientInfo[res];
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res in meetInfo) {
+            value = meetInfo[res];
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else {
+            fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
           }
-        } else if (res == "startTime") {
-          const timeParts = meetInfo[res]?.split(":");
-          const hours = parseInt(timeParts[0], 10);
-          const minutes = timeParts[1];
-          const amPm = hours >= 12 ? "PM" : "AM";
-
-          const formattedHours = hours % 12 || 12;
-          const result = `${formattedHours}:${minutes} ${amPm} ${meetInfo?.standard_time}`;
-          console.log(result, "time-23");
-          value = result;
-
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData,
-            [systemVariable.name]: value,
-          }));
-        } else if (formulaRes == "date") {
-          console.log(res, "response1234");
-          function getFormattedDate(dateString) {
-            const dateObj = new Date(dateString);
-            const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
-            const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
-            const year = dateObj.getFullYear();
-            return `${day}/${month}/${year}`; // Format as dd/mm/yyyy
+          // const value = systemVariable.mca_name; // System variable value
+        } else {
+          if (variable !== {}) {
+            fields[placeholder2] = xValues || "";
+          } else {
+            console.log("Y");
+            fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
           }
-          let result = getFormattedDate(clientInfo[res]);
-          value = result;
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res in clientInfo) {
-          console.log(clientInfo, "clientid");
-          value = clientInfo[res];
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else if (res in meetInfo) {
-          value = meetInfo[res];
-          updatedContent = updatedContent.replace(
-            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-            value
-          );
-
-          // Mark as confirmed
-          setConfirmedFields((prevState) => ({
-            ...prevState,
-            [placeholder]: true,
-          }));
-          setPlaceVar((prevData) => ({
-            ...prevData, // Spread the existing state
-            [systemVariable.name]: value, // Add the new key-value pair
-          }));
-        } else {
-          fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+          // Initialize inputFields for non-system placeholders
         }
-        // const value = systemVariable.mca_name; // System variable value
-      } else {
-        if (variable !== {}) {
-          fields[placeholder2] = xValues || "";
-        } else {
-          console.log("Y");
-          fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
-        }
-        // Initialize inputFields for non-system placeholders
       }
+
+      setInputFields(fields);
+
+      return updatedContent;
     }
-
-    setInputFields(fields);
-
-    return updatedContent;
   };
 
   // Update editorContent whenever rows or input content changes
@@ -537,13 +546,12 @@ const DocumentEditor = () => {
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
+      console.log("handleFileLoad");
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
-      // setEditorContent(result.value);
-      console.log("res-21", result.value);
-      setInitializedContent(result.value);
+      setInitializedContent(result?.value);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -563,14 +571,14 @@ const DocumentEditor = () => {
     }
     if (page == "board") {
       if (prevCSR.length >= 1) {
-        let formattedDate = getFormattedDate(prevCSR[0]?.date);
+        let formattedDate = await getFormattedDate(prevCSR[0]?.date);
         csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
 
       The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
         count++;
       }
     }
-    if (circleResolution.length >= 1) {
+    if (circleResolution?.length >= 1) {
       csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
 
       As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
@@ -601,48 +609,55 @@ const DocumentEditor = () => {
 
     try {
       let combinedContent = "";
-      console.log(initializedContent, "ini-2");
-      for (const url of urls) {
-        if (url?.title) {
-          const title = url?.title || "Untitled";
-          if (title === "For #{company_name}") {
-            combinedContent += `<p>${title}</p>\n`;
+      if (urls) {
+        for (const url of urls) {
+          if (url?.title) {
+            const title = url?.title || "Untitled";
+            if (title === "For #{company_name}") {
+              combinedContent += `<p>${title}</p>\n`;
+            } else {
+              combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+              count++;
+            }
+          }
+
+          if (url?.templateFile) {
+            console.log("Processing templateFile:", url.templateFile);
+            const response = await fetch(url.templateFile);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            combinedContent += `<br/><div>${result.value}</div>\n`;
           } else {
-            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
-            count++;
+            console.warn(
+              "Skipped processing due to missing templateFile:",
+              url
+            );
           }
-        }
 
-        if (url?.templateFile) {
-          console.log("Processing templateFile:", url.templateFile);
-          const response = await fetch(url.templateFile);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+          // Add resolution file content if available
+          if (url?.resolutionFile) {
+            console.log("Processing resolutionFile:", url.resolutionFile);
+            const response = await fetch(url.resolutionFile);
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch file from: ${url.resolutionFile}`
+              );
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            combinedContent += `<br/><div>${result.value}</div>`;
+          } else {
+            console.warn(
+              "Skipped processing due to missing resolutionFile:",
+              url
+            );
           }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          combinedContent += `<br/><div>${result.value}</div>\n`;
-        } else {
-          console.warn("Skipped processing due to missing templateFile:", url);
-        }
-
-        // Add resolution file content if available
-        if (url?.resolutionFile) {
-          console.log("Processing resolutionFile:", url.resolutionFile);
-          const response = await fetch(url.resolutionFile);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url.resolutionFile}`);
-          }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          combinedContent += `<br/><div>${result.value}</div>`;
-        } else {
-          console.warn(
-            "Skipped processing due to missing resolutionFile:",
-            url
-          );
         }
       }
+
       let footerContent = `
       <br/><p>For #{company_name}</p><p></p>
 
@@ -652,40 +667,26 @@ Name: \${name}</h6>
 <h6> Director</h6>
 <h6> DIN: \${din_pan}</h6>
 `;
+      if (initializedContent) {
+        console.log(initializedContent, "inik");
+        setEditorContent(
+          (initializedContent || "") +
+            (csrContent || "") +
+            (combinedContent || "") +
+            (footerContent || "")
+        );
+      }
 
-      console.log(
-        initializedContent +
-          "ikea1" +
-          csrContent +
-          "ikea2" +
-          combinedContent +
-          "ikea3" +
-          footerContent
-      );
-      setEditorContent(
-        initializedContent + csrContent + combinedContent + footerContent
-      );
       console.log(editorContent, "ikea");
     } catch (error) {
       console.error("Error fetching or converting one or more files:", error);
     }
   };
-  useEffect(() => {
-    if(initializedContent){
-      console.log('execute')
-      handleMultipleFilesAddOn(selectedData);
-    }
-  }, [selectedData]);
 
   useEffect(() => {
+    handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
   }, [selectedData, prevCSR, circleResolution, initializedContent]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 1000);
-  }, [fileUrl]);
 
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
