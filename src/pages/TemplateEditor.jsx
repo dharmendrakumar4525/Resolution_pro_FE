@@ -671,9 +671,13 @@ Name: \${name}</h6>
     }
   };
   useEffect(() => {
-    if (selectedData) {
+    if(initializedContent){
+      console.log('execute')
       handleMultipleFilesAddOn(selectedData);
     }
+  }, [selectedData]);
+
+  useEffect(() => {
     processPlaceholders(editorContent);
   }, [selectedData, prevCSR, circleResolution, initializedContent]);
 
