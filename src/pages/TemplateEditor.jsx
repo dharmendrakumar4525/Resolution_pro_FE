@@ -426,7 +426,9 @@ const DocumentEditor = () => {
               }));
             }
           } else if (res == "startTime") {
-            const timeParts = meetInfo[res]?.split(":");
+            const timeParts =
+              meetInfo[res]?.split(":") ||
+              "2024-11-28T09:08:41.931+00:00"?.split(":");
             console.log(timeParts, "tp");
             if (timeParts == undefined) {
               return (fields[placeholder] = inputFields[placeholder] || ""); // Preserve or initialize
