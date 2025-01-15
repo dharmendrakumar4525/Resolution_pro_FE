@@ -416,10 +416,10 @@ const DocumentEditor = () => {
                 new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
                 value
               );
-              setConfirmedFields((prevState) => ({
-                ...prevState,
-                [placeholder]: true,
-              }));
+              // setConfirmedFields((prevState) => ({
+              //   ...prevState,
+              //   [placeholder]: true,
+              // }));
               setPlaceVar((prevData) => ({
                 ...prevData,
                 [systemVariable.name]: value,
