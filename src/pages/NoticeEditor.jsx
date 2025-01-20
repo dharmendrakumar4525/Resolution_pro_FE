@@ -13,7 +13,7 @@ import {
 } from "docx";
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+//import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
@@ -522,7 +522,7 @@ const NoticeEditor = () => {
       <div className="parentContainer">
         <div className="leftContainer">
           <CKEditor
-            editor={ClassicEditor}
+            //editor=\{ClassicEditor\}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
             config={{

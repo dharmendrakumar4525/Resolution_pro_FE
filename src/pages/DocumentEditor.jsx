@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Table } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+//import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styling
 import mammoth from "mammoth"; // Import mammoth.js
 
@@ -122,7 +122,7 @@ const DocumentTemplate = () => {
         <Col md={8}>
           <h3>Document Preview</h3>
           <CKEditor
-            editor={ClassicEditor}
+            //editor=\{ClassicEditor\}
             data={editorContent}
             onChange={(event, editor) => {
               const data = editor.getData();

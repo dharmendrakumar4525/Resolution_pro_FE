@@ -6,7 +6,7 @@ import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { Button, Form, Table, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+//import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
 import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
@@ -381,7 +381,7 @@ const TemplateViewer = () => {
           <h1 className="mb-4">Document Viewer</h1>
 
           <CKEditor
-            editor={ClassicEditor}
+            //editor=\{ClassicEditor\}
             data={editorContent}
             onReady={(editor) => {
               editor.enableReadOnlyMode("read-only-mode");

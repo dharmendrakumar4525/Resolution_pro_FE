@@ -141,6 +141,7 @@ export default function CircularResolution() {
     e.stopPropagation();
     navigate(`/circular-resolution-generate/${row?.id}`, {
       state: row?.fileName,
+      circularInfo: row,
     });
   };
 

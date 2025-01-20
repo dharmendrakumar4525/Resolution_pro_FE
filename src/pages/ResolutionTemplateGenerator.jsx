@@ -23,7 +23,7 @@ import {
   Col,
 } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+//import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -315,7 +315,7 @@ const ResolutionTemplateGenerator = () => {
 
           {/* CKEditor for writing content */}
           <CKEditor
-            editor={ClassicEditor}
+            //editor=\{ClassicEditor\}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
             config={{

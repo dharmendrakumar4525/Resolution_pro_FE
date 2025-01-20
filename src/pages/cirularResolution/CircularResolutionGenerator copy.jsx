@@ -10,7 +10,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-import htmlDocx from "html-docx-js/dist/html-docx";
+
 import {
   Button,
   Modal,
@@ -27,16 +27,23 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styling/templateEditor.css";
+import "../../styling/templateEditor.css";
 import mammoth from "mammoth";
 import { useParams } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
+import Select from "react-select";
 
-const AgendaTemplateGenerator = () => {
+const CircularResolutionGenerator = () => {
   const [rows, setRows] = useState([]);
+  const [resolutionList, setResolutionList] = useState([]);
+  const [xresolution, setXResolutions] = useState([]);
+  const [variable, setVariable] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
+  const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -52,8 +59,11 @@ const AgendaTemplateGenerator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const circularInfo = location?.circularInfo;
+  console.log(circularInfo, "circle");
 
-  const fileUrl = location.state;
+  const fileUrl = location?.state;
+  console.log(fileUrl, "fileUrl");
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -80,6 +90,47 @@ const AgendaTemplateGenerator = () => {
 
     fetchData(page);
   }, [page, token]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/agenda`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        setResolutionList(data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    const fetchVariables = async () => {
+      try {
+        let url = `${apiURL}/circular-resolution/${id}`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        setXResolutions(data?.resolutions);
+        setVariable(data?.variables);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchVariables();
+
+    fetchData();
+  }, [token]);
+  const resolOptions = resolutionList?.map((resol) => ({
+    value: resol?.templateName,
+    label: resol?.templateName,
+  }));
   const handleEditorChange = (content) => {
     setEditorContent(content);
 
@@ -140,6 +191,7 @@ const AgendaTemplateGenerator = () => {
       );
       const htmlContent = result.value;
       setEditorContent(htmlContent);
+      console.log("html", htmlContent);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -236,21 +288,6 @@ const AgendaTemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
-    // console.log(formattedContent,"formatted")
-    let footerContent = `<p>Kindly make it convenient to attend the meeting. 
-        Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
-        <br/><p>For #{company_name}</p><p></p>
-
-
-<h6>
-  Name: \${name}</h6>
- <h6> Director</h6>
- <h6> DIN: \${din_pan}</h6>
-`;
-
-    const docxBlob = htmlDocx.asBlob(formattedContent);
-    console.log(docxBlob);
-
     const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
@@ -268,19 +305,15 @@ const AgendaTemplateGenerator = () => {
   // Save the document in the dashboard list
   const saveDocument = async () => {
     setButtonLoading(true);
+
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
-    console.log(docBlob, "mukul");
-    // saveAs(docBlob, "mukul.docx")
-    // return
-    // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
 
-    console.log(formData, "tokennn1");
     try {
       // Make a PATCH request with the document
-      const response = await fetch(`${apiURL}/agenda/${id}`, {
+      const response = await fetch(`${apiURL}/circular-resolution/${id}`, {
         method: "PATCH",
 
         headers: {
@@ -291,7 +324,7 @@ const AgendaTemplateGenerator = () => {
       });
       console.log(formData, "tokennn2");
       if (response.ok) {
-        toast.success("Agenda saved successfully!");
+        toast.success("Resolution saved successfully!");
 
         // Optionally update your document list
         const newDoc = {
@@ -300,7 +333,7 @@ const AgendaTemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/agenda-template");
+        navigate("/circular-resolution");
       } else {
         toast.error("Failed to save the document.");
       }
@@ -324,13 +357,38 @@ const AgendaTemplateGenerator = () => {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
+  const handleAgendaItemChange = (selectedOption) => {
+    console.log(resolutionList, "resol-lis");
+
+    const agenda = resolutionList.find(
+      (item) => item.templateName === selectedOption?.value
+    );
+
+    const selectedAgenda = selectedOption
+      ? {
+          // templateName: selectedOption.value,
+          title: agenda?.title || "",
+          templateFile: agenda?.fileName || "",
+          resolutionFile: agenda?.resolutionUrl || "",
+        }
+      : null;
+
+    console.log("dds", selectedAgenda);
+
+    setSelectedData(selectedAgenda ? [selectedAgenda] : []);
+    setPrevoiusSelectedOptions(selectedOption ? [selectedOption] : []);
+    // setFormData((prevData) => ({
+    //   ...prevData,
+    //   agendaItems: selectedAgenda ? [selectedAgenda] : [],
+    // }));
+  };
 
   return (
     <Container className="mt-5">
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Agenda Template Generator</h1>
+          <h1 className="mb-4">Circular Resolution Generator</h1>
 
           {/* CKEditor for writing content */}
           <CKEditor
@@ -363,12 +421,21 @@ const AgendaTemplateGenerator = () => {
                 aria-hidden="true"
               />
             ) : (
-              "Save Agenda"
+              "Save Resolution"
             )}
           </Button>
         </div>
         <div className="rightContainer">
-          <h4 className="h4-heading-style mt-4">System Variables</h4>
+          <Form.Group controlId="agendaItems" className="mb-5">
+            <Select
+              options={resolOptions}
+              placeholder="Select Agenda Documents"
+              value={previousSelectedOptions}
+              onChange={handleAgendaItemChange}
+              isClearable
+            />
+          </Form.Group>
+          <h4 className="h4-heading-style">System Variables</h4>
 
           {loading ? (
             <div className="text-center mt-2">
@@ -377,7 +444,7 @@ const AgendaTemplateGenerator = () => {
               </Spinner>
             </div>
           ) : (
-            <div className="table-responsive mt-4">
+            <div className="table-responsive mt-5">
               <table className="Master-table p-5">
                 <tbody>
                   {rows?.map((row) => (
@@ -408,6 +475,7 @@ const AgendaTemplateGenerator = () => {
               </Pagination>
             </div>
           )}
+
           <Button variant="danger" onClick={() => navigate(-1)}>
             Exit Without Saving
           </Button>
@@ -417,4 +485,4 @@ const AgendaTemplateGenerator = () => {
   );
 };
 
-export default AgendaTemplateGenerator;
+export default CircularResolutionGenerator;

@@ -59,6 +59,7 @@ import ShareholderMeeting from "../pages/shareholder/ShareholderMeeting";
 import ShareholderDocuments from "../pages/shareholder/ShareholderDocuments";
 import CircularResolution from "../pages/cirularResolution/CircularResolution";
 import CircularResolutionGenerator from "../pages/cirularResolution/CircularResolutionGenerator";
+import Pandu from "../pages/Pandu";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -103,6 +104,13 @@ const AppRoutes = () => {
           ) : (
             <Navigate to="/login" />
           )
+        }
+      />
+      <Route
+        path="/pandu"
+        element={
+            <RouteWithSidebar element={<Pandu />} />
+         
         }
       />
       <Route

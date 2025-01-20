@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Document,
   Packer,
-  Paragraph,
+  // Paragraph,
   TextRun,
-  Table,
+  // Table,
   TableCell,
   TableRow,
   WidthType,
 } from "docx";
-import htmlDocx from "html-docx-js/dist/html-docx";
+import axios from "axios";
 import {
   Button,
   Modal,
@@ -18,11 +18,15 @@ import {
   FormControl,
   Container,
   Spinner,
-  Pagination,
+  // Pagination,
   Row,
   Col,
 } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+import JoditEditor from "jodit-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
 //import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
@@ -34,26 +38,108 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
+import htmlDocx from "html-docx-js/dist/html-docx";
+import {
+	DecoupledEditor,
+	Plugin,
+	ButtonView,
+	Alignment,
+	Autoformat,
+	AutoImage,
+	AutoLink,
+	Autosave,
+	BalloonToolbar,
+	Bold,
+	CKBox,
+	CKBoxImageEdit,
+	CloudServices,
+	Code,
+	Essentials,
+	FindAndReplace,
+	FontBackgroundColor,
+	FontColor,
+	FontFamily,
+	FontSize,
+	Heading,
+	HorizontalLine,
+	ImageBlock,
+	ImageCaption,
+	ImageInline,
+	ImageInsert,
+	ImageInsertViaUrl,
+	ImageResize,
+	ImageStyle,
+	ImageTextAlternative,
+	ImageToolbar,
+	ImageUpload,
+	Indent,
+	IndentBlock,
+	Italic,
+	Link,
+	LinkImage,
+	List,
+	ListProperties,
+	Mention,
+	PageBreak,
+	Paragraph,
+	PasteFromOffice,
+	PictureEditing,
+	RemoveFormat,
+	SpecialCharacters,
+	SpecialCharactersArrows,
+	SpecialCharactersCurrency,
+	SpecialCharactersEssentials,
+	SpecialCharactersLatin,
+	SpecialCharactersMathematical,
+	SpecialCharactersText,
+	Strikethrough,
+	Subscript,
+	Superscript,
+	Table,
+	TableCaption,
+	TableCellProperties,
+	TableColumnResize,
+	TableProperties,
+	TableToolbar,
+	TextTransformation,
+	TodoList,
+	Underline
+} from 'ckeditor5';
+import {
+	CaseChange,
+	DocumentOutline,
+	ExportPdf,
+	ExportWord,
+	FormatPainter,
+	ImportWord,
+	MergeFields,
+	MultiLevelList,
+	Pagination,
+	PasteFromOfficeEnhanced,
+	SlashCommand,
+	TableOfContents,
+	Template
+} from 'ckeditor5-premium-features';
 
-const AgendaTemplateGenerator = () => {
+const TemplateGenerator = () => {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
-  const [editorContent, setEditorContent] = useState("");
+  const [editorContent, setEditorContent] = useState("<p>Hello</p>");
   const [isEditing, setIsEditing] = useState(false);
   const [currentDocName, setCurrentDocName] = useState("");
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
-  const [docFile, setDocFile] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [docFile, setDocFile] = useState(null);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-
   const fileUrl = location.state;
+  const editor = useRef(null);
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -121,9 +207,11 @@ const AgendaTemplateGenerator = () => {
 
   const handleFileLoad = async (url) => {
     try {
+      // template file fetch
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
       const arrayBuffer = await response.arrayBuffer();
+      // console.log(arrayBuffer, "arr-Buff");
       const mammothOptions = {
         styleMap: [
           "p[style-name='Heading 1'] => h1:fresh",
@@ -139,6 +227,7 @@ const AgendaTemplateGenerator = () => {
         mammothOptions
       );
       const htmlContent = result.value;
+      console.log(htmlContent, "htmllll");
       setEditorContent(htmlContent);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
@@ -236,20 +325,8 @@ const AgendaTemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
-    // console.log(formattedContent,"formatted")
-    let footerContent = `<p>Kindly make it convenient to attend the meeting. 
-        Please do confirm us by phone/fax/email, in case of your inability to attend.</p>
-        <br/><p>For #{company_name}</p><p></p>
-
-
-<h6>
-  Name: \${name}</h6>
- <h6> Director</h6>
- <h6> DIN: \${din_pan}</h6>
-`;
-
-    const docxBlob = htmlDocx.asBlob(formattedContent);
-    console.log(docxBlob);
+    // const docxBlob = htmlDocx.asBlob(formattedContent);
+    // saveAs(docxBlob)
 
     const parsedContent = parseHtmlToDocx(formattedContent);
 
@@ -268,19 +345,26 @@ const AgendaTemplateGenerator = () => {
   // Save the document in the dashboard list
   const saveDocument = async () => {
     setButtonLoading(true);
+    let content = editorContent
+    // const response2 = await axios.post(`http://localhost:3000/save`, { content1:content }
+    // );
+    // console.log(response2.data,"ress")
+    console.log(content,"ress")
+    return
     // Create Word document as a Blob
     const docBlob = await createWordDocument();
-    console.log(docBlob, "mukul");
-    // saveAs(docBlob, "mukul.docx")
+    // const blob = new Blob([editorContent]);
+    // saveAs(blob, "editor-content.html"); // Use FileSaver.js's saveAs
+
     // return
     // Prepare FormData with the document Blob
     const formData = new FormData();
     formData.append("file", docBlob);
+    // formData.append("file", blob);
 
-    console.log(formData, "tokennn1");
     try {
       // Make a PATCH request with the document
-      const response = await fetch(`${apiURL}/agenda/${id}`, {
+      const response = await fetch(`${apiURL}/meeting-agenda-template/${id}`, {
         method: "PATCH",
 
         headers: {
@@ -291,7 +375,7 @@ const AgendaTemplateGenerator = () => {
       });
       console.log(formData, "tokennn2");
       if (response.ok) {
-        toast.success("Agenda saved successfully!");
+        toast.success("Document saved successfully!");
 
         // Optionally update your document list
         const newDoc = {
@@ -300,7 +384,7 @@ const AgendaTemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/agenda-template");
+        navigate("/document-template");
       } else {
         toast.error("Failed to save the document.");
       }
@@ -324,33 +408,99 @@ const AgendaTemplateGenerator = () => {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
+  const modules = {
+    toolbar: [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }], // Headings
+        [{ font: [] }], // Font families
+        ["bold", "italic", "underline", "strike"], // Formatting
+        [{ list: "ordered" }, { list: "bullet" }], // Lists
+        [{ indent: "-1" }, { indent: "+1" }], // Indentation
+        [{ align: [] }], // Text alignment
+        [{ color: [] }, { background: [] }], // Colors and background
+        [{ 'code-block': true }], // Code blocks
+        ["link", "image", "video"], // Links, images, and videos
+        ["clean"], // Clear formatting
+    ],
+};
+const copyStringToClipboard = function (str) {
+  var el = document.createElement("textarea");
+  el.value = str;
+  el.setAttribute("readonly", "");
+  el.style = { position: "absolute", left: "-9999px" };
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand("copy");
+  document.body.removeChild(el);
+};
+
+const facilityMergeFields = [
+  "FacilityNumber",
+  "FacilityName",
+  "Address",
+  "MapCategory",
+  "Latitude",
+  "Longitude",
+  "ReceivingPlant",
+  "TrunkLine",
+  "SiteElevation",
+];
+const inspectionMergeFields = ["InspectionCompleteDate", "InspectionEventType"];
+const createOptionGroupElement = (mergeFields, optionGrouplabel) => {
+  let optionGroupElement = document.createElement("optgroup");
+  optionGroupElement.setAttribute("label", optionGrouplabel);
+  for (let index = 0; index < mergeFields.length; index++) {
+    let optionElement = document.createElement("option");
+    optionElement.setAttribute("class", "merge-field-select-option");
+    optionElement.setAttribute("value", mergeFields[index]);
+    optionElement.text = mergeFields[index];
+    optionGroupElement.appendChild(optionElement);
+  }
+  return optionGroupElement;
+};
+
 
   return (
     <Container className="mt-5">
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Agenda Template Generator</h1>
+          <h1 className="mb-4">Document Templ Generator</h1>
+          {/* <ReactQuill
+                theme="snow"
+                value={editorContent}
+                onChange={setEditorContent}
+                modules={modules}
+                placeholder="Start typing here with full formatting..."
+                style={{ height: "300px", marginBottom: "20px" }}
+            /> */}
 
           {/* CKEditor for writing content */}
+          {/* <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
+            }}
+            
+          /> */}
           <CKEditor
             //editor=\{ClassicEditor\}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: [
-                "heading",
-                "|",
-                "bold",
-                "italic",
-                "link",
-                "|",
-                "bulletedList",
-                "numberedList",
-                "blockQuote",
-                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
-              ],
-            }}
+            // config={{
+            //   toolbar: [
+            //     "heading",
+            //     "|",
+            //     "bold",
+            //     "italic",
+            //     "link",
+            //     "|",
+            //     "bulletedList",
+            //     "numberedList",
+            //     "blockQuote",
+            //     // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
+            //   ],
+            // }}
           />
 
           <Button variant="secondary" onClick={saveDocument} className="mt-5">
@@ -363,12 +513,12 @@ const AgendaTemplateGenerator = () => {
                 aria-hidden="true"
               />
             ) : (
-              "Save Agenda"
+              "Save Document"
             )}
           </Button>
         </div>
         <div className="rightContainer">
-          <h4 className="h4-heading-style mt-4">System Variables</h4>
+          <h4 className="h4-heading-style mt-3">System Variables</h4>
 
           {loading ? (
             <div className="text-center mt-2">
@@ -387,7 +537,7 @@ const AgendaTemplateGenerator = () => {
                   ))}
                 </tbody>
               </table>
-              <Pagination className="mt-4">
+              {/* <Pagination className="mt-4">
                 <Pagination.Prev
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 1}
@@ -405,7 +555,7 @@ const AgendaTemplateGenerator = () => {
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page === totalPages}
                 />
-              </Pagination>
+              </Pagination> */}
             </div>
           )}
           <Button variant="danger" onClick={() => navigate(-1)}>
@@ -417,4 +567,4 @@ const AgendaTemplateGenerator = () => {
   );
 };
 
-export default AgendaTemplateGenerator;
+export default TemplateGenerator;
