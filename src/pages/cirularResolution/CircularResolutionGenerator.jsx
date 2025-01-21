@@ -24,8 +24,7 @@ import Select from "react-select";
 export default function CircularResolution() {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
-  const [directorList, setDirectorList] = useState([]);
-  const [xresolution, setXResolutions] = useState([]);
+  const [xresolution, setXResolutions] = useState({});
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
@@ -85,10 +84,10 @@ export default function CircularResolution() {
           },
         });
         const data = await response.json();
-
-        setXResolutions(data?.resolutions);
+        console.log(data, "saved-cs");
+        setXResolutions(data?.agenda);
         setVariable(data?.variables);
-        setDirectorList(data?.participants);
+        setAgendaId(data?.agenda?.id);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -290,19 +289,12 @@ export default function CircularResolution() {
   };
   handleFileLoad(fileUrl);
   const handleMultipleFilesAddOn = async (url) => {
-    let count = 5;
-
     try {
       let combinedContent = "";
       if (url) {
         if (url?.title) {
           const title = url?.title || "Untitled";
-          if (title === "For #{company_name}") {
-            combinedContent += `<p>${title}</p>\n`;
-          } else {
-            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
-            count++;
-          }
+          combinedContent += `<br/><p>${title}</p>\n`;
         }
 
         if (url?.templateFile) {
@@ -338,7 +330,7 @@ export default function CircularResolution() {
 
       if (initializedContent) {
         console.log(initializedContent, "inik");
-        setEditorContent((initializedContent || "")(combinedContent || ""));
+        setEditorContent((initializedContent || "") + (combinedContent || ""));
       }
 
       console.log(editorContent, "ikea");
@@ -349,8 +341,14 @@ export default function CircularResolution() {
   console.log(selectedData, "dattt");
   useEffect(() => {
     handleMultipleFilesAddOn(selectedData);
-    // processPlaceholders(editorContent);
-  }, [selectedData, prevCSR, circleResolution, initializedContent]);
+    processPlaceholders(editorContent);
+  }, [
+    selectedData,
+    prevCSR,
+    circleResolution,
+    initializedContent,
+    xresolution,
+  ]);
 
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
@@ -512,67 +510,56 @@ export default function CircularResolution() {
     const blob = await Packer.toBlob(doc);
     return blob;
   };
+  console.log(xresolution, "xresolution");
   useEffect(() => {
-    const selectedAgendas = xresolution
-      ? xresolution.map((option) => {
-          console.log(option, resolutionList, "match");
-          const agenda = resolutionList?.find((item) => {
-            if (item.title == option.templateName) {
-              return item;
-            }
-          });
-          return {
-            title: agenda?.title || "",
-            templateFile: agenda?.fileName || "",
-            resolutionFile: agenda?.resolutionUrl || "",
-          };
-        })
-      : "";
-    console.log(selectedAgendas, "prvsly-sel");
-    let match = {};
-    let newSelect = [];
-    const selectedOptions = xresolution
-      ?.map((res) => {
-        match = resolutionList.find(
-          (option) => option.title === res?.templateName
-        );
-        newSelect.push({
-          label: match?.templateName,
-          value: match?.templateName,
-        });
+    if (!xresolution || !resolutionList?.length) return;
 
-        return {
-          title: match?.title || "",
-          templateFile: match?.fileName || "",
-          resolutionFile: match?.resolutionUrl || "",
-        };
-      })
-      .filter(Boolean);
-    console.log(match, "matches");
+    // Find the matching agenda from resolutionList based on xresolution.templateName
+    const agenda = resolutionList.find(
+      (item) => item.templateName == xresolution.templateName
+    );
+    // Construct the selected agenda
+    const selectedAgenda = {
+      title: agenda?.title || "",
+      templateFile: agenda?.fileName || "",
+      resolutionFile: agenda?.resolutionUrl || "",
+    };
 
+    // Find the matching resolution for the dropdown options
+    const match = resolutionList.find((option) => option.id === xresolution.id);
+
+    // Prepare the new dropdown option
+    const newSelect = match
+      ? [
+          {
+            label: match.templateName,
+            value: match.templateName,
+          },
+        ]
+      : [];
+
+    // Filter the options for previously selected resolutions
     const selectedResolOptions = resolutionList
-      ?.map((res) => {
-        // console.log(res,"tilejjjjj")
+      .map((res) => {
         const matchLabels = resolOptions.find(
           (option) => option.label === res.title
         );
         return matchLabels || null;
       })
       .filter(Boolean);
-
+    console.log(selectedAgenda, "mukul");
+    // Update state with a slight delay (if needed)
     setTimeout(() => {
-      setSelectedData(selectedAgendas);
+      setSelectedData(selectedAgenda);
       setPrevoiusSelectedOptions(newSelect);
     }, 3000);
-  }, [resolutionList?.length, xresolution?.length]);
+  }, [resolutionList?.length, xresolution]);
+  console.log(selectedData, "selected");
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
   }));
-  const directorOptions = directorList?.map((director) => ({
-    value: director?.director?.id,
-    label: director?.director?.name,
-  }));
+  console.log(placeVar, "place");
 
   const saveDocument = async () => {
     setButtonLoading(true);
@@ -583,8 +570,9 @@ export default function CircularResolution() {
 
     formData.append("file", docBlob);
     formData.append("agenda", agendaId);
-    formData.append("variables", JSON.stringify(placeVar));
-    console.log(JSON.stringify(placeVar));
+    if (placeVar && Object.keys(placeVar).length > 0) {
+      formData.append("variables", JSON.stringify(placeVar));
+    }
     let url = `${apiURL}/circular-resolution/${id}`;
     try {
       const response = await fetch(url, {
@@ -597,6 +585,7 @@ export default function CircularResolution() {
 
       if (response.ok) {
         toast.success("Document saved successfully");
+        navigate("/circular-resolution");
       } else {
         console.log("Failed to save the document.");
       }

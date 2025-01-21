@@ -140,7 +140,7 @@ export default function CircularResolution() {
   const handleViewResolutionTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/circular-resolution-generate/${row?.id}`, {
-      state: { fileUrl: row?.fileName, circular: row },
+      state: { fileUrl: row?.templateFile, circular: row },
     });
   };
 
@@ -250,6 +250,11 @@ export default function CircularResolution() {
       } else {
         requestData.append("created_by", formData.created_by);
         if (formData.fileName == "") {
+          requestData.append(
+            "templateFile",
+            "https://resolutionpro.s3.amazonaws.com/agendas/Circular_Resolution_1737442413775.docx"
+          );
+
           response = await fetch(`${apiURL}/circular-resolution`, {
             method: "POST",
             headers: {
