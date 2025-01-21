@@ -140,7 +140,7 @@ export default function CircularResolution() {
   const handleViewResolutionTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/circular-resolution-generate/${row?.id}`, {
-      state: row?.fileName,
+      state: { fileUrl: row?.fileName, circular: row },
     });
   };
 
@@ -258,7 +258,7 @@ export default function CircularResolution() {
             body: requestData,
           });
         } else {
-          requestData.append("fileName", formData.fileName);
+          requestData.append("file", formData.fileName);
           response = await fetch(`${apiURL}/circular-resolution`, {
             method: "POST",
             headers: {

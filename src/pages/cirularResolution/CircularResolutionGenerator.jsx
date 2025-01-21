@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { saveAs } from "file-saver";
 import {
   Document,
   Packer,
@@ -10,106 +11,392 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-
-import {
-  Button,
-  Modal,
-  Form,
-  FormControl,
-  Container,
-  Spinner,
-  Pagination,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../../styling/templateEditor.css";
 import mammoth from "mammoth";
-import { useParams } from "react-router-dom";
 import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { saveAs } from "file-saver";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../../styling/templateEditor.css";
+import Select from "react-select";
 
-const CircularResolutionGenerator = () => {
+export default function CircularResolution() {
   const [rows, setRows] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [documents, setDocuments] = useState([]);
-  const [editorContent, setEditorContent] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentDocName, setCurrentDocName] = useState("");
-  const [inputFields, setInputFields] = useState({});
+  const [resolutionList, setResolutionList] = useState([]);
+  const [directorList, setDirectorList] = useState([]);
+  const [xresolution, setXResolutions] = useState([]);
+  const [variable, setVariable] = useState([]);
+  const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
+  const [clientInfo, setClientInfo] = useState([]);
+  const [meetInfo, setMeetInfo] = useState({});
+  const [previousMeet, setPreviousMeet] = useState([]);
+  const [meetData, setMeetData] = useState([]);
+  const [placeVar, setPlaceVar] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
+  const [editorContent, setEditorContent] = useState(""); // CKEditor content
+  const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
+  const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({});
-  const [docFile, setDocFile] = useState(null);
-  const [buttonLoading, setButtonLoading] = useState(false);
-  const token = localStorage.getItem("refreshToken");
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const [agendaId, setAgendaId] = useState();
   const location = useLocation();
+  const { id } = useParams();
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [circleResolution, setCircleResolution] = useState([]);
+  const [prevCSR, setPrevCSR] = useState([]);
 
-  const fileUrl = location.state;
+  const token = localStorage.getItem("refreshToken");
+  const index = location.state?.index;
+  const fileUrl = location.state?.fileUrl;
+  const page = location?.state?.page || "";
+  const circularData = location?.state?.circular || "";
+  console.log(page, "123345");
+  console.log(circularData, "Kontent");
+  console.log(location, "locate");
+  const navigate = useNavigate();
   useEffect(() => {
-    const fetchData = async (pageNo) => {
-      try {
-        const response = await fetch(
-          `${apiURL}/system-variable?page=${pageNo}&limit=15`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        setTotalPages(data.totalPages);
+    setClientInfo(circularData?.client_name);
+  }, [circularData]);
 
-        setRows(data.results);
-        console.log(data, "mkkl");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiURL}/agenda`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        console.log(data.results, "mkjl");
+        setResolutionList(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+      }
+    };
+    const fetchVariables = async () => {
+      try {
+        let url = `${apiURL}/circular-resolution/${id}`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        setXResolutions(data?.resolutions);
+        setVariable(data?.variables);
+        setDirectorList(data?.participants);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    const fetchDefinedVariables = async () => {
+      try {
+        const response = await fetch(`${apiURL}/system-variable`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+
+        setRows(data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchData(page);
-  }, [page, token]);
+    fetchDefinedVariables();
+    fetchVariables();
+
+    fetchData();
+  }, [token]);
+
+  // Helper function to process placeholders
+  const processPlaceholders = (content) => {
+    console.log("content-out", content, meetInfo);
+    if (content) {
+      const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
+      let match;
+      let updatedContent = content;
+      const fields = {};
+      let xValues;
+      while ((match = regex.exec(content)) !== null) {
+        console.log("content-out-match", match);
+
+        const placeholder = match[2];
+        const placeholder2 = match[1] || match[2];
+
+        if (variable !== {}) {
+          const filledVariable = variable[placeholder2];
+
+          xValues = filledVariable;
+        }
+        // Check if it's a system variable
+        const systemVariable = rows?.find((row) => row?.name === placeholder);
+        if (systemVariable) {
+          console.log(systemVariable, "system-var");
+          let res = systemVariable.mca_name;
+
+          let formulaRes = systemVariable.formula;
+          let value;
+          function getOrdinalSuffix(number) {
+            const suffixes = ["TH", "ST", "ND", "RD"];
+            const value = number % 100;
+            return (
+              number +
+              (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
+            );
+          }
+          if (res == "current_year") {
+            function getCurrentFinancialYear() {
+              const today = new Date();
+              const year = today.getFullYear();
+
+              if (today.getMonth() + 1 >= 4) {
+                return `${year}-${year + 1}`;
+              } else {
+                return `${year - 1}-${year}`;
+              }
+            }
+
+            let result = getCurrentFinancialYear();
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res == "date") {
+            function getFormattedDate(dateString) {
+              const dateObj = new Date(dateString);
+
+              const day = dateObj.toLocaleDateString("en-US", {
+                weekday: "long",
+              });
+              const month = dateObj.toLocaleDateString("en-US", {
+                month: "long",
+              });
+              const date = dateObj.getDate();
+              const year = dateObj.getFullYear();
+
+              return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
+            }
+
+            let result = getFormattedDate(meetInfo[res]);
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res in clientInfo) {
+            console.log(clientInfo, "clientid");
+            value = clientInfo[res];
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res in meetInfo) {
+            value = meetInfo[res];
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+
+            // Mark as confirmed
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else {
+            fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+          }
+          // const value = systemVariable.mca_name; // System variable value
+        } else {
+          if (variable !== {}) {
+            fields[placeholder2] = xValues || "";
+          } else {
+            console.log("Y");
+            fields[placeholder2] = inputFields[placeholder2] || ""; // Preserve or initialize
+          }
+          // Initialize inputFields for non-system placeholders
+        }
+      }
+
+      setInputFields(fields);
+
+      return updatedContent;
+    }
+  };
+
+  // Update editorContent whenever rows or input content changes
+  useEffect(() => {
+    if (rows.length > 0 && editorContent) {
+      const updatedContent = processPlaceholders(editorContent);
+      setEditorContent(updatedContent);
+    }
+  }, [rows, editorContent]);
+
   const handleEditorChange = (content) => {
-    setEditorContent(content);
+    const updatedContent = processPlaceholders(content);
+    setEditorContent(updatedContent);
+  };
 
-    // Regex to detect placeholders in the format ${placeholder}
-    const regex = /\$\{([a-zA-Z0-9_]+)\}/g;
-    let match;
-    const fields = {};
+  // Load file content and process placeholders
+  const handleFileLoad = async (url) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const arrayBuffer = await response.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      setInitializedContent(result?.value);
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+  handleFileLoad(fileUrl);
+  const handleMultipleFilesAddOn = async (url) => {
+    let count = 5;
 
-    while ((match = regex.exec(content)) !== null) {
-      const placeholder = match[1];
-      fields[placeholder] = inputFields[placeholder] || "";
+    try {
+      let combinedContent = "";
+      if (url) {
+        if (url?.title) {
+          const title = url?.title || "Untitled";
+          if (title === "For #{company_name}") {
+            combinedContent += `<p>${title}</p>\n`;
+          } else {
+            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+            count++;
+          }
+        }
+
+        if (url?.templateFile) {
+          console.log("Processing templateFile:", url.templateFile);
+          const response = await fetch(url.templateFile);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+          }
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          combinedContent += `<br/><div>${result.value}</div>\n`;
+        } else {
+          console.warn("Skipped processing due to missing templateFile:", url);
+        }
+
+        // Add resolution file content if available
+        if (url?.resolutionFile) {
+          console.log("Processing resolutionFile:", url.resolutionFile);
+          const response = await fetch(url.resolutionFile);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file from: ${url.resolutionFile}`);
+          }
+          const arrayBuffer = await response.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          combinedContent += `<br/><div>${result.value}</div>`;
+        } else {
+          console.warn(
+            "Skipped processing due to missing resolutionFile:",
+            url
+          );
+        }
+      }
+
+      if (initializedContent) {
+        console.log(initializedContent, "inik");
+        setEditorContent((initializedContent || "")(combinedContent || ""));
+      }
+
+      console.log(editorContent, "ikea");
+    } catch (error) {
+      console.error("Error fetching or converting one or more files:", error);
+    }
+  };
+  console.log(selectedData, "dattt");
+  useEffect(() => {
+    handleMultipleFilesAddOn(selectedData);
+    // processPlaceholders(editorContent);
+  }, [selectedData, prevCSR, circleResolution, initializedContent]);
+
+  const autofillPlaceholders = () => {
+    // Check if all placeholders have values
+    const hasEmptyFields = Object.keys(inputFields).some(
+      (key) => !inputFields[key]?.trim()
+    );
+
+    if (hasEmptyFields) {
+      // Show a toast notification for empty fields
+      toast.error("Please fill all required fields.");
+      return; // Stop execution
     }
 
-    setInputFields(fields);
-  };
+    // Replace placeholders for non-system variables
+    const updatedContent = editorContent.replace(
+      /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g,
+      (match, p1, p2) => {
+        const placeholder = p1 || p2;
 
-  const handleInputChange = (placeholder, value) => {
-    setInputFields((prevState) => ({
-      ...prevState,
-      [placeholder]: value,
-    }));
-  };
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
+        // Skip already confirmed/system variables
+        if (confirmedFields[placeholder]) return match;
+
+        const value = inputFields[placeholder]; // Use user-provided value
+
+        // Confirm field and update state
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
+
+        setPlaceVar((prevData) => ({
+          ...prevData,
+          [placeholder]: value,
+        }));
+
+        return value;
+      }
+    );
+
+    setEditorContent(updatedContent);
   };
 
   const handleConfirm = (placeholder) => {
     const value = inputFields[placeholder] || placeholder;
     const updatedContent = editorContent.replace(
-      new RegExp(`\\$\\{${placeholder}\\}`, "g"),
+      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
       value
     );
     setEditorContent(updatedContent);
@@ -119,44 +406,22 @@ const CircularResolutionGenerator = () => {
     }));
   };
 
-  const handleFileLoad = async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const mammothOptions = {
-        styleMap: [
-          "p[style-name='Heading 1'] => h1:fresh",
-          "p[style-name='Heading 2'] => h2:fresh",
-          "p[style-name='Normal'] => p:fresh",
-          "p[style-name='AlignedCenter'] => p.text-center:fresh",
-          "p[style-name='AlignedRight'] => p.text-right:fresh",
-        ],
-      };
+  const handleInputChange = (placeholder, value) => {
+    // Prevent editing of system variables
+    if (confirmedFields[placeholder]) return;
 
-      const result = await mammoth.convertToHtml(
-        { arrayBuffer },
-        mammothOptions
-      );
-      const htmlContent = result.value;
-      setEditorContent(htmlContent);
-    } catch (error) {
-      console.error("Error fetching or converting the file:", error);
-    }
+    setInputFields((prevState) => ({
+      ...prevState,
+      [placeholder]: value,
+    }));
   };
 
-  useEffect(() => {
-    handleFileLoad(fileUrl);
-  }, [fileUrl]);
-
-  // Parse HTML content to docx-compatible Paragraphs and TextRuns
   const parseHtmlToDocx = (htmlContent) => {
     const parser = new DOMParser();
     const content = parser.parseFromString(htmlContent, "text/html");
     const elements = content.body.childNodes;
 
     const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagss", element);
       if (element.tagName === "B" || element.tagName === "STRONG") {
         return new Paragraph({
           children: [new TextRun({ text: element.textContent, bold: true })],
@@ -189,7 +454,6 @@ const CircularResolutionGenerator = () => {
       } else if (element.tagName === "FIGURE") {
         const table = element.querySelector("table"); // Get the table inside the figure
         if (table) {
-          console.log("table inside figure");
           const rows = Array.from(table.rows).map((row) => {
             const cells = Array.from(row.cells).map((cell) => {
               return new TableCell({
@@ -209,7 +473,6 @@ const CircularResolutionGenerator = () => {
 
       // Handle tables directly (outside of figure tag)
       else if (element.tagName === "TABLE") {
-        console.log("table outside figure");
         const rows = Array.from(element.rows).map((row) => {
           const cells = Array.from(row.cells).map((cell) => {
             return new TableCell({
@@ -249,41 +512,93 @@ const CircularResolutionGenerator = () => {
     const blob = await Packer.toBlob(doc);
     return blob;
   };
+  useEffect(() => {
+    const selectedAgendas = xresolution
+      ? xresolution.map((option) => {
+          console.log(option, resolutionList, "match");
+          const agenda = resolutionList?.find((item) => {
+            if (item.title == option.templateName) {
+              return item;
+            }
+          });
+          return {
+            title: agenda?.title || "",
+            templateFile: agenda?.fileName || "",
+            resolutionFile: agenda?.resolutionUrl || "",
+          };
+        })
+      : "";
+    console.log(selectedAgendas, "prvsly-sel");
+    let match = {};
+    let newSelect = [];
+    const selectedOptions = xresolution
+      ?.map((res) => {
+        match = resolutionList.find(
+          (option) => option.title === res?.templateName
+        );
+        newSelect.push({
+          label: match?.templateName,
+          value: match?.templateName,
+        });
 
-  // Save the document in the dashboard list
+        return {
+          title: match?.title || "",
+          templateFile: match?.fileName || "",
+          resolutionFile: match?.resolutionUrl || "",
+        };
+      })
+      .filter(Boolean);
+    console.log(match, "matches");
+
+    const selectedResolOptions = resolutionList
+      ?.map((res) => {
+        // console.log(res,"tilejjjjj")
+        const matchLabels = resolOptions.find(
+          (option) => option.label === res.title
+        );
+        return matchLabels || null;
+      })
+      .filter(Boolean);
+
+    setTimeout(() => {
+      setSelectedData(selectedAgendas);
+      setPrevoiusSelectedOptions(newSelect);
+    }, 3000);
+  }, [resolutionList?.length, xresolution?.length]);
+  const resolOptions = resolutionList?.map((resol) => ({
+    value: resol?.templateName,
+    label: resol?.templateName,
+  }));
+  const directorOptions = directorList?.map((director) => ({
+    value: director?.director?.id,
+    label: director?.director?.name,
+  }));
+
   const saveDocument = async () => {
     setButtonLoading(true);
 
-    // Create Word document as a Blob
     const docBlob = await createWordDocument();
+
     const formData = new FormData();
+
     formData.append("file", docBlob);
-
+    formData.append("agenda", agendaId);
+    formData.append("variables", JSON.stringify(placeVar));
+    console.log(JSON.stringify(placeVar));
+    let url = `${apiURL}/circular-resolution/${id}`;
     try {
-      // Make a PATCH request with the document
-      const response = await fetch(`${apiURL}/circular-resolution/${id}`, {
+      const response = await fetch(url, {
         method: "PATCH",
-
         headers: {
           Authorization: `Bearer ${token}`,
         },
-
         body: formData,
       });
-      console.log(formData, "tokennn2");
+
       if (response.ok) {
-        toast.success("Resolution saved successfully!");
-
-        // Optionally update your document list
-        const newDoc = {
-          name: currentDocName,
-          content: editorContent,
-        };
-
-        setDocuments([...documents, newDoc]);
-        navigate("/circular-resolution");
+        toast.success("Document saved successfully");
       } else {
-        toast.error("Failed to save the document.");
+        console.log("Failed to save the document.");
       }
     } catch (error) {
       toast.error("Error occurred while saving the document.");
@@ -291,29 +606,41 @@ const CircularResolutionGenerator = () => {
       setButtonLoading(false);
     }
   };
-  // Save changes to an existing document
-  const saveChanges = () => {
-    const updatedDocs = documents.map((doc) =>
-      doc.name === currentDocName ? { ...doc, content: editorContent } : doc
-    );
-    setDocuments(updatedDocs);
-    setEditorContent("");
-    setCurrentDocName("");
-    setIsEditing(false);
+
+  const handleAgendaItemChange = (selectedOption) => {
+    console.log(selectedOption, "resol-lis");
+    const agenda = selectedOption
+      ? resolutionList.find(
+          (item) => item.templateName === selectedOption.value
+        )
+      : null;
+
+    if (agenda) {
+      setAgendaId(agenda?.id);
+    }
+    const selectedAgenda = agenda
+      ? {
+          title: agenda.title || "",
+          templateFile: agenda.fileName || "",
+          resolutionFile: agenda.resolutionUrl || "",
+        }
+      : {};
+
+    console.log("Selected Agenda", selectedAgenda);
+
+    setSelectedData(selectedAgenda);
+    setPrevoiusSelectedOptions(selectedOption || null);
   };
 
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-
+  console.log(variable, "variable");
   return (
     <Container className="mt-5">
-      <ToastContainer />
+      <h1>Circular Resolution Generator</h1>
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Circular Resolution Generator</h1>
-
-          {/* CKEditor for writing content */}
           <CKEditor
             editor={ClassicEditor}
             data={editorContent}
@@ -333,69 +660,93 @@ const CircularResolutionGenerator = () => {
               ],
             }}
           />
-
-          <Button variant="secondary" onClick={saveDocument} className="mt-5">
-            {buttonLoading ? (
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-            ) : (
-              "Save Resolution"
-            )}
-          </Button>
         </div>
         <div className="rightContainer">
-          <h4 className="h4-heading-style">System Variables</h4>
+          <div>
+            <Form.Group controlId="agendaItems" className="mb-5">
+              <Select
+                options={resolOptions}
+                placeholder="Select Agenda Documents"
+                value={previousSelectedOptions}
+                onChange={handleAgendaItemChange}
+                isClearable
+              />
+            </Form.Group>
 
-          {loading ? (
-            <div className="text-center mt-2">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </Spinner>
-            </div>
-          ) : (
-            <div className="table-responsive mt-5">
-              <table className="Master-table p-5">
-                <tbody>
-                  {rows?.map((row) => (
-                    <tr key={row?.id}>
-                      <td>{row?.name}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <Pagination className="mt-4">
-                <Pagination.Prev
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
+            <h3>Detected Placeholders:</h3>
+            {Object.keys(inputFields)?.length > 0 ? (
+              Object.keys(inputFields)?.map((placeholder) => {
+                const pascalCasePlaceholder = placeholder
+                  .replace(/_/g, " ")
+                  .replace(
+                    /\w\S*/g,
+                    (txt) =>
+                      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                  );
+
+                return (
+                  <div key={placeholder}>
+                    <td>
+                      <label>{pascalCasePlaceholder} :</label>
+                    </td>
+                    <> </>
+                    <input
+                      className="mt-1 mb-2"
+                      type="text"
+                      value={inputFields[placeholder]}
+                      onChange={(e) =>
+                        handleInputChange(placeholder, e.target.value)
+                      }
+                      disabled={confirmedFields[placeholder]}
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <p>All placeholders are filled</p>
+            )}
+          </div>
+          <div className="mt-4">
+            <Button onClick={autofillPlaceholders}>
+              Autofill Placeholders
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            <Button
+              variant="secondary"
+              onClick={saveDocument}
+              disabled={hasUnconfirmedPlaceholders}
+            >
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
                 />
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <Pagination.Item
-                    key={index + 1}
-                    active={index + 1 === page}
-                    onClick={() => handlePageChange(index + 1)}
-                  >
-                    {index + 1}
-                  </Pagination.Item>
-                ))}
-                <Pagination.Next
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                />
-              </Pagination>
-            </div>
-          )}
-          <Button variant="danger" onClick={() => navigate(-1)}>
-            Exit Without Saving
+              ) : (
+                "Save Meeting Document"
+              )}
+            </Button>
+            {hasUnconfirmedPlaceholders && (
+              <p style={{ color: "red" }}>
+                Some placeholders are unconfirmed. Please confirm all before
+                saving.
+              </p>
+            )}
+          </div>
+          <Button
+            className="mt-4"
+            variant="danger"
+            onClick={() => navigate(-1)}
+          >
+            Exit without Saving
           </Button>
         </div>
       </div>
+      <ToastContainer />
     </Container>
   );
-};
-
-export default CircularResolutionGenerator;
+}
