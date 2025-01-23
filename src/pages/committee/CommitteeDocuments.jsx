@@ -28,6 +28,7 @@ export default function CommitteeDocuments() {
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -298,18 +299,32 @@ export default function CommitteeDocuments() {
     });
   };
 
-  const handleCheckboxChange = (e, participant) => {
+  const handleCheckboxChange = (e, participant, field) => {
     const isChecked = e.target.checked;
 
-    const updatedParticipants = participants.map((p) =>
-      p.director.id === participant.director.id
-        ? { ...p, isPresent: isChecked }
-        : p
-    );
+    const updatedParticipants = participants.map((p) => {
+      if (p.director.id === participant.director.id) {
+        if (field === "isPresent") {
+          return {
+            ...p,
+            isPresent: isChecked,
+            isPresent_vc: isChecked ? false : p.isPresent_vc,
+          };
+        } else if (field === "isPresent_vc") {
+          if (!p.isPresent) {
+            return { ...p, isPresent_vc: isChecked };
+          }
+        }
+      }
+      return p;
+    });
+
     setParticipants(updatedParticipants);
   };
 
   const patchAttendance = async () => {
+    setButtonLoading(true);
+
     try {
       const url = `${apiURL}/committee-meeting/${id}`;
       const transformedParticipants = participants.map((participant) => ({
@@ -345,6 +360,8 @@ export default function CommitteeDocuments() {
       }
     } catch (error) {
       toast.error("Error updating attendance:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handleDownload = () => {
@@ -715,7 +732,20 @@ export default function CommitteeDocuments() {
                         type="checkbox"
                         className="form-check-input"
                         checked={participant?.isPresent}
-                        onChange={(e) => handleCheckboxChange(e, participant)}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent")
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent_vc}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent_vc")
+                        }
+                        disabled={participant?.isPresent}
                       />
                     </td>
                   </tr>
@@ -727,7 +757,17 @@ export default function CommitteeDocuments() {
               style={{ alignContent: "right" }}
               onClick={patchAttendance}
             >
-              Mark Attendance
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Mark Attendance"
+              )}
             </Button>
             <br />
             <Table bordered hover className="Master-table">
