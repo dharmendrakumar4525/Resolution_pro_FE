@@ -549,7 +549,6 @@ export default function AddMeeting() {
   }));
   const handleChange = (e) => {
     const { id, name, value } = e.target;
-    console.log(id, name, value, "target");
 
     setFormData({ ...formData, [id || name]: value });
   };
@@ -824,17 +823,23 @@ export default function AddMeeting() {
               </Col>
 
               <Col md={6} lg={4}>
-                <Form.Group controlId="selectTimeZone">
+                <Form.Group controlId="standard_time">
                   <Form.Label className="f-label">
-                    Select Time Zone<sup>*</sup>
+                    Time Zone<sup>*</sup>
                   </Form.Label>
 
-                  <Select
+                  {/* <Select
                     id="time-zone-select"
                     options={timeZoneOptions}
                     onChange={handleTimeZoneChange}
                     isSearchable
                     placeholder="Choose Time Zone"
+                  /> */}
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Time Zone"
+                    value={formData.standard_time} // Bind it to your state
+                    onChange={handleChange} // Update state on change
                   />
                 </Form.Group>
               </Col>
