@@ -7,6 +7,7 @@ import {
   faTimes,
   faUser,
   faPenToSquare,
+  faClipboardUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Navbar, Button, Accordion, Badge } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
@@ -142,7 +143,7 @@ export default function Sidebar() {
             <CollapsableNavItem
               eventKey="tracker/"
               title="Attendance"
-              icon={faPenToSquare}
+              icon={faClipboardUser}
             >
               {/* {hasPermission("Members_resolution", "view") && ( */}
               <NavItem title="Attendance Tracker" link="/client-attendance" />
