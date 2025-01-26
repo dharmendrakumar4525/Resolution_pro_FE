@@ -140,6 +140,15 @@ export default function Sidebar() {
               ""
             )}
             <CollapsableNavItem
+              eventKey="tracker/"
+              title="Attendance"
+              icon={faPenToSquare}
+            >
+              {/* {hasPermission("Members_resolution", "view") && ( */}
+              <NavItem title="Attendance Tracker" link="/client-attendance" />
+              {/* )} */}
+            </CollapsableNavItem>
+            <CollapsableNavItem
               eventKey="circular-resolution/"
               title="Circular Resolution"
               icon={faFileAlt}

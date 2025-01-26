@@ -33,7 +33,6 @@ import EditMeeting from "../pages/EditMeeting";
 import ViewCommitteeMember from "../pages/CommitteeMemberView";
 import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
-import ClientRecord from "../pages/ClientRecord";
 import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
@@ -59,6 +58,8 @@ import ShareholderMeeting from "../pages/shareholder/ShareholderMeeting";
 import ShareholderDocuments from "../pages/shareholder/ShareholderDocuments";
 import CircularResolution from "../pages/cirularResolution/CircularResolution";
 import CircularResolutionGenerator from "../pages/cirularResolution/CircularResolutionGenerator";
+import Attendance from "../pages/attendanceTracker/Attendance";
+import AttendanceInsights from "../pages/attendanceTracker/AttendanceInsights";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -386,6 +387,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/client-attendance"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Attendance />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/attendance-insights/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AttendanceInsights />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
         path="/template-group"
         element={
           isAuthenticated ? (
@@ -565,16 +586,7 @@ const AppRoutes = () => {
           )
         }
       />
-      <Route
-        path="/client-cin"
-        element={
-          isAuthenticated ? (
-            <RouteWithSidebar element={<ClientRecord />} />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
+
       <Route
         path="/client-records"
         element={

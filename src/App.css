@@ -421,3 +421,6 @@ h2 {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+.width-70 {
+  width: 70%;
+}
