@@ -1,5 +1,3 @@
-// CustomerMaintenanceForm.js
-
 import React, { useEffect, useState } from "react";
 import { Form, Button, Row, Col, Container, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
@@ -15,6 +13,9 @@ export default function CustomerMaintenanceForm() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const token = localStorage.getItem("refreshToken");
+
+  const [step, setStep] = useState(1);
+
   const [formData, setFormData] = useState({
     company_name: "",
     date_of_incorporation: "",
@@ -42,6 +43,57 @@ export default function CustomerMaintenanceForm() {
     },
     alloted_consultant: "",
     alloted_manager: "",
+    books_of_account: "",
+    total_paid_up_capital_last_audited: null,
+    net_worth_lau: null,
+    turnover_lau: null,
+    net_profit_lau: null,
+    company_type: "",
+    isin: "",
+    RTA_name: "",
+    DP_name: "",
+    depositry_name: "",
+    BM_notice_period: null,
+    CM_notice_period: null,
+    AGM_notice_period: null,
+    EGM_notice_period: null,
+    client_prev_name: "",
+    client_effective_date: null,
+    BM_next_due_date: null,
+    AGM_next_due_date: null,
+    promoters_MGT_names: [],
+    BM_calender_year_no: null,
+    business_nature: "",
+    cost_auditor_detail: {
+      name: null,
+      address: "",
+      from: null,
+      to: null,
+    },
+    internal_auditor_detail: {
+      name: null,
+      address: "",
+      from: null,
+      to: null,
+    },
+    items_req_secial_resol_AOA: "",
+    special_provision_AOA: "",
+    BM_last_serial: {
+      type: "",
+      serial_no: null,
+    },
+    CM_last_serial: {
+      type: "",
+      serial_no: null,
+    },
+    AGM_last_serial: {
+      type: "",
+      serial_no: null,
+    },
+    EGM_last_serial: {
+      type: "",
+      serial_no: null,
+    },
   });
 
   useEffect(() => {
@@ -112,7 +164,75 @@ export default function CustomerMaintenanceForm() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [id]: value }));
+
+    if (id === "promoters_MGT_names") {
+      // Split the input value by commas and update the array in the state
+      setFormData((prevData) => ({
+        ...prevData,
+        [id]: value.split(",").map((item) => item.trim()), // Trim spaces from each item
+      }));
+    } else if (id.startsWith("cost_auditor_detail")) {
+      const fieldName = id.split("cost_auditor_detail_")[1];
+      setFormData((prevData) => ({
+        ...prevData,
+        cost_auditor_detail: {
+          ...prevData.cost_auditor_detail,
+          [fieldName]: value,
+        },
+      }));
+    } else if (id.startsWith("internal_auditor_detail")) {
+      const fieldName = id.split("internal_auditor_detail_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        internal_auditor_detail: {
+          ...prevData.internal_auditor_detail,
+          [fieldName]: value,
+        },
+      }));
+    } else if (id.startsWith("BM_last_serial")) {
+      const fieldName = id.split("BM_last_serial_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        BM_last_serial: {
+          ...prevData.BM_last_serial,
+          [fieldName]: value,
+        },
+      }));
+    } else if (id.startsWith("CM_last_serial")) {
+      const fieldName = id.split("CM_last_serial_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        CM_last_serial: {
+          ...prevData.CM_last_serial,
+          [fieldName]: value,
+        },
+      }));
+    } else if (id.startsWith("AGM_last_serial")) {
+      const fieldName = id.split("AGM_last_serial_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        AGM_last_serial: {
+          ...prevData.AGM_last_serial,
+          [fieldName]: value,
+        },
+      }));
+    } else if (id.startsWith("EGM_last_serial")) {
+      const fieldName = id.split("EGM_last_serial_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        EGM_last_serial: {
+          ...prevData.EGM_last_serial,
+          [fieldName]: value,
+        },
+      }));
+    } else {
+      setFormData((prevData) => ({ ...prevData, [id]: value }));
+    }
   };
 
   const handleAuditorChange = (field, value) => {
@@ -133,6 +253,13 @@ export default function CustomerMaintenanceForm() {
       ...prevData,
       secretary_detail: { ...prevData.secretary_detail, [field]: value },
     }));
+  };
+  const handleNext = () => {
+    if (step < 3) setStep(step + 1);
+  };
+
+  const handlePrevious = () => {
+    if (step > 1) setStep(step - 1);
   };
 
   const handleSubmit = async (e) => {
@@ -232,400 +359,1053 @@ export default function CustomerMaintenanceForm() {
     }
     setValidated(true);
   };
-  console.log(formData, "ds");
   return (
     <Container>
       <div className="customer-form-container mt-4">
-        <h2 className="mb-4">{customerId ? "Edit Client" : "Add Client"}</h2>
+        <div className="d-flex justify-content-between mb-3">
+          <h2>{customerId ? "Edit Client" : "Add Client"}</h2>
+          <div className="mb-3 stepper-navigation">
+            <Button
+              variant="secondary"
+              disabled={step === 1}
+              onClick={handlePrevious}
+            >
+              Previous
+            </Button>
+            <span className="mx-3">Step {step} of 3</span>
+            <Button
+              variant="secondary"
+              disabled={step === 3}
+              onClick={handleNext}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
         <Form onSubmit={handleSubmit}>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="company_name">
-                <Form.Label>
-                  Company Name<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.company_name}
-                  onChange={handleChange}
-                  placeholder="Enter Company Name"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="pan">
-                <Form.Label>
-                  PAN <sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.pan}
-                  onChange={handleChange}
-                  placeholder="Enter PAN"
-                  required
-                />
-              </Form.Group>
-            </Col>
+          {step === 1 && (
+            <>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="company_name">
+                    <Form.Label>
+                      Company Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.company_name}
+                      onChange={handleChange}
+                      placeholder="Enter Company Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="pan">
+                    <Form.Label>
+                      PAN <sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.pan}
+                      onChange={handleChange}
+                      placeholder="Enter PAN"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
 
-            <Col>
-              <Form.Group controlId="registered_address">
-                <Form.Label>
-                  Registered Address<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.registered_address}
-                  onChange={handleChange}
-                  placeholder="Enter Registered Address"
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="registration_number">
-                <Form.Label>
-                  Registeration Number<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.registration_number}
-                  onChange={handleChange}
-                  placeholder="Enter Registeration Number"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="roc_code">
-                <Form.Label>
-                  ROC Code<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.roc_code}
-                  onChange={handleChange}
-                  placeholder="Enter ROC Code"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="company_subcategory">
-                <Form.Label>
-                  Company Subcategory<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.company_subcategory}
-                  onChange={handleChange}
-                  placeholder="Enter Company Subcategory"
-                  isInvalid={!!errors.company_subcategory}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.company_subcategory}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="authorised_capital_equity">
-                <Form.Label>
-                  Authorised Capital (Equity)<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData?.authorised_capital_equity}
-                  onChange={handleChange}
-                  placeholder="Enter Authorised Capital (Equity)"
-                  required
-                  isInvalid={!!errors.authorised_capital_equity}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.authorised_capital_equity}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
+                <Col>
+                  <Form.Group controlId="registered_address">
+                    <Form.Label>
+                      Registered Address<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.registered_address}
+                      onChange={handleChange}
+                      placeholder="Enter Registered Address"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="registration_number">
+                    <Form.Label>
+                      Registeration Number<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.registration_number}
+                      onChange={handleChange}
+                      placeholder="Enter Registeration Number"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="roc_code">
+                    <Form.Label>
+                      ROC Code<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.roc_code}
+                      onChange={handleChange}
+                      placeholder="Enter ROC Code"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="company_subcategory">
+                    <Form.Label>
+                      Company Subcategory<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.company_subcategory}
+                      onChange={handleChange}
+                      placeholder="Enter Company Subcategory"
+                      isInvalid={!!errors.company_subcategory}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.company_subcategory}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="authorised_capital_equity">
+                    <Form.Label>
+                      Authorised Capital (Equity)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.authorised_capital_equity}
+                      onChange={handleChange}
+                      placeholder="Enter Authorised Capital (Equity)"
+                      required
+                      isInvalid={!!errors.authorised_capital_equity}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.authorised_capital_equity}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
 
-            <Col>
-              <Form.Group controlId="authorised_capital_preference_capital">
-                <Form.Label>
-                  Authorised Capital (Preference)<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData?.authorised_capital_preference_capital}
-                  onChange={handleChange}
-                  placeholder="Enter Authorised Capital (Preference)"
-                  required
-                  isInvalid={!!errors.authorised_capital_preference_capital}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.authorised_capital_preference_capital}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="paid_up_capital_equity">
-                <Form.Label>
-                  Paid Up Capital (Equity)<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData?.paid_up_capital_equity}
-                  onChange={handleChange}
-                  placeholder="Enter Paid Up Capital (Equity)"
-                  required
-                  isInvalid={!!errors.paid_up_capital_equity}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.paid_up_capital_equity}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
+                <Col>
+                  <Form.Group controlId="authorised_capital_preference_capital">
+                    <Form.Label>
+                      Authorised Capital (Preference)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.authorised_capital_preference_capital}
+                      onChange={handleChange}
+                      placeholder="Enter Authorised Capital (Preference)"
+                      required
+                      isInvalid={!!errors.authorised_capital_preference_capital}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.authorised_capital_preference_capital}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="paid_up_capital_equity">
+                    <Form.Label>
+                      Paid Up Capital (Equity)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.paid_up_capital_equity}
+                      onChange={handleChange}
+                      placeholder="Enter Paid Up Capital (Equity)"
+                      required
+                      isInvalid={!!errors.paid_up_capital_equity}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.paid_up_capital_equity}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="paid_up_capital_preference_capital">
-                <Form.Label>
-                  Paid Up Capital (Preference)<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData?.paid_up_capital_preference_capital}
-                  onChange={handleChange}
-                  placeholder="Enter Paid Up Capital (Preference)"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="date_of_balance_sheet">
-                <Form.Label>Date of Balance Sheet</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formData?.date_of_balance_sheet?.split("T")[0]}
-                  onChange={handleChange}
-                  // isInvalid={!!errors.date_of_balance_sheet}
-                />
-                {/* <Form.Control.Feedback type="invalid">
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="paid_up_capital_preference_capital">
+                    <Form.Label>
+                      Paid Up Capital (Preference)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.paid_up_capital_preference_capital}
+                      onChange={handleChange}
+                      placeholder="Enter Paid Up Capital (Preference)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="date_of_balance_sheet">
+                    <Form.Label>Date of Balance Sheet</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.date_of_balance_sheet?.split("T")[0]}
+                      onChange={handleChange}
+                      // isInvalid={!!errors.date_of_balance_sheet}
+                    />
+                    {/* <Form.Control.Feedback type="invalid">
                   {errors.date_of_balance_sheet}
                 </Form.Control.Feedback> */}
-              </Form.Group>
-            </Col>
+                  </Form.Group>
+                </Col>
 
-            <Col>
-              <Form.Group controlId="class_of_company">
-                <Form.Label>
-                  Class of Company<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.class_of_company}
-                  onChange={handleChange}
-                  placeholder="Enter Class of Company"
-                  // isInvalid={!!errors.class_of_company}
-                  required
-                />
-                {/* <Form.Control.Feedback type="invalid">
+                <Col>
+                  <Form.Group controlId="class_of_company">
+                    <Form.Label>
+                      Class of Company<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.class_of_company}
+                      onChange={handleChange}
+                      placeholder="Enter Class of Company"
+                      // isInvalid={!!errors.class_of_company}
+                      required
+                    />
+                    {/* <Form.Control.Feedback type="invalid">
                   {errors.class_of_company}
                 </Form.Control.Feedback> */}
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="cin">
-                <Form.Label>
-                  CIN<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData?.cin}
-                  onChange={handleChange}
-                  placeholder="Enter CIN"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="secretary_detail.name">
-                <Form.Label>Secretary Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="secretary_detail.name"
-                  value={formData?.secretary_detail.name}
-                  onChange={(e) =>
-                    handleSecretaryChange("name", e.target.value)
-                  }
-                  placeholder="Enter Secretary Name"
-                />
-              </Form.Group>
-            </Col>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="cin">
+                    <Form.Label>
+                      CIN<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.cin}
+                      onChange={handleChange}
+                      placeholder="Enter CIN"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="secretary_detail.name">
+                    <Form.Label>Company Secretary Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="secretary_detail.name"
+                      value={formData?.secretary_detail.name}
+                      onChange={(e) =>
+                        handleSecretaryChange("name", e.target.value)
+                      }
+                      placeholder="Enter Company Secretary Name"
+                    />
+                  </Form.Group>
+                </Col>
 
-            <Col>
-              <Form.Group controlId="secretary_detail.email">
-                <Form.Label>Secretary Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="secretary_detail.email"
-                  value={formData?.secretary_detail.email}
-                  onChange={(e) =>
-                    handleSecretaryChange("email", e.target.value)
-                  }
-                  placeholder="Enter Secretary Email"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="alloted_manager">
-                <Form.Label>
-                  Client Manager<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  value={formData?.alloted_manager?.id || ""}
-                  onChange={(e) => {
-                    const selectedManager = managers.find(
-                      (manager) => manager.id === e.target.value
-                    );
-                    setFormData((prevData) => ({
-                      ...prevData,
-                      alloted_manager: selectedManager,
-                    }));
-                  }}
-                >
-                  <option value="">Select Client Manager</option>
-                  {managers.map((manager) => (
-                    <option key={manager.id} value={manager.id}>
-                      {manager.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="auditor_detail.name">
-                <Form.Label>Auditor Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="auditor_detail.name"
-                  value={formData?.auditor_detail.name}
-                  onChange={(e) => handleAuditorChange("name", e.target.value)}
-                  placeholder="Enter Auditor Name"
-                />
-              </Form.Group>
-            </Col>
+                <Col>
+                  <Form.Group controlId="secretary_detail.email">
+                    <Form.Label>Company Secretary Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="secretary_detail.email"
+                      value={formData?.secretary_detail.email}
+                      onChange={(e) =>
+                        handleSecretaryChange("email", e.target.value)
+                      }
+                      placeholder="Enter Company Secretary Email"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="alloted_manager">
+                    <Form.Label>
+                      Client Manager<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={formData?.alloted_manager?.id || ""}
+                      onChange={(e) => {
+                        const selectedManager = managers.find(
+                          (manager) => manager.id === e.target.value
+                        );
+                        setFormData((prevData) => ({
+                          ...prevData,
+                          alloted_manager: selectedManager,
+                        }));
+                      }}
+                    >
+                      <option value="">Select Client Manager</option>
+                      {managers.map((manager) => (
+                        <option key={manager.id} value={manager.id}>
+                          {manager.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="auditor_detail.name">
+                    <Form.Label>Auditor Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="auditor_detail.name"
+                      value={formData?.auditor_detail.name}
+                      onChange={(e) =>
+                        handleAuditorChange("name", e.target.value)
+                      }
+                      placeholder="Enter Auditor Name"
+                    />
+                  </Form.Group>
+                </Col>
 
-            <Col>
-              <Form.Group controlId="auditor_detail.email">
-                <Form.Label>Auditor Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="auditor_detail.email"
-                  value={formData?.auditor_detail.email}
-                  onChange={(e) => handleAuditorChange("email", e.target.value)}
-                  placeholder="Enter Auditor Email"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col>
-              <Form.Group controlId="date_of_incorporation">
-                <Form.Label>
-                  Date of Incorporation<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formData?.date_of_incorporation.split("T")[0]}
-                  onChange={handleChange}
-                  placeholder="Enter Date of Incorporation"
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="date_of_last_agm">
-                <Form.Label>
-                  Date of Last AGM<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formData?.date_of_last_agm?.split("T")[0]}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId="alloted_consultants">
-                <Form.Label>
-                  Client Consultant<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  required
-                  value={formData?.alloted_consultant?.id || ""}
-                  onChange={(e) =>
-                    handleChange({
-                      target: {
-                        id: "alloted_consultant",
-                        value: {
-                          ...consultants.find(
-                            (consultant) => consultant.id === e.target.value
-                          ),
-                        },
-                      },
-                    })
-                  }
-                >
-                  <option value="">Select Client Consultant</option>
-                  {consultants.map((consultant) => (
-                    <option key={consultant.id} value={consultant.id}>
-                      {consultant.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
+                <Col>
+                  <Form.Group controlId="auditor_detail.email">
+                    <Form.Label>Auditor Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="auditor_detail.email"
+                      value={formData?.auditor_detail.email}
+                      onChange={(e) =>
+                        handleAuditorChange("email", e.target.value)
+                      }
+                      placeholder="Enter Auditor Email"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="date_of_incorporation">
+                    <Form.Label>
+                      Date of Incorporation<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.date_of_incorporation.split("T")[0]}
+                      onChange={handleChange}
+                      placeholder="Enter Date of Incorporation"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="date_of_last_agm">
+                    <Form.Label>
+                      Date of Last AGM<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.date_of_last_agm?.split("T")[0]}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="alloted_consultants">
+                    <Form.Label>
+                      Client Consultant<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      required
+                      value={formData?.alloted_consultant?.id || ""}
+                      onChange={(e) =>
+                        handleChange({
+                          target: {
+                            id: "alloted_consultant",
+                            value: {
+                              ...consultants.find(
+                                (consultant) => consultant.id === e.target.value
+                              ),
+                            },
+                          },
+                        })
+                      }
+                    >
+                      <option value="">Select Client Consultant</option>
+                      {consultants.map((consultant) => (
+                        <option key={consultant.id} value={consultant.id}>
+                          {consultant.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-3" style={{ width: "34%" }}>
-            <Col>
-              <Form.Group controlId="email_id">
-                <Form.Label>
-                  Email Address<sup>*</sup>
-                </Form.Label>
-                <Form.Control
-                  type="email"
-                  value={formData?.email_id}
-                  onChange={handleChange}
-                  placeholder="Enter Email Address"
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
+              <Row className="mb-3" style={{ width: "34%" }}>
+                <Col>
+                  <Form.Group controlId="email_id">
+                    <Form.Label>
+                      Email Address<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={formData?.email_id}
+                      onChange={handleChange}
+                      placeholder="Enter Email Address"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="books_of_account">
+                    <Form.Label>
+                      Books of Account<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.books_of_account}
+                      onChange={handleChange}
+                      placeholder="Enter Books of Account"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
 
-          <Button variant="success" type="submit" className="ms-3 float-end">
-            {buttonLoading ? (
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-            ) : (
-              <>{customerId ? "Update Client" : "Save"}</>
-            )}
-          </Button>
+                <Col>
+                  <Form.Group controlId="total_paid_up_capital_last_audited">
+                    <Form.Label>
+                      Total Paid-Up Capital (Last Audited)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.total_paid_up_capital_last_audited}
+                      onChange={handleChange}
+                      placeholder="Enter Total Paid-Up Capital (Last Audited)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="net_worth_lau">
+                    <Form.Label>
+                      Net Worth (Last Audited)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.net_worth_lau}
+                      onChange={handleChange}
+                      placeholder="Enter Net Worth (Last Audited)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="turnover_lau">
+                    <Form.Label>
+                      Turnover (Last Audited)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.turnover_lau}
+                      onChange={handleChange}
+                      placeholder="Enter Turnover (Last Audited)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="net_profit_lau">
+                    <Form.Label>
+                      Net Profit (Last Audited)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.net_profit_lau}
+                      onChange={handleChange}
+                      placeholder="Enter Net Profit (Last Audited)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="company_type">
+                    <Form.Label>
+                      Company Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={formData?.company_type}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Company Type</option>
+                      <option value="small_company">Small Company</option>
+                      <option value="non_small_company">
+                        Non-Small Company
+                      </option>
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="isin">
+                    <Form.Label>
+                      ISIN<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.isin}
+                      onChange={handleChange}
+                      placeholder="Enter ISIN"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="RTA_name">
+                    <Form.Label>
+                      RTA Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.RTA_name}
+                      onChange={handleChange}
+                      placeholder="Enter RTA Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="DP_name">
+                    <Form.Label>
+                      DP Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.DP_name}
+                      onChange={handleChange}
+                      placeholder="Enter DP Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="depositry_name">
+                    <Form.Label>
+                      Depository Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.depositry_name}
+                      onChange={handleChange}
+                      placeholder="Enter Depository Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="BM_notice_period">
+                    <Form.Label>
+                      BM Notice Period<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.BM_notice_period}
+                      onChange={handleChange}
+                      placeholder="Enter BM Notice Period"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="CM_notice_period">
+                    <Form.Label>
+                      CM Notice Period<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.CM_notice_period}
+                      onChange={handleChange}
+                      placeholder="Enter CM Notice Period"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="AGM_notice_period">
+                    <Form.Label>
+                      AGM Notice Period<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.AGM_notice_period}
+                      onChange={handleChange}
+                      placeholder="Enter AGM Notice Period"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="EGM_notice_period">
+                    <Form.Label>
+                      EGM Notice Period<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.EGM_notice_period}
+                      onChange={handleChange}
+                      placeholder="Enter EGM Notice Period"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="client_prev_name">
+                    <Form.Label>
+                      Client Previous Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.client_prev_name}
+                      onChange={handleChange}
+                      placeholder="Enter Client Previous Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="client_effective_date">
+                    <Form.Label>
+                      Client Effective Date<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.client_effective_date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="BM_next_due_date">
+                    <Form.Label>
+                      BM Next Due Date<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.BM_next_due_date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="AGM_next_due_date">
+                    <Form.Label>
+                      AGM Next Due Date<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.AGM_next_due_date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="promoters_MGT_names">
+                    <Form.Label>
+                      Promoters (MGT Names)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.promoters_MGT_names.join(", ")}
+                      onChange={handleChange}
+                      placeholder="Enter Promoters (MGT Names)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="BM_calender_year_no">
+                    <Form.Label>
+                      BM Calendar Year No.<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.BM_calender_year_no}
+                      onChange={handleChange}
+                      placeholder="Enter BM Calendar Year No."
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="business_nature">
+                    <Form.Label>
+                      Nature of Business<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.business_nature}
+                      onChange={handleChange}
+                      placeholder="Enter Nature of Business"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="cost_auditor_detail_name">
+                    <Form.Label>
+                      Cost Auditor Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.cost_auditor_detail?.name}
+                      onChange={handleChange}
+                      placeholder="Enter Cost Auditor Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="cost_auditor_detail_address">
+                    <Form.Label>
+                      Cost Auditor Address<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.cost_auditor_detail?.address}
+                      onChange={handleChange}
+                      placeholder="Enter Cost Auditor Address"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="cost_auditor_detail_from">
+                    <Form.Label>
+                      Cost Auditor From<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.cost_auditor_detail?.from}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="cost_auditor_detail_to">
+                    <Form.Label>
+                      Cost Auditor To<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.cost_auditor_detail?.to}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="internal_auditor_detail_name">
+                    <Form.Label>
+                      Internal Auditor Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.internal_auditor_detail?.name}
+                      onChange={handleChange}
+                      placeholder="Enter Internal Auditor Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="internal_auditor_detail_address">
+                    <Form.Label>
+                      Internal Auditor Address<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.internal_auditor_detail?.address}
+                      onChange={handleChange}
+                      placeholder="Enter Internal Auditor Address"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="internal_auditor_detail_from">
+                    <Form.Label>
+                      Internal Auditor From<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.internal_auditor_detail?.from}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="internal_auditor_detail_to">
+                    <Form.Label>
+                      Internal Auditor To<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formData?.internal_auditor_detail?.to}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="items_req_secial_resol_AOA">
+                    <Form.Label>
+                      Items Requiring Special Resolution (AOA)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.items_req_secial_resol_AOA}
+                      onChange={handleChange}
+                      placeholder="Enter Items Requiring Special Resolution (AOA)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="special_provision_AOA">
+                    <Form.Label>
+                      Special Provision (AOA)<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.special_provision_AOA}
+                      onChange={handleChange}
+                      placeholder="Enter Special Provision (AOA)"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="BM_last_serial_type">
+                    <Form.Label>
+                      BM Last Serial Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={formData?.BM_last_serial?.type}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select BM Last Serial Type</option>
+                      <option value="regular">Regular</option>
+                      <option value="financial">Financial</option>
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="BM_last_serial_no">
+                    <Form.Label>
+                      BM Last Serial No<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.BM_last_serial?.serial_no}
+                      onChange={handleChange}
+                      placeholder="Enter BM Last Serial No"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="CM_last_serial_type">
+                    <Form.Label>
+                      CM Last Serial Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      as="select"
+                      type="text"
+                      value={formData?.CM_last_serial?.type}
+                      onChange={handleChange}
+                      placeholder="Enter CM Last Serial Type"
+                      required
+                    >
+                      <option value="">Select BM Last Serial Type</option>
+                      <option value="regular">Regular</option>
+                      <option value="financial">Financial</option>
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="CM_last_serial_no">
+                    <Form.Label>
+                      CM Last Serial No<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.CM_last_serial?.serial_no}
+                      onChange={handleChange}
+                      placeholder="Enter CM Last Serial No"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="AGM_last_serial_type">
+                    <Form.Label>
+                      AGM Last Serial Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.AGM_last_serial?.type}
+                      onChange={handleChange}
+                      placeholder="Enter AGM Last Serial Type"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group controlId="AGM_last_serial_no">
+                    <Form.Label>
+                      AGM Last Serial No<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.AGM_last_serial?.serial_no}
+                      onChange={handleChange}
+                      placeholder="Enter AGM Last Serial No"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="EGM_last_serial_type">
+                    <Form.Label>
+                      EGM Last Serial Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.EGM_last_serial?.type}
+                      onChange={handleChange}
+                      placeholder="Enter EGM Last Serial Type"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="EGM_last_serial_no">
+                    <Form.Label>
+                      EGM Last Serial No<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData?.EGM_last_serial?.serial_no}
+                      onChange={handleChange}
+                      placeholder="Enter EGM Last Serial No"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Button
+                variant="success"
+                type="submit"
+                className="ms-3 float-end"
+              >
+                {buttonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <>{customerId ? "Update Client" : "Save"}</>
+                )}
+              </Button>
+            </>
+          )}
         </Form>
         <ToastContainer />
       </div>
