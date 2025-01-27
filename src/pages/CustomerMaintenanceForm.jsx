@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { apiURL } from "../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import Select from "react-select";
 export default function CustomerMaintenanceForm() {
   const navigate = useNavigate();
   const { customerId } = useParams();
@@ -233,6 +234,18 @@ export default function CustomerMaintenanceForm() {
     } else {
       setFormData((prevData) => ({ ...prevData, [id]: value }));
     }
+  };
+  const handleManagerChange = (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      alloted_manager: selectedOption?.value,
+    }));
+  };
+  const handleConsultantChange = (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      alloted_consultant: selectedOption?.value,
+    }));
   };
 
   const handleAuditorChange = (field, value) => {
@@ -635,26 +648,18 @@ export default function CustomerMaintenanceForm() {
                     <Form.Label>
                       Client Manager<sup>*</sup>
                     </Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={formData?.alloted_manager?.id || ""}
-                      onChange={(e) => {
-                        const selectedManager = managers.find(
-                          (manager) => manager.id === e.target.value
-                        );
-                        setFormData((prevData) => ({
-                          ...prevData,
-                          alloted_manager: selectedManager,
-                        }));
-                      }}
-                    >
-                      <option value="">Select Client Manager</option>
-                      {managers.map((manager) => (
-                        <option key={manager.id} value={manager.id}>
-                          {manager.name}
-                        </option>
-                      ))}
-                    </Form.Control>
+                    <Select
+                      options={managers.map((manager) => ({
+                        value: manager.id,
+                        label: manager.name,
+                      }))}
+                      value={managers?.find(
+                        (option) => option.value === formData.alloted_manager
+                      )}
+                      onChange={handleManagerChange}
+                      placeholder="Select Client Manager"
+                      isClearable
+                    />
                   </Form.Group>
                 </Col>
                 <Col>
@@ -719,30 +724,18 @@ export default function CustomerMaintenanceForm() {
                     <Form.Label>
                       Client Consultant<sup>*</sup>
                     </Form.Label>
-                    <Form.Control
-                      as="select"
-                      required
-                      value={formData?.alloted_consultant?.id || ""}
-                      onChange={(e) =>
-                        handleChange({
-                          target: {
-                            id: "alloted_consultant",
-                            value: {
-                              ...consultants.find(
-                                (consultant) => consultant.id === e.target.value
-                              ),
-                            },
-                          },
-                        })
-                      }
-                    >
-                      <option value="">Select Client Consultant</option>
-                      {consultants.map((consultant) => (
-                        <option key={consultant.id} value={consultant.id}>
-                          {consultant.name}
-                        </option>
-                      ))}
-                    </Form.Control>
+                    <Select
+                      options={consultants.map((consultant) => ({
+                        value: consultant.id,
+                        label: consultant.name,
+                      }))}
+                      value={consultants?.find(
+                        (option) => option.value === formData.alloted_consultant
+                      )}
+                      onChange={handleConsultantChange}
+                      placeholder="Select Client Manager"
+                      isClearable
+                    />
                   </Form.Group>
                 </Col>
               </Row>
@@ -1015,7 +1008,7 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.client_effective_date}
+                      value={formData?.client_effective_date?.split("T")[0]}
                       onChange={handleChange}
                       required
                     />
@@ -1029,7 +1022,7 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.BM_next_due_date}
+                      value={formData?.BM_next_due_date?.split("T")[0]}
                       onChange={handleChange}
                       required
                     />
@@ -1043,7 +1036,7 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.AGM_next_due_date}
+                      value={formData?.AGM_next_due_date?.split("T")[0]}
                       onChange={handleChange}
                       required
                     />
@@ -1139,7 +1132,7 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.cost_auditor_detail?.from}
+                      value={formData?.cost_auditor_detail?.from?.split("T")[0]}
                       onChange={handleChange}
                       required
                     />
@@ -1155,7 +1148,7 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.cost_auditor_detail?.to}
+                      value={formData?.cost_auditor_detail?.to?.split("T")[0]}
                       onChange={handleChange}
                       required
                     />
@@ -1201,7 +1194,9 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.internal_auditor_detail?.from}
+                      value={
+                        formData?.internal_auditor_detail?.from?.split("T")[0]
+                      }
                       onChange={handleChange}
                       required
                     />
@@ -1215,7 +1210,9 @@ export default function CustomerMaintenanceForm() {
                     </Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.internal_auditor_detail?.to}
+                      value={
+                        formData?.internal_auditor_detail?.to?.split("T")[0]
+                      }
                       onChange={handleChange}
                       required
                     />
@@ -1273,7 +1270,7 @@ export default function CustomerMaintenanceForm() {
                 </Col>
 
                 <Col>
-                  <Form.Group controlId="BM_last_serial_no">
+                  <Form.Group controlId="BM_last_serial_serial_no">
                     <Form.Label>
                       BM Last Serial No<sup>*</sup>
                     </Form.Label>
@@ -1310,7 +1307,7 @@ export default function CustomerMaintenanceForm() {
                 </Col>
 
                 <Col>
-                  <Form.Group controlId="CM_last_serial_no">
+                  <Form.Group controlId="CM_last_serial_serial_no">
                     <Form.Label>
                       CM Last Serial No<sup>*</sup>
                     </Form.Label>
@@ -1330,19 +1327,24 @@ export default function CustomerMaintenanceForm() {
                       AGM Last Serial Type<sup>*</sup>
                     </Form.Label>
                     <Form.Control
+                      as="select"
                       type="text"
                       value={formData?.AGM_last_serial?.type}
                       onChange={handleChange}
                       placeholder="Enter AGM Last Serial Type"
                       required
-                    />
+                    >
+                      <option value="">Select AGM Last Serial Type</option>
+                      <option value="regular">Regular</option>
+                      <option value="financial">Financial</option>
+                    </Form.Control>
                   </Form.Group>
                 </Col>
               </Row>
 
               <Row className="mb-3">
                 <Col>
-                  <Form.Group controlId="AGM_last_serial_no">
+                  <Form.Group controlId="AGM_last_serial_serial_no">
                     <Form.Label>
                       AGM Last Serial No<sup>*</sup>
                     </Form.Label>
@@ -1372,7 +1374,7 @@ export default function CustomerMaintenanceForm() {
                 </Col>
 
                 <Col>
-                  <Form.Group controlId="EGM_last_serial_no">
+                  <Form.Group controlId="EGM_last_serial_serial_no">
                     <Form.Label>
                       EGM Last Serial No<sup>*</sup>
                     </Form.Label>
