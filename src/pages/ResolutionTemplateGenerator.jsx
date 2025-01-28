@@ -139,8 +139,6 @@ const ResolutionTemplateGenerator = () => {
   // Save the document in the dashboard list
   const saveDocument = async () => {
     setButtonLoading(true);
-    const docxBlob = htmlDocx.asBlob(editorContent);
-    saveAs(docxBlob);
     const formData = new FormData();
     formData.append("resolutionUrl", editorContent);
 

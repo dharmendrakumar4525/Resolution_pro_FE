@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
@@ -19,6 +19,8 @@ import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
+
 import Select from "react-select";
 
 export default function CircularResolution() {
@@ -49,6 +51,8 @@ export default function CircularResolution() {
   const fileUrl = location.state?.fileUrl;
   const page = location?.state?.page || "";
   const circularData = location?.state?.circular || "";
+  const editor = useRef(null);
+
   console.log(page, "123345");
   console.log(circularData, "Kontent");
   console.log(location, "locate");
@@ -268,7 +272,7 @@ export default function CircularResolution() {
       const updatedContent = processPlaceholders(editorContent);
       setEditorContent(updatedContent);
     }
-  }, [rows, editorContent]);
+  }, [rows]);
 
   const handleEditorChange = (content) => {
     const updatedContent = processPlaceholders(content);
@@ -278,16 +282,14 @@ export default function CircularResolution() {
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      setInitializedContent(result?.value);
+      setInitializedContent(url);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  handleFileLoad(fileUrl);
+  useEffect(() => {
+    handleFileLoad(fileUrl);
+  }, []);
   const handleMultipleFilesAddOn = async (url) => {
     try {
       let combinedContent = "";
@@ -298,28 +300,14 @@ export default function CircularResolution() {
         }
 
         if (url?.templateFile) {
-          console.log("Processing templateFile:", url.templateFile);
-          const response = await fetch(url.templateFile);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-          }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          combinedContent += `<br/><div>${result.value}</div>\n`;
+          combinedContent += `<br/><div>${url?.templateFile}</div>\n`;
         } else {
           console.warn("Skipped processing due to missing templateFile:", url);
         }
 
         // Add resolution file content if available
         if (url?.resolutionFile) {
-          console.log("Processing resolutionFile:", url.resolutionFile);
-          const response = await fetch(url.resolutionFile);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url.resolutionFile}`);
-          }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          combinedContent += `<br/><div>${result.value}</div>`;
+          combinedContent += `<br/><div>${url?.resolutionFile}</div>`;
         } else {
           console.warn(
             "Skipped processing due to missing resolutionFile:",
@@ -342,13 +330,7 @@ export default function CircularResolution() {
   useEffect(() => {
     handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
-  }, [
-    selectedData,
-    prevCSR,
-    circleResolution,
-    initializedContent,
-    xresolution,
-  ]);
+  }, [selectedData, prevCSR, xresolution]);
 
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
@@ -414,103 +396,6 @@ export default function CircularResolution() {
     }));
   };
 
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    const children = Array.from(elements).map((element) => {
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
-              children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
-              ],
-              width: { size: 1000, type: WidthType.AUTO },
-            });
-          });
-          return new TableRow({ children: cells });
-        });
-        return new Table({
-          rows: rows,
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
-  console.log(xresolution, "xresolution");
   useEffect(() => {
     if (!xresolution || !resolutionList?.length) return;
 
@@ -552,7 +437,7 @@ export default function CircularResolution() {
     setTimeout(() => {
       setSelectedData(selectedAgenda);
       setPrevoiusSelectedOptions(newSelect);
-    }, 3000);
+    }, 2000);
   }, [resolutionList?.length, xresolution]);
   console.log(selectedData, "selected");
   const resolOptions = resolutionList?.map((resol) => ({
@@ -563,12 +448,9 @@ export default function CircularResolution() {
 
   const saveDocument = async () => {
     setButtonLoading(true);
-
-    const docBlob = await createWordDocument();
-
     const formData = new FormData();
 
-    formData.append("file", docBlob);
+    formData.append("templateFile", editorContent);
     formData.append("agenda", agendaId);
     if (placeVar && Object.keys(placeVar).length > 0) {
       formData.append("variables", JSON.stringify(placeVar));
@@ -630,23 +512,11 @@ export default function CircularResolution() {
       <h1>Circular Resolution Generator</h1>
       <div className="parentContainer">
         <div className="leftContainer">
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: [
-                "heading",
-                "|",
-                "bold",
-                "italic",
-                "link",
-                "|",
-                "bulletedList",
-                "numberedList",
-                "blockQuote",
-                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
-              ],
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
         </div>
