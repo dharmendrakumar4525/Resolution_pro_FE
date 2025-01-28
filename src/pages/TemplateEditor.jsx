@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
@@ -19,6 +19,9 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
+
 import Select from "react-select";
 
 const DocumentEditor = () => {
@@ -43,6 +46,7 @@ const DocumentEditor = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [circleResolution, setCircleResolution] = useState([]);
   const [prevCSR, setPrevCSR] = useState([]);
+  const editor = useRef(null);
 
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
@@ -548,12 +552,8 @@ const DocumentEditor = () => {
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
-      console.log("handleFileLoad");
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      setInitializedContent(result?.value);
+      const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      setInitializedContent(updatedHtmlString);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -565,8 +565,8 @@ const DocumentEditor = () => {
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
-      const day = String(dateObj.getDate()).padStart(2, "0"); // Add leading zero
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // Add leading zero, months are 0-indexed
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
       const year = dateObj.getFullYear();
       return `${day}/${month}/${year}`; // Fo
       // const result = `${day}/${month}/${year}`;
@@ -624,14 +624,7 @@ const DocumentEditor = () => {
           }
 
           if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<br/><div>${result.value}</div>\n`;
+            combinedContent += `<br/><div>${url?.templateFile}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -641,16 +634,7 @@ const DocumentEditor = () => {
 
           // Add resolution file content if available
           if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            combinedContent += `<br/><div>${result.value}</div>`;
+            combinedContent += `<br/><div>${url?.resolutionFile}</div>`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
@@ -754,102 +738,6 @@ Name: \${name}</h6>
     }));
   };
 
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    const children = Array.from(elements).map((element) => {
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
-              children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
-              ],
-              width: { size: 1000, type: WidthType.AUTO },
-            });
-          });
-          return new TableRow({ children: cells });
-        });
-        return new Table({
-          rows: rows,
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
   useEffect(() => {
     const selectedAgendas = xresolution
       ? xresolution.map((option) => {
@@ -954,7 +842,10 @@ Name: \${name}</h6>
           toast.success("Resolutions Saved");
           navigate(redirectedUrl);
         } else {
-          console.error("Failed to save the resolutions.");
+          const errorData = await response.json();
+          toast.error(
+            `Error: ${errorData.message || "Failed to save resolutions"}`
+          );
         }
       }
     } catch (error) {
@@ -966,11 +857,11 @@ Name: \${name}</h6>
   const saveDocument = async () => {
     setButtonLoading(true);
 
-    const docBlob = await createWordDocument();
+    const docxBlob = htmlDocx.asBlob(editorContent);
 
     const formData = new FormData();
 
-    formData.append("file", docBlob);
+    formData.append("file", docxBlob);
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
     formData.append("is_approved", true);
@@ -1062,23 +953,11 @@ Name: \${name}</h6>
       <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
       <div className="parentContainer">
         <div className="leftContainer">
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: [
-                "heading",
-                "|",
-                "bold",
-                "italic",
-                "link",
-                "|",
-                "bulletedList",
-                "numberedList",
-                "blockQuote",
-                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
-              ],
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
         </div>

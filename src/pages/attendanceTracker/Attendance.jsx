@@ -19,11 +19,13 @@ import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { useAuth } from "../../context/AuthContext";
 import { Refresh } from "@mui/icons-material";
+import Select from "react-select";
 
 export default function Attendance() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [clientList, setClientList] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
@@ -100,51 +102,24 @@ export default function Attendance() {
   }, [page, refresh]);
 
   useEffect(() => {
-    const fetchManagers = async () => {
+    const fetchClientList = async () => {
       try {
-        const response = await fetch(
-          `${apiURL}/users?role=672c47cb38903b464c9d2923`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        setManagers(data.results);
-      } catch (error) {
-        console.error("Error fetching managers:", error);
-      }
-    };
-    fetchManagers();
-  }, []);
-
-  const handleDeleteClick = async (row, e) => {
-    e.stopPropagation();
-    try {
-      const response = await fetch(
-        `${apiURL}/customer-maintenance/${row?._id}`,
-        {
-          method: "DELETE",
-
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
+        });
+        const data = await response.json();
+        setClientList(data.docs);
+        console.log(data.docs, "ds");
+      } catch (error) {
+        console.error("Error fetching clients:", error);
       }
-      setRefresh(!refresh);
+    };
 
-      toast.success("Item deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete item. Please try again.");
-    }
-  };
+    fetchClientList();
+  }, []);
 
   const handleAdd = () => navigate("/client-records-form");
 
@@ -168,14 +143,17 @@ export default function Attendance() {
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
-  const handleChange = async (e) => {
-    const { id, value } = e.target;
-    console.log(e.target, "dsd");
-    setFormData((prevData) => ({ ...prevData, [id]: value }));
-    if (!value == "") {
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
+  const handleChange = async (selectedOption) => {
+    setFormData({ ...formData, client_name: selectedOption.value || "" });
+
+    if (selectedOption.value !== "") {
       const token = localStorage.getItem("refreshToken");
       const response = await fetch(
-        `${apiURL}/customer-maintenance?alloted_manager=${value}`,
+        `${apiURL}/customer-maintenance/${selectedOption.value}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -184,11 +162,13 @@ export default function Attendance() {
         }
       );
       const data = await response.json();
-      setRows(data.docs);
+      console.log(data, "mba");
+      setRows([data]);
     } else {
       setRefresh(!refresh);
     }
   };
+
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Client_Record")
       ?.childList || [];
@@ -201,30 +181,17 @@ export default function Attendance() {
           <h4 className="h4-heading-style">Client Records Attendance</h4>
           <div>
             {userRole === "672c47c238903b464c9d2920" && (
-              <Form.Control
-                style={{ width: "300px", marginLeft: "60px" }}
-                as="select"
-                value={formData.alloted_manager.name}
-                onChange={(e) =>
-                  handleChange({
-                    target: { id: "alloted_manager", value: e.target.value },
-                  })
-                }
-              >
-                <option value="">Select Client Manager</option>
-                {managers.map((manager) => (
-                  <option key={manager.id} value={manager.id}>
-                    {manager.name}
-                  </option>
-                ))}
-              </Form.Control>
+              <>
+                <Select
+                  id="client-name-select"
+                  options={clientOptions}
+                  placeholder="Select Client"
+                  onChange={handleChange}
+                  isClearable
+                />
+              </>
             )}
           </div>
-          {hasPermission("add") && (
-            <Button variant="primary" className="btn-box" onClick={handleAdd}>
-              <FaPlus style={{ marginRight: "8px" }} /> Add
-            </Button>
-          )}
         </div>
 
         {loading ? (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Document,
@@ -34,6 +34,8 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 
 const ResolutionTemplateGenerator = () => {
   const [rows, setRows] = useState([]);
@@ -52,6 +54,7 @@ const ResolutionTemplateGenerator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const editor = useRef(null);
 
   const fileUrl = location.state;
   useEffect(() => {
@@ -121,25 +124,7 @@ const ResolutionTemplateGenerator = () => {
 
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const mammothOptions = {
-        styleMap: [
-          "p[style-name='Heading 1'] => h1:fresh",
-          "p[style-name='Heading 2'] => h2:fresh",
-          "p[style-name='Normal'] => p:fresh",
-          "p[style-name='AlignedCenter'] => p.text-center:fresh",
-          "p[style-name='AlignedRight'] => p.text-right:fresh",
-        ],
-      };
-
-      const result = await mammoth.convertToHtml(
-        { arrayBuffer },
-        mammothOptions
-      );
-      const htmlContent = result.value;
-      setEditorContent(htmlContent);
+      setEditorContent(url);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -150,114 +135,14 @@ const ResolutionTemplateGenerator = () => {
   }, [fileUrl]);
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagss", element);
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          console.log("table inside figure");
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        console.log("table outside figure");
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
-              children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
-              ],
-              width: { size: 1000, type: WidthType.AUTO },
-            });
-          });
-          return new TableRow({ children: cells });
-        });
-        return new Table({
-          rows: rows,
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
 
   // Save the document in the dashboard list
   const saveDocument = async () => {
     setButtonLoading(true);
-
-    // Create Word document as a Blob
-    const docBlob = await createWordDocument();
+    const docxBlob = htmlDocx.asBlob(editorContent);
+    saveAs(docxBlob);
     const formData = new FormData();
-    formData.append("resol_file", docBlob);
+    formData.append("resolutionUrl", editorContent);
 
     try {
       // Make a PATCH request with the document
@@ -313,24 +198,11 @@ const ResolutionTemplateGenerator = () => {
         <div className="leftContainer">
           <h1 className="mb-4">Resolution Template Generator</h1>
 
-          {/* CKEditor for writing content */}
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: [
-                "heading",
-                "|",
-                "bold",
-                "italic",
-                "link",
-                "|",
-                "bulletedList",
-                "numberedList",
-                "blockQuote",
-                // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
-              ],
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
 

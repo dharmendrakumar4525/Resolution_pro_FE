@@ -123,28 +123,28 @@ const TemplateGenerator = () => {
 
   const handleFileLoad = async (url) => {
     try {
-      // template file fetch
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      // console.log(arrayBuffer, "arr-Buff");
-      const mammothOptions = {
-        styleMap: [
-          "p[style-name='Heading 1'] => h1:fresh",
-          "p[style-name='Heading 2'] => h2:fresh",
-          "p[style-name='Normal'] => p:fresh",
-          "p[style-name='AlignedCenter'] => p.text-center:fresh",
-          "p[style-name='AlignedRight'] => p.text-right:fresh",
-        ],
-      };
+      // // template file fetch
+      // const response = await fetch(url);
+      // if (!response.ok) throw new Error("Network response was not ok");
+      // const arrayBuffer = await response.arrayBuffer();
+      // // console.log(arrayBuffer, "arr-Buff");
+      // const mammothOptions = {
+      //   styleMap: [
+      //     "p[style-name='Heading 1'] => h1:fresh",
+      //     "p[style-name='Heading 2'] => h2:fresh",
+      //     "p[style-name='Normal'] => p:fresh",
+      //     "p[style-name='AlignedCenter'] => p.text-center:fresh",
+      //     "p[style-name='AlignedRight'] => p.text-right:fresh",
+      //   ],
+      // };
 
-      const result = await mammoth.convertToHtml(
-        { arrayBuffer },
-        mammothOptions
-      );
-      const htmlContent = result.value;
-      console.log(htmlContent, "htmllll");
-      setEditorContent(htmlContent);
+      // const result = await mammoth.convertToHtml(
+      //   { arrayBuffer },
+      //   mammothOptions
+      // );
+      // const htmlContent = result.value;
+      // console.log(htmlContent, "htmllll");
+      setEditorContent(url);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -241,9 +241,9 @@ const TemplateGenerator = () => {
 
   const createWordDocument = async () => {
     const formattedContent = editorContent.replace(/\n/g, "<br>");
-    // const docxBlob = htmlDocx.asBlob(formattedContent);
-    // saveAs(docxBlob)
-
+    const docxBlob = htmlDocx.asBlob(formattedContent);
+    saveAs(docxBlob);
+    return;
     const parsedContent = parseHtmlToDocx(formattedContent);
 
     const doc = new Document({
@@ -263,14 +263,14 @@ const TemplateGenerator = () => {
     setButtonLoading(true);
 
     // Create Word document as a Blob
-    const docBlob = await createWordDocument();
+    // const docBlob = await createWordDocument();
     // const blob = new Blob([editorContent]);
     // saveAs(blob, "editor-content.html"); // Use FileSaver.js's saveAs
 
     // return
     // Prepare FormData with the document Blob
     const formData = new FormData();
-    formData.append("file", docBlob);
+    formData.append("fileName", editorContent);
     // formData.append("file", blob);
 
     try {
@@ -328,14 +328,14 @@ const TemplateGenerator = () => {
           <h1 className="mb-4">Document Template Generator</h1>
 
           {/* CKEditor for writing content */}
-          {/* <JoditEditor
+          <JoditEditor
             ref={editor}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}
-          /> */}
-          <CKEditor
+          />
+          {/* <CKEditor
             editor={ClassicEditor}
             data={editorContent}
             onChange={(event, editor) => handleEditorChange(editor.getData())}
@@ -353,7 +353,7 @@ const TemplateGenerator = () => {
                 // Remove 'imageUpload', 'mediaEmbed', etc., from the toolbar.
               ],
             }}
-          />
+          /> */}
 
           <Button variant="secondary" onClick={saveDocument} className="mt-5">
             {buttonLoading ? (
