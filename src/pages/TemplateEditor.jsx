@@ -865,6 +865,7 @@ Name: \${name}</h6>
     formData.append("index", index);
     formData.append("variables", JSON.stringify(placeVar));
     formData.append("is_approved", true);
+    formData.append("htmlcontent", editorContent);
     console.log(JSON.stringify(placeVar));
     let url;
     if (page == "committee") {

@@ -365,8 +365,8 @@ export default function CommitteeDocuments() {
     }
   };
   const handleDownload = () => {
-    if (notice?.fileName) {
-      saveAs(notice.fileName, "customFileName.docx");
+    if (notice?.filedocx) {
+      saveAs(notice.filedocx, "customFileName.docx");
     } else {
       console.error("File URL is not available");
     }
