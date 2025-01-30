@@ -16,7 +16,7 @@ export default function CustomerMaintenanceForm() {
   const token = localStorage.getItem("refreshToken");
 
   const [step, setStep] = useState(1);
-
+  console.log(managers, "manager-list");
   const [formData, setFormData] = useState({
     company_name: "",
     date_of_incorporation: "",
@@ -70,6 +70,11 @@ export default function CustomerMaintenanceForm() {
       address: "",
       from: null,
       to: null,
+    },
+    holding_company_detail: {
+      name: null,
+      address: "",
+      CIN_FCRN: null,
     },
     internal_auditor_detail: {
       name: null,
@@ -191,6 +196,16 @@ export default function CustomerMaintenanceForm() {
           [fieldName]: value,
         },
       }));
+    } else if (id.startsWith("holding_company_detail")) {
+      const fieldName = id.split("holding_company_detail_")[1];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        holding_company_detail: {
+          ...prevData.holding_company_detail,
+          [fieldName]: value,
+        },
+      }));
     } else if (id.startsWith("BM_last_serial")) {
       const fieldName = id.split("BM_last_serial_")[1];
 
@@ -236,12 +251,16 @@ export default function CustomerMaintenanceForm() {
     }
   };
   const handleManagerChange = (selectedOption) => {
+    console.log("manager", selectedOption.value);
     setFormData((prevData) => ({
       ...prevData,
       alloted_manager: selectedOption?.value,
     }));
   };
+
   const handleConsultantChange = (selectedOption) => {
+    console.log("Consultat=nt", selectedOption.value);
+
     setFormData((prevData) => ({
       ...prevData,
       alloted_consultant: selectedOption?.value,
@@ -321,8 +340,8 @@ export default function CustomerMaintenanceForm() {
     } else {
       const updatedFormData = {
         ...formData,
-        alloted_manager: formData?.alloted_manager?.id || null,
-        alloted_consultant: formData?.alloted_consultant?.id || null,
+        alloted_manager: formData?.alloted_manager,
+        alloted_consultant: formData?.alloted_consultant,
       };
       try {
         const dataToSubmit = { ...updatedFormData };
@@ -653,9 +672,14 @@ export default function CustomerMaintenanceForm() {
                         value: manager.id,
                         label: manager.name,
                       }))}
-                      value={managers?.find(
-                        (option) => option.value === formData.alloted_manager
-                      )}
+                      value={managers
+                        .map((manager) => ({
+                          value: manager.id,
+                          label: manager.name,
+                        }))
+                        .find(
+                          (option) => option.value === formData.alloted_manager
+                        )}
                       onChange={handleManagerChange}
                       placeholder="Select Client Manager"
                       isClearable
@@ -729,17 +753,58 @@ export default function CustomerMaintenanceForm() {
                         value: consultant.id,
                         label: consultant.name,
                       }))}
-                      value={consultants?.find(
-                        (option) => option.value === formData.alloted_consultant
-                      )}
+                      value={consultants
+                        .map((consultant) => ({
+                          value: consultant.id,
+                          label: consultant.name,
+                        }))
+                        .find(
+                          (option) =>
+                            option.value === formData.alloted_consultant
+                        )}
                       onChange={handleConsultantChange}
-                      placeholder="Select Client Manager"
+                      placeholder="Select Client Consultant"
                       isClearable
                     />
                   </Form.Group>
                 </Col>
               </Row>
+              <Row className="mb-3">
+                <Col md={6} lg={4}>
+                  <Form.Group controlId="holding_company_detail_name">
+                    <Form.Label>Holding Company Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.holding_company_detail?.name || ""}
+                      onChange={handleChange}
+                      placeholder="Enter Holding Company Name"
+                    />
+                  </Form.Group>
+                </Col>
 
+                <Col md={6} lg={4}>
+                  <Form.Group controlId="holding_company_detail_address">
+                    <Form.Label>Holding Company Address</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.holding_company_detail?.address || ""}
+                      onChange={handleChange}
+                      placeholder="Enter Holding Company Address"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} lg={4}>
+                  <Form.Group controlId="holding_company_detail_CIN_FCRN">
+                    <Form.Label>CIN/FCRN</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.holding_company_detail?.CIN_FCRN || ""}
+                      onChange={handleChange}
+                      placeholder="Enter CIN/FCRN"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
               <Row className="mb-3" style={{ width: "34%" }}>
                 <Col>
                   <Form.Group controlId="email_id">
@@ -1364,12 +1429,17 @@ export default function CustomerMaintenanceForm() {
                       EGM Last Serial Type<sup>*</sup>
                     </Form.Label>
                     <Form.Control
+                      as="select"
                       type="text"
                       value={formData?.EGM_last_serial?.type}
                       onChange={handleChange}
                       placeholder="Enter EGM Last Serial Type"
                       required
-                    />
+                    >
+                      <option value="">Select EGM Last Serial Type</option>
+                      <option value="regular">Regular</option>
+                      <option value="financial">Financial</option>
+                    </Form.Control>
                   </Form.Group>
                 </Col>
 
