@@ -20,6 +20,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styling/templateEditor.css";
 import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 
 import Select from "react-select";
 
@@ -448,9 +449,12 @@ export default function CircularResolution() {
 
   const saveDocument = async () => {
     setButtonLoading(true);
+    const docxBlob = htmlDocx.asBlob(editorContent);
+
     const formData = new FormData();
 
-    formData.append("templateFile", editorContent);
+    formData.append("file", docxBlob);
+    formData.append("htmlcontent", editorContent);
     formData.append("agenda", agendaId);
     if (placeVar && Object.keys(placeVar).length > 0) {
       formData.append("variables", JSON.stringify(placeVar));
