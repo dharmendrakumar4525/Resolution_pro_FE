@@ -10,7 +10,7 @@ import {
   TableRow,
   WidthType,
 } from "docx";
-import htmlDocx from "html-docx-js/dist/html-docx";
+
 import {
   Button,
   Modal,
@@ -23,20 +23,21 @@ import {
   Col,
 } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import JoditEditor from "jodit-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styling/templateEditor.css";
+import "../../styling/templateEditor.css";
 import mammoth from "mammoth";
 import { useParams } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { saveAs } from "file-saver";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 
-const AgendaTemplateGenerator = () => {
+const ResolutionTemplateGenerator = () => {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -139,9 +140,8 @@ const AgendaTemplateGenerator = () => {
   const saveDocument = async () => {
     setButtonLoading(true);
     const formData = new FormData();
-    formData.append("fileName", editorContent);
+    formData.append("resolutionUrl", editorContent);
 
-    console.log(formData, "tokennn1");
     try {
       // Make a PATCH request with the document
       const response = await fetch(`${apiURL}/agenda/${id}`, {
@@ -155,7 +155,7 @@ const AgendaTemplateGenerator = () => {
       });
       console.log(formData, "tokennn2");
       if (response.ok) {
-        toast.success("Agenda saved successfully!");
+        toast.success("Resolution saved successfully!");
 
         // Optionally update your document list
         const newDoc = {
@@ -194,7 +194,7 @@ const AgendaTemplateGenerator = () => {
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Agenda Template Generator</h1>
+          <h1 className="mb-4">Resolution Template Generator</h1>
 
           <JoditEditor
             ref={editor}
@@ -214,12 +214,12 @@ const AgendaTemplateGenerator = () => {
                 aria-hidden="true"
               />
             ) : (
-              "Save Agenda"
+              "Save Resolution"
             )}
           </Button>
         </div>
         <div className="rightContainer">
-          <h4 className="h4-heading-style mt-4">System Variables</h4>
+          <h4 className="h4-heading-style mt-3">System Variables</h4>
 
           {loading ? (
             <div className="text-center mt-2">
@@ -268,4 +268,4 @@ const AgendaTemplateGenerator = () => {
   );
 };
 
-export default AgendaTemplateGenerator;
+export default ResolutionTemplateGenerator;
