@@ -243,28 +243,31 @@ const TemplateViewer = () => {
 
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
+      const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      setEditorContent(updatedHtmlString);
 
-      const fileType = url.split(".").pop().toLowerCase(); // Determine file type by extension
+      // const response = await fetch(url);
+      // if (!response.ok) throw new Error("Network response was not ok");
+      // const arrayBuffer = await response.arrayBuffer();
 
-      if (fileType === "docx") {
-        // Handle DOCX file
-        const result = await mammoth.convertToHtml({ arrayBuffer });
-        const htmlContent = result.value;
-        setEditorContent(htmlContent);
-      }
-      // else if (fileType === "pdf") {
-      //   // Handle PDF file
-      //   const textContent = await extractPdfText(arrayBuffer);
-      //   setEditorContent(textContent);
+      // const fileType = url.split(".").pop().toLowerCase(); // Determine file type by extension
+
+      // if (fileType === "docx") {
+      //   // Handle DOCX file
+      //   const result = await mammoth.convertToHtml({ arrayBuffer });
+      //   const htmlContent = result.value;
+      //   setEditorContent(htmlContent);
       // }
-      else {
-        throw new Error(
-          "Unsupported file format. Only DOCX and PDF are supported."
-        );
-      }
+      // // else if (fileType === "pdf") {
+      // //   // Handle PDF file
+      // //   const textContent = await extractPdfText(arrayBuffer);
+      // //   setEditorContent(textContent);
+      // // }
+      // else {
+      //   throw new Error(
+      //     "Unsupported file format. Only DOCX and PDF are supported."
+      //   );
+      // }
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
