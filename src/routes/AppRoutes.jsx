@@ -37,9 +37,10 @@ import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
 import DocEditor from "../pages/DocEditor";
-import AgendaTemplate from "../pages/AgendaTemplate";
-import AgendaTemplateGenerator from "../pages/AgendaTemplateGenerator";
-import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
+import AgendaTemplate from "../pages/agendaTemplate/AgendaTemplate";
+import AgendaTemplateGenerator from "../pages/agendaTemplate/AgendaTemplateGenerator";
+import ResolutionTemplateGenerator from "../pages/agendaTemplate/ResolutionTemplateGenerator";
+import StatementTemplateGenerator from "../pages/agendaTemplate/StatementTemplateGenerator";
 import NoticeEditor from "../pages/NoticeEditor";
 import MomEditor from "../pages/MomEditor";
 import AttendanceEditor from "../pages/AttendanceEditor";
@@ -261,6 +262,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ResolutionTemplateGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/statement-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<StatementTemplateGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
