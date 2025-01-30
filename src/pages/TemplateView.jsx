@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 // import { getDocument } from "pdfjs-dist";
@@ -12,6 +12,7 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
 
 const TemplateViewer = () => {
   const [documents, setDocuments] = useState([]); // List of saved documents
@@ -31,6 +32,8 @@ const TemplateViewer = () => {
   const page = location.state?.page;
   const approvalData = location.state?.meetData;
   const meetData = approvalData?.meeting_id;
+  const editor = useRef(null);
+
   console.log(approvalData, "approved");
   console.log(fileUrl, "approved");
   console.log(meetData, "meetData");
@@ -382,16 +385,15 @@ const TemplateViewer = () => {
       <div className="parentContainer">
         <div className="leftContainer" style={{ width: "70%" }}>
           <h1 className="mb-4">Document Viewer</h1>
-
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onReady={(editor) => {
-              editor.enableReadOnlyMode("read-only-mode");
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
             config={{
               toolbar: false,
+              readonly: true,
             }}
           />
         </div>
