@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
@@ -19,6 +19,8 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 import Select from "react-select";
 
 const ResolutionEditor = () => {
@@ -41,6 +43,7 @@ const ResolutionEditor = () => {
   const fileUrl = location.state?.fileUrl;
   const resolTitle = location.state?.resolTitle;
   const page = location.state?.page || "";
+  const editor = useRef(null);
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
@@ -261,12 +264,8 @@ const ResolutionEditor = () => {
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      // setEditorContent(result.value);
-      setInitializedContent(result.value);
+      const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      setInitializedContent(updatedHtmlString);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -343,102 +342,6 @@ const ResolutionEditor = () => {
     }));
   };
 
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    const children = Array.from(elements).map((element) => {
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
-              children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
-              ],
-              width: { size: 1000, type: WidthType.AUTO },
-            });
-          });
-          return new TableRow({ children: cells });
-        });
-        return new Table({
-          rows: rows,
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
   const resolOptions = resolutionList.map((resol) => ({
     value: resol.templateName,
     label: resol.templateName,
@@ -446,10 +349,11 @@ const ResolutionEditor = () => {
   const saveDocument = async () => {
     setButtonLoading(true);
 
-    const docBlob = await createWordDocument();
+    const docxBlob = htmlDocx.asBlob(editorContent);
 
     const formData = new FormData();
-    formData.append("resolution_file", docBlob);
+    formData.append("htmlcontent", editorContent);
+    formData.append("resolution_file", docxBlob);
     formData.append("index", `${index}`);
     try {
       let url;
@@ -492,12 +396,11 @@ const ResolutionEditor = () => {
       <h1>Resolution Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: false,
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
         </div>

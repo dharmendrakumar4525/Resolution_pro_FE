@@ -50,7 +50,7 @@ export default function ReviseDocs() {
 
   const handleView = (row) => {
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: row?.meeting_id?.agendaItems[0]?.filedocx },
+      state: { fileUrl: row?.meeting_id?.agendaItems[0]?.filehtml },
     });
   };
   return (

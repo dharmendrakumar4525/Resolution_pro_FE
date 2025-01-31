@@ -859,17 +859,16 @@ export default function AddCommitteeMeeting() {
                 </Form.Group>
               </Col>
               <Col md={6} lg={4}>
-                <Form.Group controlId="selectTimeZone">
+                <Form.Group controlId="standard_time">
                   <Form.Label className="f-label">
-                    Select Time Zone<sup>*</sup>
+                    Time Zone<sup>*</sup>
                   </Form.Label>
 
-                  <Select
-                    id="time-zone-select"
-                    options={timeZoneOptions}
-                    onChange={handleTimeZoneChange}
-                    isSearchable
-                    placeholder="Choose Time Zone"
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Time Zone"
+                    value={formData.standard_time}
+                    onChange={handleChange}
                   />
                 </Form.Group>
               </Col>

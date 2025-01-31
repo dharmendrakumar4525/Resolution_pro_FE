@@ -55,13 +55,13 @@ export default function ApprovalDocs() {
   const handleView = (row) => {
     // console.log(`${row?.meeting_id}`,"ghjk")
     // return
-    if (`${row?.meeting_id?.agendaItems[0]?.filedocx}` == null) {
+    if (`${row?.meeting_id?.agendaItems[0]?.filehtml}` == null) {
       toast.warn("Please save the related document first");
       return;
     }
     navigate(`/template-group-meeting-view/${row._id}`, {
       state: {
-        fileUrl: `${row?.meeting_id?.agendaItems[0]?.filedocx}`,
+        fileUrl: `${row?.meeting_id?.agendaItems[0]?.filehtml}`,
         page: "approval",
         meetData: row,
       },

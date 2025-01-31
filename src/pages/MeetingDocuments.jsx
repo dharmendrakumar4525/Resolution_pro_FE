@@ -28,6 +28,7 @@ export default function MeetingDocuments() {
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -108,12 +109,12 @@ export default function MeetingDocuments() {
     });
   };
   const handleView = (row) => {
-    if (`${row?.filedocx}` == null) {
+    if (`${row?.filehtml}` == null) {
       toast.warn("Please save the related document first");
       return;
     }
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filedocx}` },
+      state: { fileUrl: `${row?.filehtml}` },
     });
   };
   const sendApproval = async (meetData) => {
@@ -281,18 +282,32 @@ export default function MeetingDocuments() {
     });
   };
 
-  const handleCheckboxChange = (e, participant) => {
+  const handleCheckboxChange = (e, participant, field) => {
     const isChecked = e.target.checked;
 
-    const updatedParticipants = participants.map((p) =>
-      p.director.id === participant.director.id
-        ? { ...p, isPresent: isChecked }
-        : p
-    );
+    const updatedParticipants = participants.map((p) => {
+      if (p.director.id === participant.director.id) {
+        if (field === "isPresent") {
+          return {
+            ...p,
+            isPresent: isChecked,
+            isPresent_vc: isChecked ? false : p.isPresent_vc,
+          };
+        } else if (field === "isPresent_vc") {
+          if (!p.isPresent) {
+            return { ...p, isPresent_vc: isChecked };
+          }
+        }
+      }
+      return p;
+    });
+
     setParticipants(updatedParticipants);
   };
 
   const patchAttendance = async () => {
+    setButtonLoading(true);
+
     try {
       const url = `${apiURL}/meeting/${id}`;
       const transformedParticipants = participants.map((participant) => ({
@@ -328,11 +343,13 @@ export default function MeetingDocuments() {
       }
     } catch (error) {
       toast.error("Error updating attendance:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
   const handleDownload = () => {
-    if (notice?.fileName) {
-      saveAs(notice.fileName, "customFileName.docx");
+    if (notice?.filedocx) {
+      saveAs(notice.filedocx, "customFileName.docx");
     } else {
       console.error("File URL is not available");
     }
@@ -565,8 +582,8 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleNoticeView(notice?.filedocx, 1)}
-                      disabled={!notice?.filedocx}
+                      onClick={() => handleNoticeView(notice?.filehtml, 1)}
+                      disabled={!notice?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -635,8 +652,8 @@ export default function MeetingDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.filedocx, 11)}
-                      disabled={!minutes?.filedocx}
+                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
+                      disabled={!minutes?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -684,8 +701,11 @@ export default function MeetingDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
-                  <th>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>Name</th>
+                  <th style={{ width: "33.3%" }}>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>
+                    Present in the Meeting(through Video Call)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -697,7 +717,20 @@ export default function MeetingDocuments() {
                         type="checkbox"
                         className="form-check-input"
                         checked={participant?.isPresent}
-                        onChange={(e) => handleCheckboxChange(e, participant)}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent")
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent_vc}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent_vc")
+                        }
+                        disabled={participant?.isPresent}
                       />
                     </td>
                   </tr>
@@ -709,7 +742,17 @@ export default function MeetingDocuments() {
               style={{ alignContent: "right" }}
               onClick={patchAttendance}
             >
-              Mark Attendance
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Mark Attendance"
+              )}
             </Button>
             <br />
             <Table bordered hover className="Master-table">
@@ -739,9 +782,9 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceView(attendance?.filedocx, 1)
+                        handleAttendanceView(attendance?.filehtml, 1)
                       }
-                      disabled={!attendance?.filedocx}
+                      disabled={!attendance?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -813,8 +856,8 @@ export default function MeetingDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleAbsenceView(item?.filedocx, index)}
-                        disabled={!item?.filedocx}
+                        onClick={() => handleAbsenceView(item?.filehtml, index)}
+                        disabled={!item?.filehtml}
                       >
                         <FaFileWord />
                       </Button>
@@ -885,8 +928,8 @@ export default function MeetingDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleResolView(row?.filedocx)}
-                        disabled={!row?.filedocx}
+                        onClick={() => handleResolView(row?.filehtml)}
+                        disabled={!row?.filehtml}
                       >
                         <FaFileWord />
                       </Button>
@@ -961,9 +1004,9 @@ export default function MeetingDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAcknowledgementView(acknowledgement?.filedocx, 11)
+                        handleAcknowledgementView(acknowledgement?.filehtml, 11)
                       }
-                      disabled={!acknowledgement?.filedocx}
+                      disabled={!acknowledgement?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -1081,7 +1124,7 @@ function TableContent({
                 <Button
                   variant="outline-primary"
                   onClick={() => handleView(row)}
-                  disabled={!row?.filedocx}
+                  disabled={!row?.filehtml}
                 >
                   <FaFileWord />
                 </Button>

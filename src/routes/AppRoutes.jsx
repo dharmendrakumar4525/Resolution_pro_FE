@@ -33,14 +33,14 @@ import EditMeeting from "../pages/EditMeeting";
 import ViewCommitteeMember from "../pages/CommitteeMemberView";
 import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
-import ClientRecord from "../pages/ClientRecord";
 import SystemVariables from "../pages/SystemVariables";
 import Shareholders from "../pages/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
 import DocEditor from "../pages/DocEditor";
-import AgendaTemplate from "../pages/AgendaTemplate";
-import AgendaTemplateGenerator from "../pages/AgendaTemplateGenerator";
-import ResolutionTemplateGenerator from "../pages/ResolutionTemplateGenerator";
+import AgendaTemplate from "../pages/agendaTemplate/AgendaTemplate";
+import AgendaTemplateGenerator from "../pages/agendaTemplate/AgendaTemplateGenerator";
+import ResolutionTemplateGenerator from "../pages/agendaTemplate/ResolutionTemplateGenerator";
+import StatementTemplateGenerator from "../pages/agendaTemplate/StatementTemplateGenerator";
 import NoticeEditor from "../pages/NoticeEditor";
 import MomEditor from "../pages/MomEditor";
 import AttendanceEditor from "../pages/AttendanceEditor";
@@ -59,6 +59,10 @@ import ShareholderMeeting from "../pages/shareholder/ShareholderMeeting";
 import ShareholderDocuments from "../pages/shareholder/ShareholderDocuments";
 import CircularResolution from "../pages/cirularResolution/CircularResolution";
 import CircularResolutionGenerator from "../pages/cirularResolution/CircularResolutionGenerator";
+import Attendance from "../pages/attendanceTracker/Attendance";
+import AttendanceInsights from "../pages/attendanceTracker/AttendanceInsights";
+import ShareholderAgendaEditor from "../pages/shareholder/ShareholderAgendaEditor";
+import ShareholderResolutionEditor from "../pages/shareholder/ShareholderResolutionEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -196,6 +200,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/shareholder-agenda-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderAgendaEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-resolution-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderResolutionEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
         path="/roles"
         element={
           isAuthenticated ? (
@@ -260,6 +284,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ResolutionTemplateGenerator />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/statement-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<StatementTemplateGenerator />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -380,6 +414,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<SystemVariables />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/client-attendance"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Attendance />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/attendance-insights/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<AttendanceInsights />} />
           ) : (
             <Navigate to="/login" />
           )
@@ -565,16 +619,7 @@ const AppRoutes = () => {
           )
         }
       />
-      <Route
-        path="/client-cin"
-        element={
-          isAuthenticated ? (
-            <RouteWithSidebar element={<ClientRecord />} />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
+
       <Route
         path="/client-records"
         element={

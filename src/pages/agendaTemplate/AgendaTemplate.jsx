@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import {
   Button,
   Form,
@@ -23,7 +23,7 @@ import {
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AgendaTemplate() {
   const [rows, setRows] = useState([]);
@@ -110,6 +110,10 @@ export default function AgendaTemplate() {
   const handleViewResolutionTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/resolution-generate/${row?.id}`, { state: row?.resolutionUrl });
+  };
+  const handleViewStatementTemplate = (row, e) => {
+    e.stopPropagation();
+    navigate(`/statement-generate/${row?.id}`, { state: row?.statementUrl });
   };
 
   const handleOpenAddModal = () => {
@@ -267,7 +271,7 @@ export default function AgendaTemplate() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
-
+  console.log(rows, "rows");
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
@@ -342,67 +346,7 @@ export default function AgendaTemplate() {
                     />
                   </Form.Group>
                 </Col>
-                {!editingRow ? (
-                  <Col md={6}>
-                    <Form.Group controlId="fileName">
-                      <Form.Label className="f-label">
-                        Upload Agenda Template
-                      </Form.Label>
-                      <Form.Control
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        placeholder="Choose a file"
-                      />
-                    </Form.Group>
-                  </Col>
-                ) : (
-                  <>
-                    <Col md={6}>
-                      <Form.Group controlId="fileName">
-                        <Form.Label className="f-label">
-                          Agenda File Url
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Choose a file"
-                          value={formData.fileName}
-                          readOnly
-                        />
-                      </Form.Group>
-                    </Col>
-                  </>
-                )}
 
-                {!editingRow ? (
-                  <Col md={6}>
-                    <Form.Group controlId="fileName">
-                      <Form.Label className="f-label">
-                        Upload Resolution Template
-                      </Form.Label>
-                      <Form.Control
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        placeholder="Choose a file"
-                      />
-                    </Form.Group>
-                  </Col>
-                ) : (
-                  <>
-                    <Col md={6}>
-                      <Form.Group controlId="fileName">
-                        <Form.Label className="f-label">
-                          Resolution File Url
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Choose a file"
-                          value={formData.resolutionUrl}
-                          readOnly
-                        />
-                      </Form.Group>
-                    </Col>
-                  </>
-                )}
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
                     <Form.Label className="f-label">
@@ -492,6 +436,7 @@ export default function AgendaTemplate() {
                   <th>Meeting Type</th>
                   <th>Agenda Template</th>
                   <th>Resolution Template</th>
+                  <th>Statement Template</th>
                   <th>Status</th>
                   <th>By</th>
                   {/* <th>Creation date</th> */}
@@ -528,6 +473,17 @@ export default function AgendaTemplate() {
                       <button
                         className="director-btn"
                         onClick={(e) => handleViewResolutionTemplate(row, e)}
+                      >
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        disabled={row.meetingType !== "shareholder_meeting"}
+                        className="director-btn"
+                        onClick={(e) => handleViewStatementTemplate(row, e)}
                       >
                         <FaFileWord
                           style={{ height: "40px", alignContent: "center" }}

@@ -28,8 +28,10 @@ export default function ShareholderDocuments() {
   const [notice, setNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
+  const [spclResolutions, setSpclResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [shareholderParticipants, setShareolderParticipants] = useState([]);
   const [leaveUrl, setLeaveUrl] = useState("");
@@ -74,6 +76,7 @@ export default function ShareholderDocuments() {
         setAcknowledgement(data?.acknowledgement || {});
         setAttendance(data?.attendance || {});
         setResolutions(data?.resolutions || []);
+        setSpclResolutions(data?.special_resolutions || []);
         setLeaveOfAbsence(data?.leave_of_absense || []);
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
@@ -105,17 +108,17 @@ export default function ShareholderDocuments() {
   }, [key, refresh]);
 
   const handleEditClick = (row, index) => {
-    navigate(`/template-edit/${id}`, {
+    navigate(`/shareholder-agenda-edit/${id}`, {
       state: { index, fileUrl: `${row?.templateFile}`, page: "shareholder" },
     });
   };
   const handleView = (row) => {
-    if (`${row?.filedocx}` == null) {
+    if (`${row?.filehtml}` == null) {
       toast.warn("Please save the related document first");
       return;
     }
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filedocx}`, page: "shareholder" },
+      state: { fileUrl: `${row?.filehtml}`, page: "shareholder" },
     });
   };
   const sendApproval = async (meetData) => {
@@ -274,13 +277,14 @@ export default function ShareholderDocuments() {
     });
   };
 
-  const handleResolEditClick = (row, index) => {
-    navigate(`/resolution-edit/${id}`, {
+  const handleResolEditClick = (row, index, type) => {
+    navigate(`/shareholder-resolution-edit/${id}`, {
       state: {
         index,
         fileUrl: row?.templateFile,
         resolTitle: row?.templateName,
         page: "shareholder",
+        type: type,
       },
     });
   };
@@ -298,14 +302,26 @@ export default function ShareholderDocuments() {
     });
   };
 
-  const handleCheckboxChange = (e, participant) => {
+  const handleCheckboxChange = (e, participant, field) => {
     const isChecked = e.target.checked;
 
-    const updatedParticipants = participants.map((p) =>
-      p.director.id === participant.director.id
-        ? { ...p, isPresent: isChecked }
-        : p
-    );
+    const updatedParticipants = participants.map((p) => {
+      if (p.director.id === participant.director.id) {
+        if (field === "isPresent") {
+          return {
+            ...p,
+            isPresent: isChecked,
+            isPresent_vc: isChecked ? false : p.isPresent_vc,
+          };
+        } else if (field === "isPresent_vc") {
+          if (!p.isPresent) {
+            return { ...p, isPresent_vc: isChecked };
+          }
+        }
+      }
+      return p;
+    });
+
     setParticipants(updatedParticipants);
   };
   const handleShareholderCheckboxChange = (e, participant) => {
@@ -320,6 +336,8 @@ export default function ShareholderDocuments() {
   };
 
   const patchAttendance = async () => {
+    setButtonLoading(true);
+
     try {
       const url = `${apiURL}/shareholder-meeting/${id}`;
       const transformedParticipants = participants.map((participant) => ({
@@ -355,6 +373,8 @@ export default function ShareholderDocuments() {
       }
     } catch (error) {
       toast.error("Error updating attendance:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
   const patchShareholderAttendance = async () => {
@@ -389,8 +409,8 @@ export default function ShareholderDocuments() {
     }
   };
   const handleDownload = () => {
-    if (notice?.fileName) {
-      saveAs(notice.fileName, "customFileName.docx");
+    if (notice?.filedocx) {
+      saveAs(notice.filedocx, "customFileName.docx");
     } else {
       console.error("File URL is not available");
     }
@@ -592,80 +612,6 @@ export default function ShareholderDocuments() {
           </div>
         </Tab>
 
-        <Tab eventKey="notice" title="Notice">
-          <div className="table-responsive mt-5">
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "30%" }}>Name</th>
-                  <th>Edit</th>
-                  <th>View</th>
-                  <th>Download-as PDF</th>
-                  <th>Download-as Docx</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    {notice.templateName === "Short Notice"
-                      ? "Short Notice"
-                      : "Notice"}
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleNoticeEditClick(notice?.templateFile, 1)
-                      }
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleNoticeView(notice?.filedocx, 1)}
-                      disabled={!notice?.filedocx}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    {notice?.fileName && notice?.fileName !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={notice?.fileName}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {notice?.filedocx && notice?.filedocx !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        onClick={handleDownload}
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        </Tab>
-
         <Tab eventKey="mom" title="MOM">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
@@ -694,8 +640,8 @@ export default function ShareholderDocuments() {
                   <td>
                     <Button
                       variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.filedocx, 11)}
-                      disabled={!minutes?.filedocx}
+                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
+                      disabled={!minutes?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -756,7 +702,20 @@ export default function ShareholderDocuments() {
                         type="checkbox"
                         className="form-check-input"
                         checked={participant?.isPresent}
-                        onChange={(e) => handleCheckboxChange(e, participant)}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent")
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent_vc}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent_vc")
+                        }
+                        disabled={participant?.isPresent}
                       />
                     </td>
                   </tr>
@@ -768,7 +727,17 @@ export default function ShareholderDocuments() {
               style={{ alignContent: "right" }}
               onClick={patchAttendance}
             >
-              Mark Attendance
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Mark Attendance"
+              )}
             </Button>
             <br />
             <Table bordered hover className="Master-table">
@@ -831,9 +800,9 @@ export default function ShareholderDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAttendanceView(attendance?.filedocx, 1)
+                        handleAttendanceView(attendance?.filehtml, 1)
                       }
-                      disabled={!attendance?.filedocx}
+                      disabled={!attendance?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -905,8 +874,8 @@ export default function ShareholderDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleAbsenceView(item?.filedocx, index)}
-                        disabled={!item?.filedocx}
+                        onClick={() => handleAbsenceView(item?.filehtml, index)}
+                        disabled={!item?.filehtml}
                       >
                         <FaFileWord />
                       </Button>
@@ -977,8 +946,67 @@ export default function ShareholderDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
-                        onClick={() => handleResolView(row?.filedocx)}
-                        disabled={!row?.filedocx}
+                        onClick={() =>
+                          handleResolView(row?.filehtml, "ORDINARY")
+                        }
+                        disabled={!row?.filehtml}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      {row?.fileName && row?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.fileName}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {row?.filedocx && row?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.filedocx}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {spclResolutions.map((row, index) => (
+                  <tr key={row?._id}>
+                    <td>{row?.templateName}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleResolEditClick(row, index, "SPECIAL")
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => handleResolView(row?.filehtml)}
+                        disabled={!row?.filehtml}
                       >
                         <FaFileWord />
                       </Button>
@@ -1053,9 +1081,9 @@ export default function ShareholderDocuments() {
                     <Button
                       variant="outline-primary"
                       onClick={() =>
-                        handleAcknowledgementView(acknowledgement?.filedocx, 11)
+                        handleAcknowledgementView(acknowledgement?.filehtml, 11)
                       }
-                      disabled={!acknowledgement?.filedocx}
+                      disabled={!acknowledgement?.filehtml}
                     >
                       <FaFileWord />
                     </Button>
@@ -1112,7 +1140,7 @@ export default function ShareholderDocuments() {
         </Button>
       </div>
 
-      <ToastContainer />
+      <ToastContainer autoClose={1000} />
     </>
   );
 }
@@ -1173,7 +1201,7 @@ function TableContent({
                 <Button
                   variant="outline-primary"
                   onClick={() => handleView(row)}
-                  disabled={!row?.filedocx}
+                  disabled={!row?.filehtml}
                 >
                   <FaFileWord />
                 </Button>

@@ -15,28 +15,31 @@ import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styling/templateEditor.css";
+import "../../styling/templateEditor.css";
 import JoditEditor from "jodit-react";
 import htmlDocx from "html-docx-js/dist/html-docx";
 
 import Select from "react-select";
 
-const DocumentEditor = () => {
+export default function ShareholderAgendaEditor() {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [xresolution, setXResolutions] = useState([]);
+  const [xSpecialResolution, setXSpecialResolutions] = useState([]);
   const [variable, setVariable] = useState([]);
-  const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
+  const [previousSelectedOptions, setPreviousSelectedOptions] = useState([]);
+  const [previousSpecialOptions, setPreviousSpecialOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState({});
   const [previousMeet, setPreviousMeet] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
+  const [spclSelectedData, setSpclSelectedData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
@@ -44,7 +47,6 @@ const DocumentEditor = () => {
   const location = useLocation();
   const { id } = useParams();
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [circleResolution, setCircleResolution] = useState([]);
   const [prevCSR, setPrevCSR] = useState([]);
   const editor = useRef(null);
 
@@ -138,37 +140,37 @@ const DocumentEditor = () => {
         }, null);
 
         // Fetch circular resolutions
-        const circularResolutionsResponse = await fetch(
-          `${apiURL}/circular-resolution?client_name=${specificMeetInfo.client_name.id}&meeting_type=${meetingType}&status=approved`,
-          { headers }
-        );
+        // const circularResolutionsResponse = await fetch(
+        //   `${apiURL}/circular-resolution?client_name=${specificMeetInfo.client_name.id}&meeting_type=${meetingType}&status=approved`,
+        //   { headers }
+        // );
 
-        if (!circularResolutionsResponse.ok) {
-          throw new Error(
-            `Failed to fetch circular resolutions: ${circularResolutionsResponse.status}`
-          );
-        }
+        // if (!circularResolutionsResponse.ok) {
+        //   throw new Error(
+        //     `Failed to fetch circular resolutions: ${circularResolutionsResponse.status}`
+        //   );
+        // }
 
-        const circularResolutions = await circularResolutionsResponse.json();
+        // const circularResolutions = await circularResolutionsResponse.json();
 
-        let filteredCircularResolutions = [];
-        if (closestPreviousMeeting.length > 0) {
-          const previousDate = new Date(closestPreviousMeeting[0]?.date);
-          const currMeetDate = new Date(specificMeetInfo?.date);
+        // let filteredCircularResolutions = [];
+        // if (closestPreviousMeeting.length > 0) {
+        //   const previousDate = new Date(closestPreviousMeeting[0]?.date);
+        //   const currMeetDate = new Date(specificMeetInfo?.date);
 
-          filteredCircularResolutions = circularResolutions?.results.filter(
-            (resolution) =>
-              new Date(resolution.approved_at) > previousDate &&
-              new Date(resolution.approved_at) <= currMeetDate
-          );
-        } else {
-          // For the first meeting, return all resolutions
-          filteredCircularResolutions = circularResolutions?.results;
-        }
+        //   filteredCircularResolutions = circularResolutions?.results.filter(
+        //     (resolution) =>
+        //       new Date(resolution.approved_at) > previousDate &&
+        //       new Date(resolution.approved_at) <= currMeetDate
+        //   );
+        // } else {
+        //   // For the first meeting, return all resolutions
+        //   filteredCircularResolutions = circularResolutions?.results;
+        // }
         console.log(specificMeetInfo, "test-in");
         setPreviousMeet(newDate?.date || null);
         setClientInfo(specificMeetInfo?.client_name);
-        setCircleResolution(filteredCircularResolutions);
+        // setCircleResolution(filteredCircularResolutions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -180,12 +182,15 @@ const DocumentEditor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/agenda`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${apiURL}/agenda?meetingType=shareholder_meeting&status=usable`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
 
         console.log(data.results, "mkjl");
@@ -213,6 +218,7 @@ const DocumentEditor = () => {
         const data = await response.json();
 
         setXResolutions(data?.resolutions);
+        setXSpecialResolutions(data?.resolutions);
         setVariable(data?.variables);
         setDirectorList(data?.participants);
       } catch (error) {
@@ -558,10 +564,10 @@ const DocumentEditor = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  const handleMultipleFilesAddOn = async (urls) => {
-    let count = 5;
-    let csrCount = 1;
-    let csrContent = "";
+  const handleMultipleFilesAddOn = async (urls, spclUrls) => {
+    let count = 1;
+    let spclCount = 1;
+    let spclResolutionContent = "";
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -571,47 +577,43 @@ const DocumentEditor = () => {
       return `${day}/${month}/${year}`; // Fo
       // const result = `${day}/${month}/${year}`;
     }
-    if (page == "board") {
-      if (prevCSR.length >= 1) {
-        let formattedDate = await getFormattedDate(prevCSR[0]?.date);
-        csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
+    if (spclUrls?.length >= 1) {
+      spclResolutionContent += `<br/><h5>Special Resolution</h5><br/>`;
 
-      The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
-        count++;
-      }
-    }
-    if (circleResolution?.length >= 1) {
-      csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
-
-      As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
-
-      for (const url of circleResolution) {
+      for (const url of spclUrls) {
         if (url?.title) {
           const title = url?.title || "Untitled";
 
-          csrContent += `<p>${count}.${csrCount}. ${title}</p>`;
-          csrCount++;
+          spclResolutionContent += `<br/><p>${spclCount}. ${title}</p>`;
+          spclCount++;
         }
 
-        if (url?.fileName) {
-          const response = await fetch(url.fileName);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url?.fileName}`);
-          }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          csrContent += `<div>${result.value}</div>\n`;
+        if (url?.templateFile) {
+          spclResolutionContent += `<div>${url?.templateFile}</div>`;
         } else {
           console.warn("Skipped processing due to missing templateFile:", url);
         }
+
+        // Add resolution file content if available
+        if (url?.resolutionFile) {
+          spclResolutionContent += `<div>${url?.resolutionFile}</div>`;
+        } else {
+          console.warn(
+            "Skipped processing due to missing resolutionFile:",
+            url
+          );
+        }
       }
-      count++;
     } else {
     }
 
     try {
       let combinedContent = "";
       if (urls) {
+        if (urls.length >= 1) {
+          combinedContent += `<h5>Ordinary Resolution</h5><br/>`;
+        }
+
         for (const url of urls) {
           if (url?.title) {
             const title = url?.title || "Untitled";
@@ -624,7 +626,7 @@ const DocumentEditor = () => {
           }
 
           if (url?.templateFile) {
-            combinedContent += `<br/><div>${url?.templateFile}</div>\n`;
+            combinedContent += `<div>${url?.templateFile}</div>\n`;
           } else {
             console.warn(
               "Skipped processing due to missing templateFile:",
@@ -634,7 +636,7 @@ const DocumentEditor = () => {
 
           // Add resolution file content if available
           if (url?.resolutionFile) {
-            combinedContent += `<br/><div>${url?.resolutionFile}</div>`;
+            combinedContent += `<div>${url?.resolutionFile}</div>`;
           } else {
             console.warn(
               "Skipped processing due to missing resolutionFile:",
@@ -657,8 +659,8 @@ Name: \${name}</h6>
         console.log(initializedContent, "inik");
         setEditorContent(
           (initializedContent || "") +
-            (csrContent || "") +
             (combinedContent || "") +
+            (spclResolutionContent || "") +
             (footerContent || "")
         );
       }
@@ -670,9 +672,9 @@ Name: \${name}</h6>
   };
 
   useEffect(() => {
-    handleMultipleFilesAddOn(selectedData);
+    handleMultipleFilesAddOn(selectedData, spclSelectedData);
     processPlaceholders(editorContent);
-  }, [selectedData, prevCSR, circleResolution, initializedContent]);
+  }, [selectedData, prevCSR, initializedContent, spclSelectedData]);
 
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
@@ -787,10 +789,63 @@ Name: \${name}</h6>
 
     setTimeout(() => {
       setSelectedData(selectedAgendas);
-      setPrevoiusSelectedOptions(newSelect);
+      setPreviousSelectedOptions(newSelect);
       // handleAgendaItemChange()
-    }, 3000);
+    }, 1000);
   }, [resolutionList?.length, xresolution?.length]);
+  useEffect(() => {
+    const selectedSpclAgendas = xSpecialResolution
+      ? xSpecialResolution.map((option) => {
+          console.log(option, resolutionList, "match");
+          const agenda = resolutionList?.find((item) => {
+            if (item.title == option.templateName) {
+              return item;
+            }
+          });
+          return {
+            title: agenda?.title || "",
+            templateFile: agenda?.fileName || "",
+            resolutionFile: agenda?.resolutionUrl || "",
+          };
+        })
+      : "";
+    let match = {};
+    let newSelect = [];
+    const selectedOptions = xSpecialResolution
+      ?.map((res) => {
+        match = resolutionList.find(
+          (option) => option.title === res?.templateName
+        );
+        newSelect.push({
+          label: match?.templateName,
+          value: match?.templateName,
+        });
+
+        return {
+          title: match?.title || "",
+          templateFile: match?.fileName || "",
+          resolutionFile: match?.resolutionUrl || "",
+        };
+      })
+      .filter(Boolean);
+    console.log(match, "matches");
+
+    const selectedResolOptions = resolutionList
+      ?.map((res) => {
+        const matchLabels = resolOptions.find(
+          (option) => option.label === res.title
+        );
+        return matchLabels || null;
+      })
+      .filter(Boolean);
+
+    setTimeout(() => {
+      setSpclSelectedData(selectedSpclAgendas);
+      setPreviousSpecialOptions(newSelect);
+      // handleAgendaItemChange()
+    }, 1000);
+  }, [resolutionList?.length, xresolution?.length]);
+
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
     label: resol?.templateName,
@@ -802,55 +857,63 @@ Name: \${name}</h6>
 
   const saveResolutions = async () => {
     try {
-      if (selectedData) {
-        const filteredData = selectedData?.filter(
-          (item) => item.title !== "For #{company_name}"
-        );
-        let meetingType;
-        let url;
-        let redirectedUrl;
-        if (page == "committee") {
-          url = `${apiURL}/committee-meeting/${id}`;
-          redirectedUrl = `/committee-documents/${id}`;
-          meetingType = "committee_meeting";
-        } else if (page == "shareholder") {
-          url = `${apiURL}/shareholder-meeting/${id}`;
-          redirectedUrl = `/shareholder-documents/${id}`;
-          meetingType = "shareholder_meeting";
-        } else {
-          url = `${apiURL}/meeting/${id}`;
-          redirectedUrl = `/documents/${id}`;
-          meetingType = "board_meeting";
-        }
-
-        const resolutions = filteredData?.map((item) => ({
-          templateName: item.title || "",
-          templateFile: item.resolutionFile || "",
-          meetingType: meetingType,
-        }));
-
-        const response = await fetch(url, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ resolutions }),
-        });
-
-        if (response.ok) {
-          toast.success("Resolutions Saved");
-          navigate(redirectedUrl);
-        } else {
-          const errorData = await response.json();
-          toast.error(
-            `Error: ${errorData.message || "Failed to save resolutions"}`
-          );
-        }
+      const filteredData = selectedData?.filter(
+        (item) => item.title !== "For #{company_name}"
+      );
+      const filteredSpclData = spclSelectedData?.filter(
+        (item) => item.title !== "For #{company_name}"
+      );
+      let meetingType;
+      let url;
+      let redirectedUrl;
+      if (page == "committee") {
+        url = `${apiURL}/committee-meeting/${id}`;
+        redirectedUrl = `/committee-documents/${id}`;
+        meetingType = "committee_meeting";
+      } else if (page == "shareholder") {
+        url = `${apiURL}/shareholder-meeting/${id}`;
+        redirectedUrl = `/shareholder-documents/${id}`;
+        meetingType = "shareholder_meeting";
+      } else {
+        url = `${apiURL}/meeting/${id}`;
+        redirectedUrl = `/documents/${id}`;
+        meetingType = "board_meeting";
       }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error occurred while saving the resolutions.");
+
+      const resolutions = filteredData?.map((item) => ({
+        templateName: item.title || "",
+        templateFile: item.resolutionFile || "",
+        meetingType: meetingType,
+      }));
+      const spclResolutions = filteredSpclData?.map((item) => ({
+        templateName: item.title || "",
+        templateFile: item.resolutionFile || "",
+        meetingType: meetingType,
+      }));
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          resolutions,
+          special_resolutions: spclResolutions,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Resolutions Saved");
+        navigate(redirectedUrl);
+      } else {
+        const errorData = await response.json();
+        toast.error(
+          `Error: ${errorData.message || "Failed to save resolutions"}`
+        );
+      }
+    } catch {
+      console.warn(`unable to save resolutions`);
     }
   };
 
@@ -915,7 +978,32 @@ Name: \${name}</h6>
       : [];
     console.log("dds", selectedAgendas);
     setSelectedData(selectedAgendas);
-    setPrevoiusSelectedOptions(selectedOptions || []);
+    setPreviousSelectedOptions(selectedOptions || []);
+    // setFormData((prevData) => ({
+    //   ...prevData,
+    //   agendaItems: selectedAgendas,
+    // }));
+  };
+  const handleSpecialAgendaItemChange = (selectedOptions) => {
+    console.log(resolutionList, "resol-lis");
+    const selectedAgendas = selectedOptions
+      ? selectedOptions?.map((option) => {
+          const agenda = resolutionList.find(
+            (item) => item.templateName === option.value
+          );
+          return {
+            // templateName: option.value,
+            // meetingType: agenda?.meetingType || "",
+            title: agenda?.title || "",
+            templateFile: agenda?.fileName || "",
+            resolutionFile: agenda?.resolutionUrl || "",
+          };
+        })
+      : [];
+    console.log("dds", selectedAgendas);
+    setSpclSelectedData(selectedAgendas);
+
+    setPreviousSpecialOptions(selectedOptions || []);
     // setFormData((prevData) => ({
     //   ...prevData,
     //   agendaItems: selectedAgendas,
@@ -967,10 +1055,20 @@ Name: \${name}</h6>
             <Form.Group controlId="agendaItems" className="mb-5">
               <Select
                 options={resolOptions}
-                placeholder="Select Agenda Documents"
+                placeholder="Select Ordinary Resolution"
                 value={previousSelectedOptions}
                 isMulti
                 onChange={handleAgendaItemChange}
+                isClearable
+              />
+            </Form.Group>
+            <Form.Group controlId="agendaItems" className="mb-5">
+              <Select
+                options={resolOptions}
+                placeholder="Select Special Resolution"
+                value={previousSpecialOptions}
+                isMulti
+                onChange={handleSpecialAgendaItemChange}
                 isClearable
               />
             </Form.Group>
@@ -1081,6 +1179,4 @@ Name: \${name}</h6>
       <ToastContainer />
     </Container>
   );
-};
-
-export default DocumentEditor;
+}

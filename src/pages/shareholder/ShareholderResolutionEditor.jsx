@@ -10,25 +10,23 @@ import {
   TableCell,
   TableRow,
   WidthType,
-  HeightRule,
 } from "docx";
 import { Button, Form, Container, Spinner } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import mammoth from "mammoth";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styling/templateEditor.css";
+import "../../styling/templateEditor.css";
 import JoditEditor from "jodit-react";
 import htmlDocx from "html-docx-js/dist/html-docx";
 import Select from "react-select";
 
-const AcknowledgementEditor = () => {
+export default function ShareholderResolutionEditor() {
   const [rows, setRows] = useState([]);
   const [variable, setVariable] = useState({});
   const [resolutionList, setResolutionList] = useState([]);
-  const [participants, setParticipants] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
   const [meetInfo, setMeetInfo] = useState([]);
   const [meetData, setMeetData] = useState([]);
@@ -43,19 +41,19 @@ const AcknowledgementEditor = () => {
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
+  const resolTitle = location.state?.resolTitle;
   const page = location.state?.page || "";
-  const [buttonLoading, setButtonLoading] = useState(false);
+  const type = location.state?.type || "";
   const editor = useRef(null);
+  console.log(type, "type");
+  const [buttonLoading, setButtonLoading] = useState(false);
 
-  const [refresh, setRefresh] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
         let url;
-        if (page == "committee") {
-          url = `${apiURL}/committee-meeting`;
-        } else if (page == "shareholder") {
+        if (page == "shareholder") {
           url = `${apiURL}/shareholder-meeting`;
         } else {
           url = `${apiURL}/meeting`;
@@ -72,9 +70,7 @@ const AcknowledgementEditor = () => {
 
         if (specificMeetInfo) {
           console.log(specificMeetInfo, "Filtered meetInfo");
-          setMeetInfo(specificMeetInfo);
-          setParticipants(specificMeetInfo.participants);
-          handleFileLoad(fileUrl, specificMeetInfo);
+          setMeetInfo(specificMeetInfo); // Set the filtered object
         } else {
           console.warn("No match found for the specified id.");
         }
@@ -85,7 +81,29 @@ const AcknowledgementEditor = () => {
 
     fetchMeetData(id);
   }, [id, token]);
+  useEffect(() => {
+    const fetchData = async (clientID) => {
+      try {
+        const response = await fetch(
+          `${apiURL}/customer-maintenance/${clientID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
 
+        setClientInfo(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData(meetInfo.client_name?.id);
+  }, [meetInfo.client_name?.id, token]);
+  console.log(meetInfo, "meetInfo");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -97,6 +115,7 @@ const AcknowledgementEditor = () => {
         });
         const data = await response.json();
 
+        console.log(data.results, "mkjl");
         setResolutionList(data.results);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -124,9 +143,7 @@ const AcknowledgementEditor = () => {
     const fetchVariables = async () => {
       try {
         let url;
-        if (page == "committee") {
-          url = `${apiURL}/committee-meeting/${id}`;
-        } else if (page == "shareholder") {
+        if (page == "shareholder") {
           url = `${apiURL}/shareholder-meeting/${id}`;
         } else {
           url = `${apiURL}/meeting/${id}`;
@@ -235,63 +252,55 @@ const AcknowledgementEditor = () => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);
   };
+  useEffect(() => {
+    setTimeout(() => {
+      if (fileUrl) handleFileLoad(fileUrl);
+    }, 1000);
+  }, [fileUrl]);
 
   // Load file content and process placeholders
-  const handleFileLoad = async (url, specificMeetInfo) => {
+  const handleFileLoad = async (url) => {
     try {
       const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-
-      const tableHTML = `
-      <table class="table table-bordered table-hover Master-table" style="width: 100%; border-collapse: collapse;">
-        <thead class="Master-Thead" >
-          <tr >
-            <th rowspan="2" style="border: 1px solid black;">Director</th>
-            <th colspan="2" style="border: 1px solid black;">Acknowledgement towards receipt<br/> of Notice, Agenda Notes</th>
-            <th colspan="2" style="border: 1px solid black;">Acknowledgement towards receipt<br/> of Draft Minutes</th>
-          </tr>
-          <tr >
-            <th style="border: 1px solid black;">Signature</th>
-            <th style="border: 1px solid black;">Date of Receipt</th>
-            <th style="border: 1px solid black;">Signature</th>
-            <th style="border: 1px solid black;">Date of Receipt</th>
-          </tr>
-        </thead>
-        <tbody >
-          ${specificMeetInfo?.participants
-            ?.map(
-              (participant, index) => `
-            <tr>
-              <td style="border: 1px solid black;">${
-                participant?.director?.name || "Unknown"
-              }</td>
-              <td style="border: 1px solid black;">${
-                participant?.acknowledgementNotice?.signature || ""
-              }</td>
-              <td style="border: 1px solid black;">${
-                participant?.acknowledgementNotice?.date || ""
-              }</td>
-              <td style="border: 1px solid black;">${
-                participant?.draftMinutes?.signature || ""
-              }</td>
-              <td style="border: 1px solid black;">${
-                participant?.draftMinutes?.date || ""
-              }</td>
-            </tr>
-            `
-            )
-            .join("")}
-        </tbody>
-      </table>
-      <br/>
-      <br/>
-    `;
-
-      setEditorContent(updatedHtmlString + tableHTML);
       setInitializedContent(updatedHtmlString);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
+  useEffect(() => {
+    const handleMultipleFilesAddOn = async () => {
+      try {
+        // Add title at the top
+        const title = `CERTIFIED TRUE COPY OF THE ${type} RESOLUTION PASSED BY THE MEMBERS AT THE #{counter} ANNUAL GENERAL MEETING OF #{company_name} HELD ON #{day_date}. `;
+        let titleContent = `<h3>${title}</h3>\n<br/>`;
+        let subTitle = `<h3>${resolTitle}</h3>`;
+
+        let footerContent = `<br/><p>For #{company_name}</p>
+
+<br/>
+<p>
+  Name: \${name}</p>
+ <p> Director</p>
+ <p> DIN: \${din_pan}</p>
+`;
+        setEditorContent(
+          titleContent + subTitle + initializedContent + footerContent
+        );
+      } catch (error) {
+        console.error("Error fetching or converting one or more files:", error);
+      }
+    };
+    setTimeout(() => {
+      handleMultipleFilesAddOn();
+    }, 2000);
+
+    processPlaceholders();
+  }, [initializedContent]);
+
+  // Load content on file URL change
+  useEffect(() => {
+    if (fileUrl) handleFileLoad(fileUrl);
+  }, [fileUrl]);
 
   const autofillPlaceholders = () => {
     // Replace placeholders for non-system variables
@@ -319,19 +328,6 @@ const AcknowledgementEditor = () => {
     setEditorContent(updatedContent);
   };
 
-  const handleConfirm = (placeholder) => {
-    const value = inputFields[placeholder] || placeholder;
-    const updatedContent = editorContent.replace(
-      new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
-      value
-    );
-    setEditorContent(updatedContent);
-    setConfirmedFields((prevState) => ({
-      ...prevState,
-      [placeholder]: true,
-    }));
-  };
-
   const handleInputChange = (placeholder, value) => {
     // Prevent editing of system variables
     if (confirmedFields[placeholder]) return;
@@ -353,22 +349,19 @@ const AcknowledgementEditor = () => {
 
     const formData = new FormData();
     formData.append("htmlcontent", editorContent);
-
-    formData.append("acknowledgement_file", docxBlob);
+    formData.append("resolution_file", docxBlob);
+    formData.append("index", `${index}`);
     try {
       let url;
       let redirectedUrl;
-      if (page === "committee") {
-        url = `${apiURL}/committee-meeting/${id}`;
-        redirectedUrl = `/committee-documents/${id}?tab=acknowledgement`;
-      } else if (page === "shareholder") {
+      if (page === "shareholder") {
         url = `${apiURL}/shareholder-meeting/${id}`;
-        redirectedUrl = `/shareholder-documents/${id}?tab=acknowledgement`;
+        redirectedUrl = `/shareholder-documents/${id}?tab=resolution`;
       } else {
         url = `${apiURL}/meeting/${id}`;
-        redirectedUrl = `/documents/${id}?tab=acknowledgement`;
+        redirectedUrl = `/documents/${id}?tab=resolution`;
       }
-      const response = await fetch(`${apiURL}/meeting/${id}`, {
+      const response = await fetch(url, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -377,7 +370,7 @@ const AcknowledgementEditor = () => {
       });
 
       if (response.ok) {
-        navigate(`/documents/${id}`);
+        navigate(redirectedUrl);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -393,7 +386,7 @@ const AcknowledgementEditor = () => {
 
   return (
     <Container className="mt-5">
-      <h1>Acknowledgement Document</h1>
+      <h1>Resolution Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <JoditEditor
@@ -459,7 +452,7 @@ const AcknowledgementEditor = () => {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Acknowledgement"
+                "Save Resolution"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
@@ -474,6 +467,4 @@ const AcknowledgementEditor = () => {
       <ToastContainer />
     </Container>
   );
-};
-
-export default AcknowledgementEditor;
+}

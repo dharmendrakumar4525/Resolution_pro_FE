@@ -24,10 +24,15 @@ export default function Shareholders() {
   const [formData, setFormData] = useState({
     company_id: "",
     name: "",
-    designation: "",
-    begin_date: "",
-    "din/pan": "",
     email: "",
+    type: "",
+    address: "",
+    no_of_shares: "",
+    holding_percent: "",
+    beneficial_name: "",
+    SBO_name: "",
+    SBO_address: "",
+    dematerialised: false,
   });
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
@@ -55,15 +60,19 @@ export default function Shareholders() {
     };
     fetchData();
   }, [id]);
-
   const handleOpenAddModal = () => {
     setFormData({
       company_id: `${id}`,
       name: "",
-      designation: "",
-      begin_date: "",
-      "din/pan": "",
       email: "",
+      type: "",
+      address: "",
+      no_of_shares: "",
+      holding_percent: "",
+      beneficial_name: "",
+      SBO_name: "",
+      SBO_address: "",
+      dematerialised: false,
     });
     setEditingRow(null);
     setOpenAddModal(true);
@@ -72,6 +81,13 @@ export default function Shareholders() {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
+  };
+  const handleCheckboxChange = (e) => {
+    const { id, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [id]: type === "checkbox" ? checked : value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -119,12 +135,17 @@ export default function Shareholders() {
       }
       setOpenAddModal(false);
       setFormData({
-        company_id: "",
+        company_id: `${id}`,
         name: "",
-        designation: "",
-        begin_date: "",
-        "din/pan": "",
         email: "",
+        type: "",
+        address: "",
+        no_of_shares: "",
+        holding_percent: "",
+        beneficial_name: "",
+        SBO_name: "",
+        SBO_address: "",
+        dematerialised: false,
       });
     } catch (error) {
       toast.error(error.message);
@@ -154,12 +175,17 @@ export default function Shareholders() {
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
-      company_id: row?.company_id,
-      name: row?.name,
-      designation: row?.designation,
-      begin_date: row?.begin_date,
-      "din/pan": row["din/pan"],
-      email: row?.email,
+      company_id: row?.company_id || "",
+      name: row?.name || "",
+      email: row?.email || "",
+      type: row?.type || "",
+      address: row?.address || "",
+      no_of_shares: row?.no_of_shares || "",
+      holding_percent: row?.holding_percent || "",
+      beneficial_name: row?.beneficial_name || "",
+      SBO_name: row?.SBO_name || "",
+      SBO_address: row?.SBO_address || "",
+      dematerialised: row?.dematerialised || false,
     });
     setOpenAddModal(true);
   };
@@ -201,38 +227,6 @@ export default function Shareholders() {
                 />
               </Form.Group>
 
-              <Form.Group controlId="designation" className="mb-3">
-                <Form.Label>Designation</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.designation}
-                  onChange={handleChange}
-                  placeholder="Enter Designation"
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group controlId="begin_date" className="mb-3">
-                <Form.Label>Start Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formData.begin_date}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group controlId="din/pan" className="mb-3">
-                <Form.Label>DIN/PAN</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData["din/pan"]}
-                  onChange={handleChange}
-                  placeholder="Enter DIN/PAN"
-                  required
-                />
-              </Form.Group>
-
               <Form.Group controlId="email" className="mb-3">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
@@ -243,6 +237,92 @@ export default function Shareholders() {
                   required
                 />
               </Form.Group>
+
+              <Form.Group controlId="type" className="mb-3">
+                <Form.Label>Type</Form.Label>
+                <Form.Select
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="" disabled>
+                    Select Type
+                  </option>
+                  <option value="equity">Equity</option>
+                  <option value="preference">Preference</option>
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group controlId="address" className="mb-3">
+                <Form.Label>Address</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Enter Address"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="no_of_shares" className="mb-3">
+                <Form.Label>Number of Shares</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.no_of_shares}
+                  onChange={handleChange}
+                  placeholder="Enter Number of Shares"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="holding_percent" className="mb-3">
+                <Form.Label>Holding Percentage</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.holding_percent}
+                  onChange={handleChange}
+                  placeholder="Enter Holding Percentage"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="beneficial_name" className="mb-3">
+                <Form.Label>Beneficial Owner Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.beneficial_name}
+                  onChange={handleChange}
+                  placeholder="Enter Beneficial Owner Name"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="SBO_name" className="mb-3">
+                <Form.Label>SBO Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.SBO_name}
+                  onChange={handleChange}
+                  placeholder="Enter SBO Name"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="SBO_address" className="mb-3">
+                <Form.Label>SBO Address</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.SBO_address}
+                  onChange={handleChange}
+                  placeholder="Enter SBO Address"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="dematerialised" className="mb-3">
+                <Form.Check
+                  type="checkbox"
+                  id="dematerialised"
+                  label="Dematerialised"
+                  checked={formData.dematerialised}
+                  onChange={handleCheckboxChange}
+                />
+              </Form.Group>
+
               <Button
                 variant="primary"
                 onClick={() => setOpenAddModal(false)}
@@ -284,10 +364,9 @@ export default function Shareholders() {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Designation</th>
-                  <th>Start Date</th>
-                  <th>DIN/PAN</th>
-                  <th>End Date</th>
+                  <th>Type</th>
+                  <th>Holding Percentage</th>
+                  <th>Beneficial Name</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -296,12 +375,9 @@ export default function Shareholders() {
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
                     <td>{row?.email}</td>
-                    <td>{row?.designation}</td>
-                    <td>
-                      {new Date(row?.begin_date).toLocaleDateString("en-GB")}
-                    </td>
-                    <td>{row["din/pan"]}</td>
-                    <td>{row?.end_date || "-"}</td>
+                    <td>{row?.type || "-"}</td>
+                    <td>{row?.holding_percent || "-"}</td>
+                    <td>{row?.beneficial_name}</td>
                     <td>
                       <Button
                         variant="outline-primary"

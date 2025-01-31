@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
@@ -19,6 +19,8 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 import Select from "react-select";
 
 const MomEditor = () => {
@@ -40,6 +42,7 @@ const MomEditor = () => {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const page = location.state?.page || "";
+  const editor = useRef(null);
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
@@ -255,88 +258,79 @@ const MomEditor = () => {
   // Load file content and process placeholders
   const handleFileLoad = async (url) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      setEditorContent(result.value);
-      setInitializedContent(result.value);
+      console.log(url, "url-124");
+      const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      // setInitializedContent(updatedHtmlString);
+      setEditorContent(updatedHtmlString);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
   };
-  useEffect(() => {
-    const handleMultipleFilesAddOn = async (urls) => {
-      try {
-        // Add title at the top
-        const title = urls?.[0]?.title || "Untitled";
-        let combinedContent = `<>${title}</>\n`;
+  // useEffect(() => {
+  //   const handleMultipleFilesAddOn = async (urls) => {
+  //     try {
+  //       // Add title at the top
+  //       const title = urls?.[0]?.title || "Untitled";
+  //       let combinedContent = `<>${title}</>\n`;
 
-        // Fetch and process files concurrently
-        console.log(urls, "mk");
-        const fetchPromises = urls.map(async (url) => {
-          const processedContent = [];
+  //       // Fetch and process files concurrently
+  //       console.log(urls, "mk");
+  //       const fetchPromises = urls.map(async (url) => {
+  //         const processedContent = [];
 
-          if (url?.templateFile) {
-            console.log("Processing templateFile:", url.templateFile);
-            const response = await fetch(url.templateFile);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file from: ${url.templateFile}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
+  //         if (url?.templateFile) {
+  //           console.log("Processing templateFile:", url.templateFile);
+  //           const response = await fetch(url.templateFile);
+  //           if (!response.ok) {
+  //             throw new Error(`Failed to fetch file from: ${url.templateFile}`);
+  //           }
+  //           const arrayBuffer = await response.arrayBuffer();
+  //           const result = await mammoth.convertToHtml({ arrayBuffer });
+  //           processedContent.push(`${result.value}`);
+  //         } else {
+  //           console.warn(
+  //             "Skipped processing due to missing templateFile:",
+  //             url
+  //           );
+  //         }
 
-          if (url?.resolutionFile) {
-            console.log("Processing resolutionFile:", url.resolutionFile);
-            const response = await fetch(url.resolutionFile);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch file from: ${url.resolutionFile}`
-              );
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            processedContent.push(`</br>${result.value}`);
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
-          }
+  //         if (url?.resolutionFile) {
+  //           console.log("Processing resolutionFile:", url.resolutionFile);
+  //           const response = await fetch(url.resolutionFile);
+  //           if (!response.ok) {
+  //             throw new Error(
+  //               `Failed to fetch file from: ${url.resolutionFile}`
+  //             );
+  //           }
+  //           const arrayBuffer = await response.arrayBuffer();
+  //           const result = await mammoth.convertToHtml({ arrayBuffer });
+  //           processedContent.push(`</br>${result.value}`);
+  //         } else {
+  //           console.warn(
+  //             "Skipped processing due to missing resolutionFile:",
+  //             url
+  //           );
+  //         }
 
-          return processedContent.join("\n");
-        });
+  //         return processedContent.join("\n");
+  //       });
 
-        const results = await Promise.all(fetchPromises);
-        combinedContent += results.join("\n");
-        setEditorContent(initializedContent + combinedContent);
-      } catch (error) {
-        console.error("Error fetching or converting one or more files:", error);
-      }
-    };
+  //       const results = await Promise.all(fetchPromises);
+  //       combinedContent += results.join("\n");
+  //       setEditorContent(initializedContent + combinedContent);
+  //     } catch (error) {
+  //       console.error("Error fetching or converting one or more files:", error);
+  //     }
+  //   };
 
-    handleMultipleFilesAddOn(selectedData);
-    processPlaceholders(selectedData);
-  }, [selectedData]);
+  //   handleMultipleFilesAddOn(selectedData);
+  //   processPlaceholders(selectedData);
+  // }, [selectedData]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
-  }, [fileUrl]);
-
-  // Load content on file URL change
   useEffect(() => {
     setTimeout(() => {
       if (fileUrl) handleFileLoad(fileUrl);
-    }, 3000);
+    }, 1000);
   }, [fileUrl]);
 
   const autofillPlaceholders = () => {
@@ -388,113 +382,17 @@ const MomEditor = () => {
     }));
   };
 
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    const children = Array.from(elements).map((element) => {
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row) => {
-          const cells = Array.from(row.cells).map((cell) => {
-            return new TableCell({
-              children: [
-                new Paragraph({ children: [new TextRun(cell.textContent)] }),
-              ],
-              width: { size: 1000, type: WidthType.AUTO },
-            });
-          });
-          return new TableRow({ children: cells });
-        });
-        return new Table({
-          rows: rows,
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(formattedContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
   const resolOptions = resolutionList.map((resol) => ({
     value: resol.templateName,
     label: resol.templateName,
   }));
   const saveDocument = async () => {
     setButtonLoading(true);
-
-    const docBlob = await createWordDocument();
+    const docxBlob = htmlDocx.asBlob(editorContent);
 
     const formData = new FormData();
-    formData.append("mom_file", docBlob);
+    formData.append("htmlcontent", editorContent);
+    formData.append("mom_file", docxBlob);
     try {
       let url;
       let redirectedUrl;
@@ -536,12 +434,11 @@ const MomEditor = () => {
       <h1>Mom Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: false,
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
         </div>

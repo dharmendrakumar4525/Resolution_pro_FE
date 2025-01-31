@@ -655,20 +655,16 @@ export default function EditShareholderMeeting() {
                 </Form.Group>
               </Col>
               <Col md={6} lg={4}>
-                <Form.Group controlId="selectTimeZone">
-                  <Form.Label className="f-label">
-                    Select Time Zone<sup>*</sup>
+                <Form.Group controlId="standard_time">
+                  <Form.Label>
+                    Time Zone<sup>*</sup>
                   </Form.Label>
 
-                  <Select
-                    id="time-zone-select"
-                    options={timeZoneOptions}
-                    value={timeZoneOptions.find(
-                      (option) => option.value === formData?.standard_time
-                    )}
-                    onChange={handleTimeZoneChange}
-                    isSearchable
-                    placeholder="Choose Time Zone"
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Time Zone"
+                    value={formData.standard_time}
+                    onChange={handleChange}
                   />
                 </Form.Group>
               </Col>

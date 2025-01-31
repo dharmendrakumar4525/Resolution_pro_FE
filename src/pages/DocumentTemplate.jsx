@@ -219,6 +219,7 @@ export default function DocumentTemplate() {
 
       requestData.append("meetingType", formData.meetingType);
       requestData.append("templateName", formData.templateName);
+      requestData.append("fileName", `<p>This is Blank file</p>`);
 
       if (editingRow) {
         requestData.append("status", formData.status);
@@ -235,24 +236,13 @@ export default function DocumentTemplate() {
       } else {
         requestData.append("by", formData.by);
 
-        if (formData.fileName == "") {
-          response = await fetch(`${apiURL}/meeting-agenda-template`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: requestData,
-          });
-        } else {
-          requestData.append("file", formData.fileName);
-          response = await fetch(`${apiURL}/meeting-agenda-template`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: requestData,
-          });
-        }
+        response = await fetch(`${apiURL}/meeting-agenda-template`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: requestData,
+        });
       }
 
       if (!response.ok) {
@@ -352,7 +342,7 @@ export default function DocumentTemplate() {
                     />
                   </Form.Group>
                 </Col>
-                {!editingRow ? (
+                {/* {!editingRow ? (
                   <Col md={6}>
                     <Form.Group controlId="fileName">
                       <Form.Label className="f-label">Upload File</Form.Label>
@@ -377,10 +367,7 @@ export default function DocumentTemplate() {
                       </Form.Group>
                     </Col>
                   </>
-                )}
-              </Row>
-
-              <Row className="mb-3">
+                )} */}
                 <Col md={6}>
                   <Form.Group controlId="meetingType">
                     <Form.Label className="f-label">
@@ -402,6 +389,9 @@ export default function DocumentTemplate() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
+              </Row>
+
+              <Row className="mb-3">
                 {editingRow && user?.role === "672c47c238903b464c9d2920" && (
                   <Col md={6}>
                     <Form.Group controlId="status">
@@ -479,15 +469,6 @@ export default function DocumentTemplate() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row?.id}>
-                    {/* <td>
-        {row?.status === "draft" ? (
-          <button className="director-btn d-flex align-items-center gap-2" >
-                 <FaPencilAlt /> Draft
-          </button>
-        ) : (
-          row?.status
-        )}
-      </td> */}
                     <td>{row?.templateName}</td>
                     <td>{row?.meetingType}</td>
                     <td>

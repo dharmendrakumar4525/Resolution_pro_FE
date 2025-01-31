@@ -25,6 +25,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
 import Select from "react-select";
+import { saveAs } from "file-saver";
 
 export default function CircularResolution() {
   const [rows, setRows] = useState([]);
@@ -34,7 +35,7 @@ export default function CircularResolution() {
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
-
+  const [htmlTemplate, setHtmlTemplate] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
   const [refresh, setRefresh] = useState(true);
   const [filterName, setFilterName] = useState("");
@@ -114,8 +115,26 @@ export default function CircularResolution() {
       console.error("Error fetching clients:", error);
     }
   };
+  const fetchCircularTemplate = async () => {
+    try {
+      const response = await fetch(
+        `${apiURL}/meeting-agenda-template/6784ba96ace7f5fa0736e678`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setHtmlTemplate(data?.fileName);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
   useEffect(() => {
     fetchClientList();
+    fetchCircularTemplate();
   }, [token]);
 
   const clientOptions = clientList?.map((client) => ({
@@ -140,7 +159,7 @@ export default function CircularResolution() {
   const handleViewResolutionTemplate = (row, e) => {
     e.stopPropagation();
     navigate(`/circular-resolution-generate/${row?.id}`, {
-      state: row?.fileName,
+      state: { fileUrl: row?.templateFile, circular: row },
     });
   };
 
@@ -250,6 +269,8 @@ export default function CircularResolution() {
       } else {
         requestData.append("created_by", formData.created_by);
         if (formData.fileName == "") {
+          requestData.append("templateFile", htmlTemplate);
+
           response = await fetch(`${apiURL}/circular-resolution`, {
             method: "POST",
             headers: {
@@ -258,7 +279,7 @@ export default function CircularResolution() {
             body: requestData,
           });
         } else {
-          requestData.append("fileName", formData.fileName);
+          requestData.append("file", formData.fileName);
           response = await fetch(`${apiURL}/circular-resolution`, {
             method: "POST",
             headers: {
@@ -298,6 +319,25 @@ export default function CircularResolution() {
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
+  };
+  const handleView = (url, index) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
+    navigate(`/template-group-meeting-view/2}`, {
+      state: {
+        index,
+        fileUrl: url,
+      },
+    });
+  };
+  const handleDownload = (row) => {
+    if (row?.filedocx) {
+      saveAs(row.filedocx, "customFileName.docx");
+    } else {
+      console.error("File URL is not available");
+    }
   };
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Circular_Resolution")
@@ -386,7 +426,7 @@ export default function CircularResolution() {
                 </Col>
               </Row>
               <Row className="mb-3">
-                <Col>
+                <Col md={6}>
                   <Form.Group controlId="meeting_type">
                     <Form.Label className="f-label">
                       Meeting Type<sup>*</sup>
@@ -407,76 +447,45 @@ export default function CircularResolution() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
-
-                {!editingRow ? (
-                  <Col>
-                    <Form.Group controlId="fileName">
-                      <Form.Label className="f-label">
-                        Upload Circular Resolution
-                      </Form.Label>
-                      <Form.Control
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        placeholder="Choose a file"
-                      />
-                    </Form.Group>
-                  </Col>
-                ) : (
+                {editingRow && user?.role === "672c47c238903b464c9d2920" && (
                   <>
-                    <Col>
-                      <Form.Group controlId="fileName">
+                    <Col md={6}>
+                      <Form.Group controlId="status">
                         <Form.Label className="f-label">
-                          Resolution File Url
+                          Status<sup>*</sup>
                         </Form.Label>
                         <Form.Control
-                          type="text"
-                          placeholder="Choose a file"
-                          value={formData.fileName}
-                          readOnly
-                        />
+                          as="select"
+                          value={formData.status}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select Status</option>
+                          <option value="draft">Draft</option>
+                          <option value="sent_for_approval">
+                            Sent for Approval
+                          </option>
+                          <option value="rejected">Rejected</option>
+                          <option value="approved">Approved</option>
+                        </Form.Control>
                       </Form.Group>
                     </Col>
+                    {formData?.status === "approved" && (
+                      <Col md={6}>
+                        <Form.Group controlId="approved_at">
+                          <Form.Label className="f-label">
+                            Approved Date<sup>*</sup>
+                          </Form.Label>
+                          <Form.Control
+                            type="date"
+                            value={formData.approved_at || ""}
+                            onChange={handleChange}
+                          />
+                        </Form.Group>
+                      </Col>
+                    )}
                   </>
                 )}
               </Row>
-              {editingRow && user?.role === "672c47c238903b464c9d2920" && (
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <Form.Group controlId="status">
-                      <Form.Label className="f-label">
-                        Status<sup>*</sup>
-                      </Form.Label>
-                      <Form.Control
-                        as="select"
-                        value={formData.status}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="sent_for_approval">
-                          Sent for Approval
-                        </option>
-                        <option value="rejected">Rejected</option>
-                        <option value="approved">Approved</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                  {formData?.status === "approved" && (
-                    <Col md={6}>
-                      <Form.Group controlId="approved_at">
-                        <Form.Label className="f-label">
-                          Approved Date<sup>*</sup>
-                        </Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={formData.approved_at || ""}
-                          onChange={handleChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  )}
-                </Row>
-              )}
 
               <Button
                 variant="primary"
@@ -521,14 +530,18 @@ export default function CircularResolution() {
             <Table bordered hover responsive className="Master-table mt-5">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Title</th>
-                  <th>Client Name</th>
-                  <th>Meeting Type</th>
-                  <th>Status</th>
-                  <th>Resolution File</th>
-                  <th>Actions</th>
+                  <th style={{ width: "15%" }}>Title</th>
+                  <th style={{ width: "15%" }}>Client Name</th>
+                  <th style={{ width: "10%" }}>Meeting Type</th>
+                  <th style={{ width: "10%" }}>Status</th>
+                  <th style={{ width: "5%" }}>Resolution File</th>
+                  <th style={{ width: "5%" }}>View Saved Document</th>
+                  <th style={{ width: "5%" }}>Download as Docx</th>
+                  <th style={{ width: "5%" }}>Download as Pdf</th>
+                  <th style={{ width: "5%" }}>Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {rows?.map((row, index) => (
                   <tr key={index}>
@@ -545,6 +558,47 @@ export default function CircularResolution() {
                           style={{ height: "40px", alignContent: "center" }}
                         />
                       </button>
+                    </td>
+                    <td>
+                      <button
+                        className="director-btn"
+                        onClick={() => handleView(row?.filehtml, 1)}
+                        disabled={!row?.filehtml}
+                      >
+                        <FaFileWord
+                          style={{ height: "40px", alignContent: "center" }}
+                        />
+                      </button>
+                    </td>
+                    <td>
+                      {row?.fileName && row?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={row?.fileName}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {row?.filedocx && row?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          onClick={() => handleDownload(row)}
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
                     </td>
                     <td>
                       {hasPermission("edit") && (

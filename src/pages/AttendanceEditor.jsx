@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
@@ -23,6 +23,8 @@ import { apiURL } from "../API/api";
 import { toast, ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styling/templateEditor.css";
+import JoditEditor from "jodit-react";
+import htmlDocx from "html-docx-js/dist/html-docx";
 import Select from "react-select";
 
 const AttendanceEditor = () => {
@@ -46,6 +48,7 @@ const AttendanceEditor = () => {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const page = location.state?.page || "";
+  const editor = useRef(null);
 
   const [refresh, setRefresh] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -241,10 +244,7 @@ const AttendanceEditor = () => {
   // Load file content and process placeholders
   const handleFileLoad = async (url, specificMeetInfo) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const updatedHtmlString = url.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
       console.log(meetInfo, clientInfo, "venue dhund");
       let venue;
       if (
@@ -256,7 +256,7 @@ const AttendanceEditor = () => {
         venue = `${specificMeetInfo?.variables?.venue}`;
       }
       const tableHTML = `<br/>
-      <table class="table table-bordered table-hover Master-table">
+      <table class="table table-bordered table-hover Master-table" style="width: 100%; border-collapse: collapse;">
         <thead class="Master-Thead">
           <tr>
             <th>Director</th>
@@ -286,7 +286,7 @@ const AttendanceEditor = () => {
 <h6> DIN: \${din_pan}</h6>
 `;
 
-      setEditorContent(result.value + venue + tableHTML);
+      setEditorContent(updatedHtmlString + venue + tableHTML);
     } catch (error) {
       console.error("Error fetching or converting the file:", error);
     }
@@ -346,122 +346,6 @@ const AttendanceEditor = () => {
     }));
   };
 
-  const parseHtmlToDocx = (htmlContent) => {
-    const parser = new DOMParser();
-    const content = parser.parseFromString(htmlContent, "text/html");
-    const elements = content.body.childNodes;
-
-    console.log(content, "cont-elements");
-    console.log(htmlContent, "elements");
-    const children = Array.from(elements).map((element) => {
-      console.log(element.tagName, "tagname");
-      if (element.tagName === "B" || element.tagName === "STRONG") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, bold: true })],
-        });
-      } else if (element.tagName === "I" || element.tagName === "EM") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, italics: true })],
-        });
-      } else if (element.tagName === "U") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent, underline: {} })],
-        });
-      } else if (element.tagName === "H1") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 48 }),
-          ],
-        });
-      } else if (element.tagName === "H2") {
-        return new Paragraph({
-          children: [
-            new TextRun({ text: element.textContent, bold: true, size: 36 }),
-          ],
-        });
-      } else if (element.tagName === "LI") {
-        return new Paragraph({
-          children: [new TextRun({ text: element.textContent })],
-          bullet: { level: 0 },
-        });
-      } else if (element.tagName === "FIGURE") {
-        const table = element.querySelector("table"); // Get the table inside the figure
-        if (table) {
-          const rows = Array.from(table.rows).map((row) => {
-            const cells = Array.from(row.cells).map((cell) => {
-              return new TableCell({
-                children: [
-                  new Paragraph({ children: [new TextRun(cell.textContent)] }),
-                ],
-                width: { size: 1000, type: WidthType.AUTO },
-              });
-            });
-            return new TableRow({ children: cells });
-          });
-          return new Table({
-            rows: rows,
-          });
-        }
-      }
-
-      // Handle tables directly (outside of figure tag)
-      else if (element.tagName === "TABLE") {
-        const rows = Array.from(element.rows).map((row, rowIndex) => {
-          const totalColumns = row.cells.length; // Get the total number of columns
-          const columnWidth = 100 / totalColumns;
-          const cells = Array.from(row.cells).map((cell, cellIndex) => {
-            return new TableCell({
-              children: [
-                new Paragraph({
-                  children: [new TextRun(cell.textContent)],
-                  alignment: "center",
-                }),
-              ],
-              margins: { top: 0, bottom: 0, left: 0, right: 0 }, // Remove unnecessary margins
-              verticalAlign: "center",
-              width: { size: columnWidth, type: WidthType.PERCENTAGE }, // Adjust width dynamically
-            });
-          });
-          return new TableRow({
-            children: cells,
-            height:
-              rowIndex === 0
-                ? undefined
-                : { value: 1500, rule: HeightRule.EXACT }, // Skip height for the first row
-          });
-        });
-        return new Table({
-          rows: rows,
-          width: { size: 100, type: WidthType.PERCENTAGE },
-          // Make table width responsive
-          // alignment: AlignmentType.CENTER, // Center the table horizontally
-          margins: { top: 0, bottom: 0 }, // Reduce gaps above and below the table
-        });
-      } else {
-        return new Paragraph({
-          children: [new TextRun(element.textContent)],
-        });
-      }
-    });
-
-    return children;
-  };
-
-  const createWordDocument = async () => {
-    // const formattedContent = editorContent.replace(/\n/g, "<br>");
-    const parsedContent = parseHtmlToDocx(editorContent);
-
-    const doc = new Document({
-      sections: [
-        {
-          children: parsedContent,
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    return blob;
-  };
   const resolOptions = resolutionList.map((resol) => ({
     value: resol.templateName,
     label: resol.templateName,
@@ -469,11 +353,11 @@ const AttendanceEditor = () => {
   const saveDocument = async () => {
     setButtonLoading(true);
 
-    const docBlob = await createWordDocument();
-    // saveAs(docBlob)
-    // return
+    const docxBlob = htmlDocx.asBlob(editorContent);
+
     const formData = new FormData();
-    formData.append("attendance_file", docBlob);
+    formData.append("htmlcontent", editorContent);
+    formData.append("attendance_file", docxBlob);
     try {
       let url;
       let redirectedUrl;
@@ -515,12 +399,11 @@ const AttendanceEditor = () => {
       <h1>Attendance Document</h1>
       <div className="parentContainer">
         <div className="leftContainer">
-          <CKEditor
-            editor={ClassicEditor}
-            data={editorContent}
-            onChange={(event, editor) => handleEditorChange(editor.getData())}
-            config={{
-              toolbar: false,
+          <JoditEditor
+            ref={editor}
+            value={editorContent}
+            onChange={(newContent) => {
+              setEditorContent(newContent);
             }}
           />
         </div>
