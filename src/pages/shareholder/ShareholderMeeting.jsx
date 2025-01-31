@@ -146,6 +146,7 @@ export default function ShareholderMeeting() {
                 <tr>
                   <th>Meeting Name</th>
                   <th>Client Name</th>
+                  <th>Meeting Type</th>
                   <th>Start Time</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -161,6 +162,7 @@ export default function ShareholderMeeting() {
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.title}</td>
                       <td>{row?.client_name?.company_name}</td>
+                      <td>{row?.shareholder_meeting_type}</td>
                       <td style={{ textAlign: "center" }}>{row?.startTime}</td>
                       <td>{new Date(row?.date).toLocaleDateString()}</td>
 

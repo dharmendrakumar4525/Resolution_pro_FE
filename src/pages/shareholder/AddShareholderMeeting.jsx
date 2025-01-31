@@ -29,6 +29,7 @@ export default function AddShareholderMeeting() {
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [selectedKompany, setSelectedKompany] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
@@ -38,6 +39,9 @@ export default function AddShareholderMeeting() {
     title: "",
     client_name: "",
     meetingType: "shareholder_meeting",
+    shareholder_meeting_type: "",
+    auditor_participant: {},
+    secretary_participant: {},
     date: "",
     startTime: "",
     standard_time: "",
@@ -120,6 +124,8 @@ export default function AddShareholderMeeting() {
         const idsToShow = [
           "677f7e3d2522b858279b624a",
           "677f7e642522b858279b6250",
+          "677f7e7e2522b858279b6256",
+          "677f7e982522b858279b625c",
         ];
 
         const usableAgendas = data.results.filter((item) =>
@@ -142,6 +148,8 @@ export default function AddShareholderMeeting() {
       );
 
       if (selectedCompany) {
+        setSelectedKompany([selectedCompany]);
+        console.log([selectedCompany], "itz updated");
         countPreviousMeetings(rows, selectedCompany._id);
       }
     }
@@ -277,9 +285,7 @@ export default function AddShareholderMeeting() {
         const data = await response.json();
 
         setDocxUrl(data?.results);
-        if (
-          formData?.agendaItems[0]?.templateName == "Shareholder Meeting Agenda"
-        ) {
+        if (formData?.agendaItems[0]?.templateName == "AGM Physical Agenda") {
           const acknowledgementTemplate = data?.results?.find(
             (item) => item.id === "677f7ecd2522b858279b6268"
           );
@@ -361,8 +367,7 @@ export default function AddShareholderMeeting() {
             }
           }
         } else if (
-          formData?.agendaItems[0]?.templateName ==
-          "Shareholder Meeting Agenda virtual"
+          formData?.agendaItems[0]?.templateName == "EGM Physical Agenda"
         ) {
           const acknowledgementTemplate = data?.results?.find(
             (item) => item.id === "677f7ef72522b858279b6277"
@@ -626,32 +631,36 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
-                <Form.Label>
-                  Meeting Documents <sup>*</sup>
-                </Form.Label>
-
-                <Form.Group controlId="agendaItems">
+              <Col md={6} lg={4} className="mt-2">
+                <Form.Group controlId="shareholder_meeting_type">
+                  <Form.Label>
+                    Meeting Type<sup>*</sup>
+                  </Form.Label>
                   <Select
-                    options={agendaOptions}
-                    placeholder="Select Meeting Document"
-                    value={
-                      formData.agendaItems.length > 0
-                        ? {
-                            value: formData.agendaItems[0].templateName,
-                            label: formData.agendaItems[0].templateName,
-                          }
-                        : null
+                    id="meeting-type-select"
+                    options={[
+                      { value: "AGM", label: "Annual General Meeting" },
+                      { value: "EGM", label: "Extraordinary General Meeting" },
+                    ]}
+                    placeholder="Select Meeting Type"
+                    value={[
+                      { value: "AGM", label: "Annual General Meeting" },
+                      { value: "EGM", label: "Extraordinary General Meeting" },
+                    ].find(
+                      (option) =>
+                        option.value === formData?.shareholder_meeting_type
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        shareholder_meeting_type: selectedOption?.value || "",
+                      }))
                     }
-                    onChange={handleAgendaItemChange}
                     isClearable
                   />
                 </Form.Group>
               </Col>
-            </Row>
-
-            <Row className="mt-2">
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-2">
                 <Form.Group controlId="date">
                   <Form.Label>
                     Date <sup>*</sup>
@@ -663,7 +672,7 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-2">
                 <Form.Group controlId="shareholder" className="mt-2">
                   <Form.Label>
                     Shareholders <sup>*</sup>
@@ -744,7 +753,7 @@ export default function AddShareholderMeeting() {
                 )}
               </Col>
               <Col md={6} lg={4}>
-                <Form.Group controlId="participants" className="mt-2">
+                <Form.Group controlId="participants" className="mt-3">
                   <Form.Label>
                     Participants <sup>*</sup>
                   </Form.Label>
@@ -816,7 +825,74 @@ export default function AddShareholderMeeting() {
                   </p>
                 )}
               </Col>
+              <Col md={6} lg={4} className="mt-5">
+                <Form.Group controlId="include_secretary">
+                  <Form.Check
+                    type="checkbox"
+                    label="Include Secretary Participant"
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        secretary_participant: isChecked
+                          ? {
+                              name:
+                                selectedKompany[0]?.sectory_detail?.name || "",
+                              isPresent: false,
+                              isPresent_vc: false,
+                            }
+                          : {},
+                      }));
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} lg={4} className="mt-5">
+                <Form.Group controlId="include_auditor">
+                  <Form.Check
+                    type="checkbox"
+                    label="Include Auditor Participant"
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        auditor_participant: isChecked
+                          ? {
+                              name:
+                                selectedKompany[0]?.auditor_detail?.name || "",
+                              isPresent: false,
+                              isPresent_vc: false,
+                            }
+                          : {},
+                      }));
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} lg={4} className="mt-3">
+                <Form.Label>
+                  Meeting Documents <sup>*</sup>
+                </Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData.agendaItems.length > 0
+                        ? {
+                            value: formData.agendaItems[0].templateName,
+                            label: formData.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
             </Row>
+
             <Row>
               <Col>
                 <Form.Group className="mt-2" controlId="other-participants">

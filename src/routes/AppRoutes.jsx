@@ -61,6 +61,7 @@ import CircularResolution from "../pages/cirularResolution/CircularResolution";
 import CircularResolutionGenerator from "../pages/cirularResolution/CircularResolutionGenerator";
 import Attendance from "../pages/attendanceTracker/Attendance";
 import AttendanceInsights from "../pages/attendanceTracker/AttendanceInsights";
+import ShareholderAgendaEditor from "../pages/shareholder/ShareholderAgendaEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -192,6 +193,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ShareholderDocuments />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-agenda-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderAgendaEditor/>} />
           ) : (
             <Navigate to="/login" />
           )

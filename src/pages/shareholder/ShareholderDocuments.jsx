@@ -106,7 +106,7 @@ export default function ShareholderDocuments() {
   }, [key, refresh]);
 
   const handleEditClick = (row, index) => {
-    navigate(`/template-edit/${id}`, {
+    navigate(`/shareholder-agenda-edit/${id}`, {
       state: { index, fileUrl: `${row?.templateFile}`, page: "shareholder" },
     });
   };
