@@ -31,6 +31,7 @@ export default function ShareholderDocuments() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
+  const [spclResolutions, setSpclResolutions] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [shareholderParticipants, setShareolderParticipants] = useState([]);
   const [leaveUrl, setLeaveUrl] = useState("");
@@ -75,6 +76,7 @@ export default function ShareholderDocuments() {
         setAcknowledgement(data?.acknowledgement || {});
         setAttendance(data?.attendance || {});
         setResolutions(data?.resolutions || []);
+        setSpclResolutions(data?.special_resolutions || []);
         setLeaveOfAbsence(data?.leave_of_absense || []);
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
@@ -275,13 +277,14 @@ export default function ShareholderDocuments() {
     });
   };
 
-  const handleResolEditClick = (row, index) => {
-    navigate(`/resolution-edit/${id}`, {
+  const handleResolEditClick = (row, index, type) => {
+    navigate(`/shareholder-resolution-edit/${id}`, {
       state: {
         index,
         fileUrl: row?.templateFile,
         resolTitle: row?.templateName,
         page: "shareholder",
+        type: type,
       },
     });
   };
@@ -943,6 +946,65 @@ export default function ShareholderDocuments() {
                     <td>
                       <Button
                         variant="outline-primary"
+                        onClick={() =>
+                          handleResolView(row?.filehtml, "ORDINARY")
+                        }
+                        disabled={!row?.filehtml}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      {row?.fileName && row?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.fileName}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {row?.filedocx && row?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={`${row?.filedocx}`}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {spclResolutions.map((row, index) => (
+                  <tr key={row?._id}>
+                    <td>{row?.templateName}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleResolEditClick(row, index, "SPECIAL")
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+
+                    <td>
+                      <Button
+                        variant="outline-primary"
                         onClick={() => handleResolView(row?.filehtml)}
                         disabled={!row?.filehtml}
                       >
@@ -1078,7 +1140,7 @@ export default function ShareholderDocuments() {
         </Button>
       </div>
 
-      <ToastContainer />
+      <ToastContainer autoClose={1000} />
     </>
   );
 }
