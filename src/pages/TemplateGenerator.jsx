@@ -319,6 +319,55 @@ const TemplateGenerator = () => {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
+  const config = {
+    style: {
+      padding: "20px",
+    },
+    toolbarSticky: false,
+    buttons: [
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "paragraph",
+      "|",
+      "align",
+      "undo",
+      "redo",
+      "|",
+      "hr",
+      "table",
+      "link",
+      "fullsize",
+    ],
+    removeButtons: [
+      "source",
+      "image",
+      "video",
+      "print",
+      "spellcheck",
+      "speechRecognize",
+      "about",
+      "undo",
+      "redo",
+      "showAll",
+      "file",
+
+      "ai-assistant",
+      "ai-commands",
+      "preview",
+      "dots",
+    ],
+    extraButtons: [],
+    uploader: { insertImageAsBase64URI: false },
+    showXPathInStatusbar: false,
+  };
 
   return (
     <Container className="mt-5">
@@ -330,6 +379,7 @@ const TemplateGenerator = () => {
           {/* CKEditor for writing content */}
           <JoditEditor
             ref={editor}
+            config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);

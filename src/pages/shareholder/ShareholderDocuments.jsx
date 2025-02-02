@@ -689,8 +689,11 @@ export default function ShareholderDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Director Name</th>
-                  <th>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>Name</th>
+                  <th style={{ width: "33.3%" }}>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>
+                    Present in the Meeting(through Video Call)
+                  </th>
                 </tr>
               </thead>
               <tbody>
