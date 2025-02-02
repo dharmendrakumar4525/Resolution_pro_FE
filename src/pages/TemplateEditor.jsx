@@ -593,14 +593,8 @@ const DocumentEditor = () => {
           csrCount++;
         }
 
-        if (url?.fileName) {
-          const response = await fetch(url.fileName);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file from: ${url?.fileName}`);
-          }
-          const arrayBuffer = await response.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          csrContent += `<div>${result.value}</div>\n`;
+        if (url?.filehtml) {
+          csrContent += `<div>${url?.filehtml}</div>\n`;
         } else {
           console.warn("Skipped processing due to missing templateFile:", url);
         }
@@ -946,7 +940,56 @@ Name: \${name}</h6>
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-  console.log(variable, "variable");
+  const config = {
+    style: {
+      padding: "20px",
+    },
+    toolbarSticky: false,
+    buttons: [
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "paragraph",
+      "|",
+      "align",
+      "undo",
+      "redo",
+      "|",
+      "hr",
+      "table",
+      "link",
+      "fullsize",
+    ],
+    removeButtons: [
+      "source",
+      "image",
+      "video",
+      "print",
+      "spellcheck",
+      "speechRecognize",
+      "about",
+      "undo",
+      "redo",
+      "showAll",
+      "file",
+
+      "ai-assistant",
+      "ai-commands",
+      "preview",
+      "dots",
+    ],
+    extraButtons: [],
+    uploader: { insertImageAsBase64URI: false },
+    showXPathInStatusbar: false,
+  };
+
   return (
     <Container className="mt-5">
       <h1>Document Editor</h1>
@@ -957,6 +1000,7 @@ Name: \${name}</h6>
           <JoditEditor
             ref={editor}
             value={editorContent}
+            config={config}
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}

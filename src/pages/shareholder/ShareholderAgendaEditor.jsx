@@ -40,10 +40,11 @@ export default function ShareholderAgendaEditor() {
   const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [spclSelectedData, setSpclSelectedData] = useState([]);
+  const [notesData, setNotesData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
-  const [confirmedFields, setConfirmedFields] = useState({}); // Confirmed placeholders
+  const [confirmedFields, setConfirmedFields] = useState({});
   const location = useLocation();
   const { id } = useParams();
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -225,6 +226,24 @@ export default function ShareholderAgendaEditor() {
         console.error("Error fetching data:", error);
       }
     };
+    const fetchNotesHtml = async () => {
+      try {
+        const response = await fetch(
+          `${apiURL}/meeting-agenda-template/679f15eb6abca70023b10735`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setNotesData(data?.fileName);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchNotesHtml();
     fetchVariables();
 
     fetchData();
@@ -568,6 +587,7 @@ export default function ShareholderAgendaEditor() {
     let count = 1;
     let spclCount = 1;
     let spclResolutionContent = "";
+    let statementCount = "";
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -611,18 +631,14 @@ export default function ShareholderAgendaEditor() {
       let combinedContent = "";
       if (urls) {
         if (urls.length >= 1) {
-          combinedContent += `<h5>Ordinary Resolution</h5><br/>`;
+          combinedContent += `<br/><h5>Ordinary Resolution</h5>`;
         }
 
         for (const url of urls) {
           if (url?.title) {
             const title = url?.title || "Untitled";
-            if (title === "For #{company_name}") {
-              combinedContent += `<p>${title}</p>\n`;
-            } else {
-              combinedContent += `<br/><p>${count}. ${title}</p>\n`;
-              count++;
-            }
+            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+            count++;
           }
 
           if (url?.templateFile) {
@@ -647,22 +663,35 @@ export default function ShareholderAgendaEditor() {
       }
 
       let footerContent = `
-      <br/><p>For #{company_name}</p><p></p>
-
-
+      <div style="text-align: right;">
+      <br/><h5>By the order of the Board
+      of </h5>
+       #{company_name}
 <h6>
 Name: \${name}</h6>
 <h6> Director</h6>
 <h6> DIN: \${din_pan}</h6>
+</div>
 `;
+      const notes = `<br/><br/>${notesData}`;
+      let pursuantStatement = ` <br/><br/><div style="page-break-before: always;"></div><h4>Statement Pursuant to Section 102 of the Companies Act, 2013</h4>`;
+
       if (initializedContent) {
-        console.log(initializedContent, "inik");
-        setEditorContent(
+        let content =
           (initializedContent || "") +
-            (combinedContent || "") +
-            (spclResolutionContent || "") +
-            (footerContent || "")
-        );
+          (combinedContent || "") +
+          (spclResolutionContent || "") +
+          (footerContent || "") +
+          (notes || "");
+
+        if (
+          (combinedContent && combinedContent.length > 0) ||
+          (spclResolutionContent && spclResolutionContent.length > 0)
+        ) {
+          content += pursuantStatement;
+        }
+
+        setEditorContent(content);
       }
 
       console.log(editorContent, "ikea");
@@ -1034,7 +1063,57 @@ Name: \${name}</h6>
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-  console.log(variable, "variable");
+
+  const config = {
+    style: {
+      padding: "20px",
+    },
+    toolbarSticky: false,
+    buttons: [
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "paragraph",
+      "|",
+      "align",
+      "undo",
+      "redo",
+      "|",
+      "hr",
+      "table",
+      "link",
+      "fullsize",
+    ],
+    removeButtons: [
+      "source",
+      "image",
+      "video",
+      "print",
+      "spellcheck",
+      "speechRecognize",
+      "about",
+      "undo",
+      "redo",
+      "showAll",
+      "file",
+
+      "ai-assistant",
+      "ai-commands",
+      "preview",
+      "dots",
+    ],
+    extraButtons: [],
+    uploader: { insertImageAsBase64URI: false },
+    showXPathInStatusbar: false,
+  };
+
   return (
     <Container className="mt-5">
       <h1>Document Editor</h1>
@@ -1045,6 +1124,7 @@ Name: \${name}</h6>
           <JoditEditor
             ref={editor}
             value={editorContent}
+            config={config}
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}
