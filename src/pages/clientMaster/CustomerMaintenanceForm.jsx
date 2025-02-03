@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Form, Button, Row, Col, Container, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import Select from "react-select";
 export default function CustomerMaintenanceForm() {
