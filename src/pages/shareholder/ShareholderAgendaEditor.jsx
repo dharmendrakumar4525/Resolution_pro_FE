@@ -692,7 +692,7 @@ Name: \${name}</h6>
           (notes || "");
 
         if (spclResolutionContent && spclResolutionContent.length > 0) {
-          content += pursuantStatement + statementSpecial;
+          content += pursuantStatement + statementSpecial + footerContent;
         }
 
         setEditorContent(content);
