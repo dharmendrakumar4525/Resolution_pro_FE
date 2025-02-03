@@ -343,9 +343,14 @@ export default function ShareholderDocuments() {
       const transformedParticipants = participants.map((participant) => ({
         director: participant?.director?.id,
         isPresent: participant?.isPresent,
+        isPresent_vc: participant?.isPresent_vc,
       }));
       const absentees = participants
-        .filter((participant) => participant.isPresent === false)
+        .filter(
+          (participant) =>
+            participant.isPresent === false &&
+            participant.isPresent_vc === false
+        )
         .map((participant) => ({
           director: participant?.director?.id,
           templateName: `Leave of Absence`,
@@ -572,7 +577,7 @@ export default function ShareholderDocuments() {
           ) {
             toast.warning("Need approval to see saved documents.");
           } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
-            toast.warning("Please mark attendance first.");
+            toast.warning("No absentees found");
           } else {
             setKey(k);
           }

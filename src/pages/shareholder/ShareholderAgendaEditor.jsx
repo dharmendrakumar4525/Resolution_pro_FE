@@ -219,7 +219,7 @@ export default function ShareholderAgendaEditor() {
         const data = await response.json();
 
         setXResolutions(data?.resolutions);
-        setXSpecialResolutions(data?.resolutions);
+        setXSpecialResolutions(data?.special_resolutions);
         setVariable(data?.variables);
         setDirectorList(data?.participants);
       } catch (error) {
@@ -588,6 +588,7 @@ export default function ShareholderAgendaEditor() {
     let spclCount = 1;
     let spclResolutionContent = "";
     let statementCount = 1;
+    let statementSpecial = "";
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -610,6 +611,12 @@ export default function ShareholderAgendaEditor() {
 
         if (url?.templateFile) {
           spclResolutionContent += `<div>${url?.templateFile}</div>`;
+        } else {
+          console.warn("Skipped processing due to missing templateFile:", url);
+        }
+        if (url?.statement) {
+          statementSpecial += `<div>${statementCount}. ${url?.statement}</div>`;
+          statementCount++;
         } else {
           console.warn("Skipped processing due to missing templateFile:", url);
         }
@@ -684,11 +691,8 @@ Name: \${name}</h6>
           (footerContent || "") +
           (notes || "");
 
-        if (
-          (combinedContent && combinedContent.length > 0) ||
-          (spclResolutionContent && spclResolutionContent.length > 0)
-        ) {
-          content += pursuantStatement;
+        if (spclResolutionContent && spclResolutionContent.length > 0) {
+          content += pursuantStatement + statementSpecial;
         }
 
         setEditorContent(content);
@@ -835,6 +839,7 @@ Name: \${name}</h6>
             title: agenda?.title || "",
             templateFile: agenda?.fileName || "",
             resolutionFile: agenda?.resolutionUrl || "",
+            statement: agenda?.statementUrl || "",
           };
         })
       : "";
@@ -854,6 +859,7 @@ Name: \${name}</h6>
           title: match?.title || "",
           templateFile: match?.fileName || "",
           resolutionFile: match?.resolutionUrl || "",
+          statement: match?.statementUrl || "",
         };
       })
       .filter(Boolean);
@@ -873,7 +879,7 @@ Name: \${name}</h6>
       setPreviousSpecialOptions(newSelect);
       // handleAgendaItemChange()
     }, 1000);
-  }, [resolutionList?.length, xresolution?.length]);
+  }, [resolutionList?.length, xSpecialResolution?.length]);
 
   const resolOptions = resolutionList?.map((resol) => ({
     value: resol?.templateName,
@@ -1026,6 +1032,7 @@ Name: \${name}</h6>
             title: agenda?.title || "",
             templateFile: agenda?.fileName || "",
             resolutionFile: agenda?.resolutionUrl || "",
+            statement: agenda?.statementUrl || "",
           };
         })
       : [];
@@ -1256,7 +1263,7 @@ Name: \${name}</h6>
           </Button>
         </div>
       </div>
-      <ToastContainer autoClose={1000}/>
+      <ToastContainer autoClose={1000} />
     </Container>
   );
 }

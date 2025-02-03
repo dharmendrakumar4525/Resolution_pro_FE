@@ -397,7 +397,7 @@ const TemplateViewer = () => {
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}
-            //config={config}
+            config={config}
           />
         </div>
 

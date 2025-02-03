@@ -73,7 +73,7 @@ export default function AttendanceInsights() {
           title="Board Meeting"
           className="bg-black-400 w-full"
         >
-          {bmAttendance?.length > 1 ? (
+          {bmAttendance?.length >= 1 ? (
             <table className="width-70 border-collapse border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>

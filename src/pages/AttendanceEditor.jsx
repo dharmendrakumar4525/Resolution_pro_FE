@@ -269,7 +269,7 @@ const AttendanceEditor = () => {
               (participant, index) => `
             <tr key="${index}">
               <td>${participant?.director?.name || "Unknown"}</td>
-              <td>${participant?.isPresent ? "" : "Absent"}</td>
+              <td>${participant?.isPresent||participant?.isPresent_vc ? "" : "Absent"}</td>
             </tr>
           `
             )

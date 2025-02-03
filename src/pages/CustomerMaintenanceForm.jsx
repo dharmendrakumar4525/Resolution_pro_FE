@@ -795,12 +795,12 @@ export default function CustomerMaintenanceForm() {
                 </Col>
                 <Col md={6} lg={4}>
                   <Form.Group controlId="holding_company_detail_CIN_FCRN">
-                    <Form.Label>CIN/FCRN</Form.Label>
+                    <Form.Label>Holding Company CIN/FCRN</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.holding_company_detail?.CIN_FCRN || ""}
                       onChange={handleChange}
-                      placeholder="Enter CIN/FCRN"
+                      placeholder="Enter Holding Company CIN/FCRN"
                     />
                   </Form.Group>
                 </Col>
