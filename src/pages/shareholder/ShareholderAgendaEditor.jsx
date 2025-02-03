@@ -587,7 +587,7 @@ export default function ShareholderAgendaEditor() {
     let count = 1;
     let spclCount = 1;
     let spclResolutionContent = "";
-    let statementCount = "";
+    let statementCount = 1;
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -598,7 +598,7 @@ export default function ShareholderAgendaEditor() {
       // const result = `${day}/${month}/${year}`;
     }
     if (spclUrls?.length >= 1) {
-      spclResolutionContent += `<br/><h5>Special Resolution</h5><br/>`;
+      spclResolutionContent += `<br/><h5><u>SPECIAL BUSINESS</u></h5><br/>`;
 
       for (const url of spclUrls) {
         if (url?.title) {
@@ -631,7 +631,7 @@ export default function ShareholderAgendaEditor() {
       let combinedContent = "";
       if (urls) {
         if (urls.length >= 1) {
-          combinedContent += `<br/><h5>Ordinary Resolution</h5>`;
+          combinedContent += `<br/><h5><u>ORDINARY BUSINESS</u></h5>`;
         }
 
         for (const url of urls) {
@@ -674,7 +674,7 @@ Name: \${name}</h6>
 </div>
 `;
       const notes = `<br/><br/>${notesData}`;
-      let pursuantStatement = ` <br/><br/><div style="page-break-before: always;"></div><h4>Statement Pursuant to Section 102 of the Companies Act, 2013</h4>`;
+      let pursuantStatement = ` <br/><br/><div style="page-break-before: always;"></div><h4><u>Statement Pursuant to Section 102 of the Companies Act, 2013</u></h4>`;
 
       if (initializedContent) {
         let content =
@@ -1124,7 +1124,7 @@ Name: \${name}</h6>
           <JoditEditor
             ref={editor}
             value={editorContent}
-            config={config}
+            //config={config}
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}
@@ -1256,7 +1256,7 @@ Name: \${name}</h6>
           </Button>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer autoClose={1000}/>
     </Container>
   );
 }

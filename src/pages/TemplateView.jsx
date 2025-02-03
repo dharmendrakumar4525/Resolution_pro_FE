@@ -378,7 +378,13 @@ const TemplateViewer = () => {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-
+  const config = {
+    style: {
+      padding: "20px",
+    },
+    toolbar: false,
+    readonly: true,
+  };
   return (
     <Container className="mt-5">
       <ToastContainer />
@@ -391,10 +397,7 @@ const TemplateViewer = () => {
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}
-            config={{
-              toolbar: false,
-              readonly: true,
-            }}
+            //config={config}
           />
         </div>
 

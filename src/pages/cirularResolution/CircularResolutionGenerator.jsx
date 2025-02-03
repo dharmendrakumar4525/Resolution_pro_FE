@@ -566,7 +566,7 @@ export default function CircularResolution() {
         <div className="leftContainer">
           <JoditEditor
             ref={editor}
-            config={config}
+            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);

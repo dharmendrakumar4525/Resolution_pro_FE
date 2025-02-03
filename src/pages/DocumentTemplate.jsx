@@ -308,7 +308,7 @@ export default function DocumentTemplate() {
               </Form.Select>
             </Form>
           )}
-          {hasPermission("add") && (
+          {/* {hasPermission("add") && (
             <Button
               variant="primary"
               className="btn-box"
@@ -316,7 +316,7 @@ export default function DocumentTemplate() {
             >
               <FaPlus style={{ marginRight: "8px" }} /> Add
             </Button>
-          )}
+          )} */}
         </div>
 
         <Modal show={openAddModal} onHide={handleCloseAddModal} centered>

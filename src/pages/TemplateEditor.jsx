@@ -1000,7 +1000,7 @@ Name: \${name}</h6>
           <JoditEditor
             ref={editor}
             value={editorContent}
-            config={config}
+            //config={config}
             onChange={(newContent) => {
               setEditorContent(newContent);
             }}

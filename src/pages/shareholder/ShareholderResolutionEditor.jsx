@@ -440,7 +440,7 @@ export default function ShareholderResolutionEditor() {
         <div className="leftContainer">
           <JoditEditor
             ref={editor}
-            config={config}
+            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);
