@@ -247,7 +247,7 @@ const ResolutionTemplateGenerator = () => {
 
           <JoditEditor
             ref={editor}
-            config={config}
+            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);

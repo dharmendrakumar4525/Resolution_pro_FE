@@ -379,7 +379,7 @@ const TemplateGenerator = () => {
           {/* CKEditor for writing content */}
           <JoditEditor
             ref={editor}
-            config={config}
+            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);
