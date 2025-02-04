@@ -11,7 +11,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 
 const CustomerMaintenanceDetail = () => {
   const [shareholders, setShareholders] = useState([]);
@@ -42,6 +42,7 @@ const CustomerMaintenanceDetail = () => {
     };
     fetchData();
   }, [id, token]);
+  console.log(row, "roew");
   return (
     <div className="details-container">
       <h2>Details for {row?.company_name}</h2>
@@ -60,11 +61,11 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.alloted_consultant[0]?.name || "-"}</div>
         <div>
-          <strong>Secretary Name</strong>
+          <strong>Company Secretary Name</strong>
         </div>
         <div>{row?.secretary_detail?.name || "-"}</div>
         <div>
-          <strong>Secretary Email</strong>
+          <strong>Company Secretary Email</strong>
         </div>
         <div>{row?.secretary_detail?.email || "-"}</div>
         <div>
@@ -138,6 +139,59 @@ const CustomerMaintenanceDetail = () => {
           <strong>PAN</strong>
         </div>
         <div>{row?.pan}</div>
+        <div>
+          <strong>Book Account Address</strong>
+        </div>
+        <div>{row?.books_of_account}</div>
+        <div>
+          <strong>
+            Net worth as per last audited financials (Section 2(57) of the Act)
+          </strong>
+        </div>
+        <div>{row?.books_of_account}</div>
+        <div>
+          <strong>Total paid-up capital as per last audited financials</strong>
+        </div>
+        <div>{row?.total_paid_up_capital_last_audited}</div>
+        <div>
+          <strong>
+            Turnover as per last audited financials(Section 2(91) of the Act)
+          </strong>
+        </div>
+        <div>{row?.turnover_lau}</div>
+        <div>
+          <strong>
+            Net Profit as per last audited financials (Section 198 & 135 of the
+            Act)
+          </strong>
+        </div>
+        <div>{row?.net_profit_lau}</div>
+        <div>
+          <strong>Mandatory notice period for Board Meeting</strong>
+        </div>
+        <div>{row?.BM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for Committee meetings</strong>
+        </div>
+        <div>{row?.CM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for AGM</strong>
+        </div>
+        <div>{row?.AGM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for EGM</strong>
+        </div>
+        <div>{row?.EGM_notice_period}</div>
+
+        <div>
+          <strong>Due date for next board meeting</strong>
+        </div>
+        <div>{row?.BM_next_due_date?.split("T")[0]}</div>
+
+        <div>
+          <strong>Due date for next AGM</strong>
+        </div>
+        <div>{row?.AGM_next_due_date?.split("T")[0]}</div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
@@ -219,6 +273,9 @@ const CustomerMaintenanceDetail = () => {
           <p>No partcipant details available.</p>
         )}
       </div>
+      <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
+        Go Back
+      </Button>
     </div>
   );
 };

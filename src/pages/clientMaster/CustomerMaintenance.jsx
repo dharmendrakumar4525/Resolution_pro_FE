@@ -11,13 +11,13 @@ import {
   Pagination,
   Tooltip,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { Refresh } from "@mui/icons-material";
 
 export default function CustomerMaintenance() {
@@ -138,7 +138,7 @@ export default function CustomerMaintenance() {
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
 
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -160,6 +160,14 @@ export default function CustomerMaintenance() {
   const handleViewShareholders = (row, e) => {
     e.stopPropagation();
     navigate(`/shareholders/${row?._id}`);
+  };
+  const handleViewAssociates = (row, e) => {
+    e.stopPropagation();
+    navigate(`/associates/${row?._id}`);
+  };
+  const handleViewSubsidiary = (row, e) => {
+    e.stopPropagation();
+    navigate(`/subsidiaries/${row?._id}`);
   };
 
   const handleRowClick = (row) => {
@@ -186,7 +194,7 @@ export default function CustomerMaintenance() {
       const data = await response.json();
       setRows(data.docs);
     } else {
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
     }
   };
   const userPermissions =
@@ -248,13 +256,14 @@ export default function CustomerMaintenance() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Company Name</th>
-                  <th>CIN</th>
 
                   <th>Client Manager</th>
                   <th>Secretary </th>
                   <th>Auditor</th>
                   <th>Directors</th>
                   <th>Shareholders</th>
+                  <th>Associates</th>
+                  <th>Subsidiaries</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -267,7 +276,6 @@ export default function CustomerMaintenance() {
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.company_name}</td>
-                      <td>{row?.cin}</td>
 
                       <td className="">
                         {row?.alloted_manager[0]?.name || "-"}
@@ -288,6 +296,24 @@ export default function CustomerMaintenance() {
                           style={{ height: "100%" }}
                           className="director-btn"
                           onClick={(e) => handleViewShareholders(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewAssociates(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewSubsidiary(row, e)}
                         >
                           <FaUser />
                         </button>

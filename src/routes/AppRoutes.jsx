@@ -8,15 +8,15 @@ import Users from "../pages/Users";
 import ErrorPage from "../pages/ErrorPage";
 import OtpPage from "../pages/OtpPage";
 import { useAuth } from "../context/AuthContext";
-import CustomerMaintenance from "../pages/CustomerMaintenance";
-import Directors from "../pages/Directors";
+import CustomerMaintenance from "../pages/clientMaster/CustomerMaintenance";
+import Directors from "../pages/clientMaster/Directors";
 import CommitteeMembers from "../pages/CommitteeMembers";
 import Committee from "../pages/Committee";
 import Preloader from "../components/Preloader";
 import Sidebar from "../components/Sidebar";
 import MembersResolution from "../pages/MembersResolution";
 import BoardResolution from "../pages/BoardResolution";
-import CustomerMaintenanceDetail from "../pages/CustomerMaintenanceDetails";
+import CustomerMaintenanceDetail from "../pages/clientMaster/CustomerMaintenanceDetails";
 import ManagePermissions from "../pages/ManagePermissions";
 import RoleMaster from "../pages/RoleMaster";
 import WordGenerator from "../pages/WordGenerator";
@@ -26,7 +26,7 @@ import TemplateGenerator from "../pages/TemplateGenerator";
 import TestFile from "../pages/TestFile";
 import AddCommitteeMember from "../pages/AddCommitteeMember";
 import EditCommitteeMember from "../pages/EditCommitteeMember";
-import CustomerMaintenanceForm from "../pages/CustomerMaintenanceForm";
+import CustomerMaintenanceForm from "../pages/clientMaster/CustomerMaintenanceForm";
 import DocumentTemplate from "../pages/DocumentTemplate";
 import AddMeeting from "../pages/AddMeeting";
 import EditMeeting from "../pages/EditMeeting";
@@ -34,7 +34,7 @@ import ViewCommitteeMember from "../pages/CommitteeMemberView";
 import TemplateGroupMeetings from "../pages/TemplateGroupMeetings";
 import TemplateViewer from "../pages/TemplateView";
 import SystemVariables from "../pages/SystemVariables";
-import Shareholders from "../pages/Shareholders";
+import Shareholders from "../pages/clientMaster/Shareholders";
 import MeetingDocuments from "../pages/MeetingDocuments";
 import DocEditor from "../pages/DocEditor";
 import AgendaTemplate from "../pages/agendaTemplate/AgendaTemplate";
@@ -63,6 +63,9 @@ import Attendance from "../pages/attendanceTracker/Attendance";
 import AttendanceInsights from "../pages/attendanceTracker/AttendanceInsights";
 import ShareholderAgendaEditor from "../pages/shareholder/ShareholderAgendaEditor";
 import ShareholderResolutionEditor from "../pages/shareholder/ShareholderResolutionEditor";
+import Associates from "../pages/clientMaster/Associates";
+import Subsidiary from "../pages/clientMaster/Subsidiary";
+import DirectorForm from "../pages/clientMaster/DirectorForm";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -671,10 +674,50 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/director-form/:directorId"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DirectorForm />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/director-form"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DirectorForm />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
         path="/shareholders/:id"
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Shareholders />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/associates/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Associates />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/subsidiaries/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Subsidiary />} />
           ) : (
             <Navigate to="/login" />
           )
