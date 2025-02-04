@@ -41,7 +41,7 @@ export default function AttendanceInsights() {
             },
           }
         );
-        const data = await response.jsetSMAttendanceson();
+        const data = await response.json();
         setShareholders(data.data);
         setBMAttendance(data.data?.meetings);
         setCMAttendance(data.data?.committeeMeetings);

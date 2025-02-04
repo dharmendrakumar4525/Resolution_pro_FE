@@ -314,6 +314,8 @@ export default function CommitteeDocuments() {
           if (!p.isPresent) {
             return { ...p, isPresent_vc: isChecked };
           }
+        } else if (field === "isChairman") {
+          return { ...p, isChairman: isChecked };
         }
       }
       return p;
@@ -331,6 +333,7 @@ export default function CommitteeDocuments() {
         director: participant?.director?.id,
         isPresent: participant?.isPresent,
         isPresent_vc: participant?.isPresent_vc,
+        isChairman: participant?.isChairman,
       }));
       const absentees = participants
         .filter(
@@ -725,11 +728,12 @@ export default function CommitteeDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th style={{ width: "33.3%" }}>Name</th>
-                  <th style={{ width: "33.3%" }}>Present in the Meeting</th>
-                  <th style={{ width: "33.3%" }}>
+                  <th style={{ width: "40%" }}>Name</th>
+                  <th style={{ width: "20%" }}>Present in the Meeting</th>
+                  <th style={{ width: "20%" }}>
                     Present in the Meeting(through Video Call)
                   </th>
+                  <th style={{ width: "20%" }}>Selected Chairman</th>
                 </tr>
               </thead>
               <tbody>
@@ -755,6 +759,21 @@ export default function CommitteeDocuments() {
                           handleCheckboxChange(e, participant, "isPresent_vc")
                         }
                         disabled={participant?.isPresent}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isChairman}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isChairman")
+                        }
+                        // disabled={participant?.isPresent}
+                        disabled={
+                          !participant.isChairman &&
+                          participants.some((p) => p.isChairman)
+                        }
                       />
                     </td>
                   </tr>
