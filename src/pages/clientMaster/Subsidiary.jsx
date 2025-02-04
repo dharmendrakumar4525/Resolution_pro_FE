@@ -95,7 +95,7 @@ export default function Subsidiary() {
         setRefresh((prev) => !prev);
         toast.success("Subsidiary updated successfully");
       } else {
-        const response = await fetch(`${apiURL}/client-associate-company`, {
+        const response = await fetch(`${apiURL}/client-subsidiary-company`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
