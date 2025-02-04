@@ -11,13 +11,13 @@ import {
   Pagination,
   Tooltip,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { Refresh } from "@mui/icons-material";
 
 export default function CustomerMaintenance() {

@@ -10,7 +10,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

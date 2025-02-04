@@ -11,7 +11,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import { apiURL } from "../API/api";
+import { apiURL } from "../../API/api";
 
 const CustomerMaintenanceDetail = () => {
   const [shareholders, setShareholders] = useState([]);
@@ -42,6 +42,7 @@ const CustomerMaintenanceDetail = () => {
     };
     fetchData();
   }, [id, token]);
+  console.log(row,"roew")
   return (
     <div className="details-container">
       <h2>Details for {row?.company_name}</h2>
@@ -60,11 +61,11 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.alloted_consultant[0]?.name || "-"}</div>
         <div>
-          <strong>Secretary Name</strong>
+          <strong>Company Secretary Name</strong>
         </div>
         <div>{row?.secretary_detail?.name || "-"}</div>
         <div>
-          <strong>Secretary Email</strong>
+          <strong>Company Secretary Email</strong>
         </div>
         <div>{row?.secretary_detail?.email || "-"}</div>
         <div>
@@ -138,6 +139,14 @@ const CustomerMaintenanceDetail = () => {
           <strong>PAN</strong>
         </div>
         <div>{row?.pan}</div>
+        <div>
+          <strong>Book Account Address</strong>
+        </div>
+        <div>{row?.books_of_account}</div>
+        <div>
+          <strong>Net worth as per last audited financials (Section 2(57) of the Act)</strong>
+        </div>
+        <div>{row?.books_of_account}</div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
