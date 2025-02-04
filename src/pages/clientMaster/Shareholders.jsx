@@ -216,112 +216,132 @@ export default function Shareholders() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="name" className="mb-3">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter Name"
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group controlId="email" className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter Email"
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group controlId="type" className="mb-3">
-                <Form.Label>Type</Form.Label>
-                <Form.Select
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" disabled>
-                    Select Type
-                  </option>
-                  <option value="equity">Equity</option>
-                  <option value="preference">Preference</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group controlId="address" className="mb-3">
-                <Form.Label>Address</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter Address"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="no_of_shares" className="mb-3">
-                <Form.Label>Number of Shares</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.no_of_shares}
-                  onChange={handleChange}
-                  placeholder="Enter Number of Shares"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="holding_percent" className="mb-3">
-                <Form.Label>Holding Percentage</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.holding_percent}
-                  onChange={handleChange}
-                  placeholder="Enter Holding Percentage"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="beneficial_name" className="mb-3">
-                <Form.Label>Beneficial Owner Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.beneficial_name}
-                  onChange={handleChange}
-                  placeholder="Enter Beneficial Owner Name"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="SBO_name" className="mb-3">
-                <Form.Label>SBO Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.SBO_name}
-                  onChange={handleChange}
-                  placeholder="Enter SBO Name"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="SBO_address" className="mb-3">
-                <Form.Label>SBO Address</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.SBO_address}
-                  onChange={handleChange}
-                  placeholder="Enter SBO Address"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="dematerialised" className="mb-3">
-                <Form.Check
-                  type="checkbox"
-                  id="dematerialised"
-                  label="Dematerialised"
-                  checked={formData.dematerialised}
-                  onChange={handleCheckboxChange}
-                />
-              </Form.Group>
+              <Row>
+                {" "}
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="name" className="mb-3">
+                    <Form.Label>
+                      Name<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter Name"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="email" className="mb-3">
+                    <Form.Label>
+                      Email<sup>*</sup>
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Enter Email"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="type" className="mb-3">
+                    <Form.Label>
+                      Type<sup>*</sup>
+                    </Form.Label>
+                    <Form.Select
+                      value={formData.type}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="" disabled>
+                        Select Type
+                      </option>
+                      <option value="equity">Equity</option>
+                      <option value="preference">Preference</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="address" className="mb-3">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Enter Address"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="no_of_shares" className="mb-3">
+                    <Form.Label>Number of Shares</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData.no_of_shares}
+                      onChange={handleChange}
+                      placeholder="Enter Number of Shares"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="holding_percent" className="mb-3">
+                    <Form.Label>Holding Percentage</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={formData.holding_percent}
+                      onChange={handleChange}
+                      placeholder="Enter Holding Percentage"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="beneficial_name" className="mb-3">
+                    <Form.Label>Beneficial Owner Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.beneficial_name}
+                      onChange={handleChange}
+                      placeholder="Enter Beneficial Owner Name"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="SBO_name" className="mb-3">
+                    <Form.Label>SBO Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.SBO_name}
+                      onChange={handleChange}
+                      placeholder="Enter SBO Name"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-2">
+                  <Form.Group controlId="SBO_address" className="mb-3">
+                    <Form.Label>SBO Address</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.SBO_address}
+                      onChange={handleChange}
+                      placeholder="Enter SBO Address"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} className="mt-5 ps-3">
+                  <Form.Group controlId="dematerialised">
+                    <Form.Check
+                      type="checkbox"
+                      id="dematerialised"
+                      label="Dematerialised"
+                      checked={formData.dematerialised}
+                      onChange={handleCheckboxChange}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
               <Button
                 variant="primary"
@@ -399,8 +419,8 @@ export default function Shareholders() {
             </Table>
           </div>
         )}
+        <ToastContainer autoClose={1000} />
       </Container>
-      <ToastContainer />
     </>
   );
 }
