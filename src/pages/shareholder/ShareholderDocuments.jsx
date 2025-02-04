@@ -105,7 +105,7 @@ export default function ShareholderDocuments() {
     fetchData();
 
     fetchLeaveAgendaUrl();
-  }, [key, refresh]);
+  }, []);
 
   const handleEditClick = (row, index) => {
     navigate(`/shareholder-agenda-edit/${id}`, {
@@ -324,14 +324,26 @@ export default function ShareholderDocuments() {
 
     setParticipants(updatedParticipants);
   };
-  const handleShareholderCheckboxChange = (e, participant) => {
+  const handleShareholderCheckboxChange = (e, participant, field) => {
     const isChecked = e.target.checked;
 
-    const updatedParticipants = shareholderParticipants.map((p) =>
-      p.shareholder.id === participant.shareholder.id
-        ? { ...p, isPresent: isChecked }
-        : p
-    );
+    const updatedParticipants = shareholderParticipants?.map((p) => {
+      if (p?.shareholder.id === participant?.shareholder?.id) {
+        if (field === "isPresent") {
+          return {
+            ...p,
+            isPresent: isChecked,
+            isPresent_vc: isChecked ? false : p.isPresent_vc,
+          };
+        } else if (field === "isPresent_vc") {
+          if (!p.isPresent) {
+            return { ...p, isPresent_vc: isChecked };
+          }
+        }
+      }
+      return p;
+    });
+
     setShareolderParticipants(updatedParticipants);
   };
 
@@ -366,13 +378,12 @@ export default function ShareholderDocuments() {
         },
         body: JSON.stringify({
           participants: transformedParticipants,
-          leave_of_absense: absentees,
+          // leave_of_absense: absentees,
         }),
       });
 
       if (response.ok) {
         toast.success("Director Attendance updated successfully");
-        setRefresh((prev) => !prev);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -383,14 +394,31 @@ export default function ShareholderDocuments() {
     }
   };
   const patchShareholderAttendance = async () => {
+    setButtonLoading(true);
+
     try {
       const url = `${apiURL}/shareholder-meeting/${id}`;
+
       const transformedShareholderParticipants = shareholderParticipants.map(
         (participant) => ({
           shareholder: participant?.shareholder?.id,
           isPresent: participant?.isPresent,
+          isPresent_vc: participant?.isPresent_vc,
         })
       );
+
+      const absentees = shareholderParticipants
+        .filter(
+          (participant) =>
+            participant.isPresent === false &&
+            participant.isPresent_vc === false
+        )
+        .map((participant) => ({
+          shareholder: participant?.shareholder?.id,
+          templateName: `Leave of Absence`,
+          meetingType: "shareholder_meeting",
+          templateFile: leaveUrl,
+        }));
 
       const response = await fetch(url, {
         method: "PATCH",
@@ -400,19 +428,22 @@ export default function ShareholderDocuments() {
         },
         body: JSON.stringify({
           shareholder_participants: transformedShareholderParticipants,
+          // leave_of_absense: absentees,
         }),
       });
 
       if (response.ok) {
         toast.success("Shareholder Attendance updated successfully");
-        setRefresh((prev) => !prev);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
       toast.error("Error updating attendance:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
+
   const handleDownload = () => {
     if (notice?.filedocx) {
       saveAs(notice.filedocx, "customFileName.docx");
@@ -694,7 +725,7 @@ export default function ShareholderDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th style={{ width: "33.3%" }}>Name</th>
+                  <th style={{ width: "33.3%" }}>Director Name</th>
                   <th style={{ width: "33.3%" }}>Present in the Meeting</th>
                   <th style={{ width: "33.3%" }}>
                     Present in the Meeting(through Video Call)
@@ -751,8 +782,11 @@ export default function ShareholderDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Shareholder Name</th>
-                  <th>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>Shareholder Name</th>
+                  <th style={{ width: "33.3%" }}>Present in the Meeting</th>
+                  <th style={{ width: "33.3%" }}>
+                    Present in the Meeting(through Video Call)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -765,8 +799,27 @@ export default function ShareholderDocuments() {
                         className="form-check-input"
                         checked={participant?.isPresent}
                         onChange={(e) =>
-                          handleShareholderCheckboxChange(e, participant)
+                          handleShareholderCheckboxChange(
+                            e,
+                            participant,
+                            "isPresent"
+                          )
                         }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent_vc}
+                        onChange={(e) =>
+                          handleShareholderCheckboxChange(
+                            e,
+                            participant,
+                            "isPresent_vc"
+                          )
+                        }
+                        disabled={participant?.isPresent}
                       />
                     </td>
                   </tr>
@@ -778,7 +831,17 @@ export default function ShareholderDocuments() {
               style={{ alignContent: "right" }}
               onClick={patchShareholderAttendance}
             >
-              Mark Shareholder Attendance
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Mark Shareholder Attendance"
+              )}
             </Button>
             <br />
             <Table bordered hover className="Master-table">
