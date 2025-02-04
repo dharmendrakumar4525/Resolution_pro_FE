@@ -116,7 +116,7 @@ export default function CustomerMaintenance() {
 
       if (response.ok) {
         toast.success("Item deleted successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       } else {
         toast.error("System is unable to delete record");
       }
@@ -145,7 +145,7 @@ export default function CustomerMaintenance() {
 
         if (response.ok) {
           toast.success("User edited successfully");
-          setRefresh(!refresh);
+          setRefresh((prev) => !prev);
           setOpenAddModal(false);
 
           const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -178,7 +178,7 @@ export default function CustomerMaintenance() {
         });
 
         if (response.ok) {
-          setRefresh(!refresh);
+          setRefresh((prev) => !prev);
           setOpenAddModal(false);
           toast.success("User added successfully");
         } else {

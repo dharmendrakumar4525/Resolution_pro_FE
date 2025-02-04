@@ -160,7 +160,7 @@ export default function DocumentTemplate() {
       if (rows.length === 1 && page > 1) {
         setPage(page - 1);
       } else {
-        setRefresh(!refresh); // Refresh data to reflect changes
+        setRefresh((prev) => !prev); // Refresh data to reflect changes
       }
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -258,7 +258,7 @@ export default function DocumentTemplate() {
       }
 
       // Refresh and close modal on success
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
       toast.success(
         `Document template ${editingRow ? "edited" : "added"} successfully`
       );

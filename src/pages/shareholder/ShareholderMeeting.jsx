@@ -79,7 +79,7 @@ export default function ShareholderMeeting() {
         return;
       }
 
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
       toast.success("Meeting deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

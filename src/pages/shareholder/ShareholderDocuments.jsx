@@ -372,7 +372,7 @@ export default function ShareholderDocuments() {
 
       if (response.ok) {
         toast.success("Director Attendance updated successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -405,7 +405,7 @@ export default function ShareholderDocuments() {
 
       if (response.ok) {
         toast.success("Shareholder Attendance updated successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

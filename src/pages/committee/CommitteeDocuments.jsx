@@ -360,7 +360,7 @@ export default function CommitteeDocuments() {
 
       if (response.ok) {
         toast.success("Attendance updated successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

@@ -196,7 +196,7 @@ export default function TemplateGroup() {
             body: JSON.stringify(formData),
           }
         );
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
 
         toast.success("template edited successfully");
       } else {
@@ -222,7 +222,7 @@ export default function TemplateGroup() {
           toast.error(errorMessage);
           return;
         }
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
         toast.success("template added successfully");
       }
       handleCloseModal();

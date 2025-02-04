@@ -231,7 +231,7 @@ const AttendanceEditor = () => {
         setClientInfo(specificMeetInfo.client_name);
 
         setParticipants(specificMeetInfo.participants);
-        // setRefresh(!refresh)
+        //  ̰
         handleFileLoad(fileUrl, specificMeetInfo);
         console.log(specificMeetInfo, "specific-data");
       } else {

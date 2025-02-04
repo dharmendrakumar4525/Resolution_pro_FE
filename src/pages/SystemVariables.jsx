@@ -143,7 +143,7 @@ export default function SystemVariables() {
           }
         );
         toast.success("System Variables edited successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       } else {
         const response = await fetch(`${apiURL}/system-variable`, {
           method: "POST",
@@ -168,7 +168,7 @@ export default function SystemVariables() {
           return;
         }
         toast.success("System variable added successfully");
-        setRefresh(!refresh);
+        setRefresh((prev) => !prev);
       }
       handleCloseModal();
     } catch (error) {

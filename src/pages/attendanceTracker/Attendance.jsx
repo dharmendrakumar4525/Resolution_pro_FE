@@ -165,7 +165,7 @@ export default function Attendance() {
       console.log(data, "mba");
       setRows([data]);
     } else {
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
     }
   };
 

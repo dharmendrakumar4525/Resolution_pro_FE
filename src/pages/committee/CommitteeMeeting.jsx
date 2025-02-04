@@ -78,7 +78,7 @@ export default function CommitteeMeeting() {
         return;
       }
 
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
       toast.success("Item deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

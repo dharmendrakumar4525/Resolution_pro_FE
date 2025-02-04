@@ -138,7 +138,7 @@ export default function CustomerMaintenance() {
       if (!response.ok) {
         throw new Error("Failed to delete item");
       }
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
 
       toast.success("Item deleted successfully");
     } catch (error) {
@@ -194,7 +194,7 @@ export default function CustomerMaintenance() {
       const data = await response.json();
       setRows(data.docs);
     } else {
-      setRefresh(!refresh);
+      setRefresh((prev) => !prev);
     }
   };
   const userPermissions =
