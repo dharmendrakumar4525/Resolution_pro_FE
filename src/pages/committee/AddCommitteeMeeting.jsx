@@ -29,6 +29,7 @@ export default function AddCommitteeMeeting() {
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [clientData, setClientData] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
@@ -140,9 +141,9 @@ export default function AddCommitteeMeeting() {
         (company) => company._id === formData?.client_name
       );
 
-      if (selectedCompany) {
-        countPreviousMeetings(rows, selectedCompany._id);
-      }
+      // if (selectedCompany) {
+      //   countPreviousMeetings(rows, selectedCompany._id);
+      // }
     }
   }, [formData?.client_name, clientList, rows]);
   function getOrdinalSuffix(number) {
@@ -329,7 +330,10 @@ export default function AddCommitteeMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              (daysDifference < clientData?.CM_notice_period || 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
@@ -412,7 +416,10 @@ export default function AddCommitteeMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              (daysDifference < clientData?.CM_notice_period || 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
@@ -539,9 +546,12 @@ export default function AddCommitteeMeeting() {
         },
       });
       const data = await response.json();
+      setClientData(data);
+      let result = getOrdinalSuffix((data?.CM_last_serial?.serial_no || 0) + 1);
       setFormData((prevData) => ({
         ...prevData,
         location: data.registered_address,
+        title: result + " " + "Committee Meeting",
       }));
     } catch (error) {
       console.error("Error fetching clients:", error);
