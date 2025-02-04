@@ -28,6 +28,7 @@ export default function AddMeeting() {
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [clientData, setClientData] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
@@ -146,9 +147,9 @@ export default function AddMeeting() {
         (company) => company._id === formData?.client_name
       );
 
-      if (selectedCompany) {
-        countPreviousMeetings(rows, selectedCompany._id);
-      }
+      // if (selectedCompany) {
+      //   countPreviousMeetings(rows, selectedCompany._id);
+      // }
     }
   }, [formData?.client_name, clientList, rows]);
   const fetchRegisteredAddress = async (cid) => {
@@ -160,9 +161,12 @@ export default function AddMeeting() {
         },
       });
       const data = await response.json();
+      setClientData(data);
+      let result = getOrdinalSuffix((data?.BM_last_serial?.serial_no || 0) + 1);
       setFormData((prevData) => ({
         ...prevData,
         location: data.registered_address,
+        title: result + " " + "Board Meeting",
       }));
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -339,8 +343,11 @@ export default function AddMeeting() {
             const currentDate = new Date();
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-            if (daysDifference < 7 && daysDifference >= 0) {
+            console.log(clientData, "234");
+            if (
+              (daysDifference < clientData?.BM_notice_period || 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
@@ -422,7 +429,10 @@ export default function AddMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              (daysDifference < clientData?.BM_notice_period || 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {

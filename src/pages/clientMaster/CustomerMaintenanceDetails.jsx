@@ -121,19 +121,30 @@ const CustomerMaintenanceDetail = () => {
           <strong>Date of Balance Sheet</strong>
         </div>
         <div>
-          {new Date(row?.date_of_balance_sheet).toLocaleDateString("en-GB")}
+          <div>
+            {row?.date_of_balance_sheet
+              ? new Date(row.date_of_balance_sheet).toLocaleDateString("en-GB")
+              : "-"}
+          </div>
         </div>
         <div>
           <strong>Date Of Incorporation</strong>
         </div>
 
         <div>
-          {new Date(row?.date_of_incorporation).toLocaleDateString("en-GB")}
+          {row?.date_of_incorporation
+            ? new Date(row.date_of_incorporation).toLocaleDateString("en-GB")
+            : "-"}
         </div>
+
         <div>
           <strong>Date Of Last Agm</strong>
         </div>
-        <div>{new Date(row?.date_of_last_agm).toLocaleDateString("en-GB")}</div>
+        <div>
+          {row?.date_of_last_agm
+            ? new Date(row.date_of_last_agm).toLocaleDateString("en-GB")
+            : "-"}
+        </div>
 
         <div>
           <strong>PAN</strong>
@@ -186,12 +197,18 @@ const CustomerMaintenanceDetail = () => {
         <div>
           <strong>Due date for next board meeting</strong>
         </div>
-        <div>{row?.BM_next_due_date?.split("T")[0]}</div>
+        <div>
+          {" "}
+          {new Date(row?.BM_next_due_date)?.toLocaleDateString("en-GB")}
+        </div>
 
         <div>
           <strong>Due date for next AGM</strong>
         </div>
-        <div>{row?.AGM_next_due_date?.split("T")[0]}</div>
+        <div>
+          {" "}
+          {new Date(row?.AGM_next_due_date)?.toLocaleDateString("en-GB")}
+        </div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
