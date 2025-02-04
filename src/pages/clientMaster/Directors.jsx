@@ -297,6 +297,9 @@ export default function Directors() {
             </Table>
           </div>
         )}
+        <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
+          Go Back
+        </Button>
       </Container>
       <ToastContainer />
     </>

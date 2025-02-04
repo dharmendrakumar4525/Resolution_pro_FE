@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
   Form,
@@ -22,6 +22,7 @@ export default function Associates() {
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     company_id: "",
@@ -301,6 +302,9 @@ export default function Associates() {
             </Table>
           </div>
         )}
+        <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
+          Go Back
+        </Button>
         <ToastContainer autoClose={1000} />
       </Container>
     </>

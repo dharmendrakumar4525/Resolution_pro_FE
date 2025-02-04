@@ -42,7 +42,7 @@ const CustomerMaintenanceDetail = () => {
     };
     fetchData();
   }, [id, token]);
-  console.log(row,"roew")
+  console.log(row, "roew");
   return (
     <div className="details-container">
       <h2>Details for {row?.company_name}</h2>
@@ -144,7 +144,9 @@ const CustomerMaintenanceDetail = () => {
         </div>
         <div>{row?.books_of_account}</div>
         <div>
-          <strong>Net worth as per last audited financials (Section 2(57) of the Act)</strong>
+          <strong>
+            Net worth as per last audited financials (Section 2(57) of the Act)
+          </strong>
         </div>
         <div>{row?.books_of_account}</div>
       </div>
@@ -228,6 +230,9 @@ const CustomerMaintenanceDetail = () => {
           <p>No partcipant details available.</p>
         )}
       </div>
+      <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
+        Go Back
+      </Button>
     </div>
   );
 };
