@@ -161,6 +161,14 @@ export default function CustomerMaintenance() {
     e.stopPropagation();
     navigate(`/shareholders/${row?._id}`);
   };
+  const handleViewAssociates = (row, e) => {
+    e.stopPropagation();
+    navigate(`/associates/${row?._id}`);
+  };
+  const handleViewSubsidiary = (row, e) => {
+    e.stopPropagation();
+    navigate(`/subsidiaries/${row?._id}`);
+  };
 
   const handleRowClick = (row) => {
     navigate(`/client-records-detail/${row?._id}`, { state: { row } });
@@ -248,13 +256,14 @@ export default function CustomerMaintenance() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Company Name</th>
-                  <th>CIN</th>
 
                   <th>Client Manager</th>
                   <th>Secretary </th>
                   <th>Auditor</th>
                   <th>Directors</th>
                   <th>Shareholders</th>
+                  <th>Associates</th>
+                  <th>Subsidiaries</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -267,7 +276,6 @@ export default function CustomerMaintenance() {
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.company_name}</td>
-                      <td>{row?.cin}</td>
 
                       <td className="">
                         {row?.alloted_manager[0]?.name || "-"}
@@ -288,6 +296,24 @@ export default function CustomerMaintenance() {
                           style={{ height: "100%" }}
                           className="director-btn"
                           onClick={(e) => handleViewShareholders(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewAssociates(row, e)}
+                        >
+                          <FaUser />
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          style={{ height: "100%" }}
+                          className="director-btn"
+                          onClick={(e) => handleViewSubsidiary(row, e)}
                         >
                           <FaUser />
                         </button>

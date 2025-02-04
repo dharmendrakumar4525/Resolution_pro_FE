@@ -63,6 +63,8 @@ import Attendance from "../pages/attendanceTracker/Attendance";
 import AttendanceInsights from "../pages/attendanceTracker/AttendanceInsights";
 import ShareholderAgendaEditor from "../pages/shareholder/ShareholderAgendaEditor";
 import ShareholderResolutionEditor from "../pages/shareholder/ShareholderResolutionEditor";
+import Associates from "../pages/clientMaster/Associates";
+import Subsidiary from "../pages/clientMaster/Subsidiary";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -675,6 +677,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Shareholders />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/associates/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Associates />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/subsidiaries/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Subsidiary />} />
           ) : (
             <Navigate to="/login" />
           )
