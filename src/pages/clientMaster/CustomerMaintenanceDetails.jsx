@@ -149,6 +149,49 @@ const CustomerMaintenanceDetail = () => {
           </strong>
         </div>
         <div>{row?.books_of_account}</div>
+        <div>
+          <strong>Total paid-up capital as per last audited financials</strong>
+        </div>
+        <div>{row?.total_paid_up_capital_last_audited}</div>
+        <div>
+          <strong>
+            Turnover as per last audited financials(Section 2(91) of the Act)
+          </strong>
+        </div>
+        <div>{row?.turnover_lau}</div>
+        <div>
+          <strong>
+            Net Profit as per last audited financials (Section 198 & 135 of the
+            Act)
+          </strong>
+        </div>
+        <div>{row?.net_profit_lau}</div>
+        <div>
+          <strong>Mandatory notice period for Board Meeting</strong>
+        </div>
+        <div>{row?.BM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for Committee meetings</strong>
+        </div>
+        <div>{row?.CM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for AGM</strong>
+        </div>
+        <div>{row?.AGM_notice_period}</div>
+        <div>
+          <strong>Mandatory notice period for EGM</strong>
+        </div>
+        <div>{row?.EGM_notice_period}</div>
+
+        <div>
+          <strong>Due date for next board meeting</strong>
+        </div>
+        <div>{row?.BM_next_due_date?.split("T")[0]}</div>
+
+        <div>
+          <strong>Due date for next AGM</strong>
+        </div>
+        <div>{row?.AGM_next_due_date?.split("T")[0]}</div>
       </div>
       <div className="mt-4"></div>
       <h3>Directors</h3>
