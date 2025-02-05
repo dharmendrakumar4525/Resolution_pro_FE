@@ -449,6 +449,172 @@ export default function AddShareholderMeeting() {
               }));
             }
           }
+        } else if (
+          formData?.agendaItems[0]?.templateName == "AGM Virtual Agenda"
+        ) {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "677f7ef72522b858279b6277"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "677f7e982522b858279b625c"
+          );
+
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "677f87d7d3115f06a4c3717a"
+          );
+
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "677f7eb92522b858279b6262"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "677f80882522b858279b629d"
+          );
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
+        } else if (
+          formData?.agendaItems[0]?.templateName == "EGM Virtual Agenda"
+        ) {
+          const acknowledgementTemplate = data?.results?.find(
+            (item) => item.id === "677f7ef72522b858279b6277"
+          );
+          console.log(acknowledgementTemplate, "a123");
+          if (acknowledgementTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              acknowledgement: {
+                ...prevFormData.acknowledgement,
+                templateFile: acknowledgementTemplate?.fileName,
+              },
+            }));
+          }
+          const noticeTemplate = data?.results?.find(
+            (item) => item.id === "677f7e982522b858279b625c"
+          );
+
+          if (noticeTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              notes: {
+                ...prevFormData.notes,
+                templateFile: noticeTemplate.fileName,
+              },
+            }));
+          }
+          const momTemplate = data?.results?.find(
+            (item) => item.id === "677f87d7d3115f06a4c3717a"
+          );
+
+          if (momTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              mom: {
+                ...prevFormData.mom,
+                templateFile: momTemplate.fileName,
+              },
+            }));
+          }
+          const attendanceTemplate = data?.results?.find(
+            (item) => item.id === "677f7eb92522b858279b6262"
+          );
+
+          if (attendanceTemplate) {
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              attendance: {
+                ...prevFormData.attendance,
+                templateFile: attendanceTemplate.fileName,
+              },
+            }));
+          }
+          const shortNoticeTemplate = data?.results?.find(
+            (item) => item.id === "677f80882522b858279b629d"
+          );
+          if (formData?.date) {
+            const formDate = new Date(formData?.date);
+            const currentDate = new Date();
+            const timeDifference = formDate - currentDate;
+            const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+            if (daysDifference < 7 && daysDifference >= 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: shortNoticeTemplate.fileName,
+                  templateName: "Short Notice",
+                },
+              }));
+            } else {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                },
+              }));
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -473,6 +639,18 @@ export default function AddShareholderMeeting() {
     value: shareholder.id,
     label: shareholder.name,
   }));
+  const shareholderEquityOptions = shareholderList
+    .filter((share) => share.type === "equity")
+    ?.map((shareholder) => ({
+      value: shareholder.id,
+      label: shareholder.name,
+    }));
+  const shareholderPreferentialOptions = shareholderList
+    .filter((share) => share.type === "preference")
+    ?.map((shareholder) => ({
+      value: shareholder.id,
+      label: shareholder.name,
+    }));
 
   const validateForm = () => {
     const {
@@ -683,6 +861,14 @@ export default function AddShareholderMeeting() {
                     required
                     options={[
                       { value: "selectAll", label: "Select All" },
+                      {
+                        value: "selectEquity",
+                        label: "Select All Equity Shareholder",
+                      },
+                      {
+                        value: "selectPreference",
+                        label: "Select All Preference Shareholder",
+                      },
                       ...shareholderOptions,
                     ]}
                     value={
@@ -701,6 +887,32 @@ export default function AddShareholderMeeting() {
                     }
                     onChange={(selectedOptions) => {
                       if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectEquity"
+                        )
+                      ) {
+                        setFormData({
+                          ...formData,
+                          shareholder_participants:
+                            shareholderEquityOptions.map((option) => ({
+                              shareholder: option.value,
+                              isPresent: false,
+                            })),
+                        });
+                      } else if (
+                        selectedOptions.some(
+                          (option) => option.value === "selectPreference"
+                        )
+                      ) {
+                        setFormData({
+                          ...formData,
+                          shareholder_participants:
+                            shareholderPreferentialOptions.map((option) => ({
+                              shareholder: option.value,
+                              isPresent: false,
+                            })),
+                        });
+                      } else if (
                         selectedOptions.some(
                           (option) => option.value === "selectAll"
                         ) &&

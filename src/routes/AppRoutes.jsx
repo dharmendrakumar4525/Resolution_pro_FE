@@ -66,6 +66,7 @@ import ShareholderResolutionEditor from "../pages/shareholder/ShareholderResolut
 import Associates from "../pages/clientMaster/Associates";
 import Subsidiary from "../pages/clientMaster/Subsidiary";
 import DirectorForm from "../pages/clientMaster/DirectorForm";
+import ShareholderAttendanceEditor from "../pages/shareholder/ShareholderAttendanceEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -217,6 +218,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ShareholderResolutionEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-attendance-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderAttendanceEditor />} />
           ) : (
             <Navigate to="/login" />
           )
