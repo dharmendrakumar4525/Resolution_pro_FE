@@ -29,6 +29,7 @@ export default function ShareholderDocuments() {
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [buttonSLoading, setButtonSLoading] = useState(false);
   const [acknowledgement, setAcknowledgement] = useState({});
   const [resolutions, setResolutions] = useState([]);
   const [spclResolutions, setSpclResolutions] = useState([]);
@@ -209,7 +210,7 @@ export default function ShareholderDocuments() {
     });
   };
   const handleAttendanceEditClick = (url, index) => {
-    navigate(`/attendance-edit/${id}`, {
+    navigate(`/shareholder-attendance-edit/${id}`, {
       state: {
         index,
         fileUrl: url,
@@ -394,7 +395,7 @@ export default function ShareholderDocuments() {
     }
   };
   const patchShareholderAttendance = async () => {
-    setButtonLoading(true);
+    setButtonSLoading(true);
 
     try {
       const url = `${apiURL}/shareholder-meeting/${id}`;
@@ -440,7 +441,7 @@ export default function ShareholderDocuments() {
     } catch (error) {
       toast.error("Error updating attendance:", error);
     } finally {
-      setButtonLoading(false);
+      setButtonSLoading(false);
     }
   };
 
@@ -607,8 +608,8 @@ export default function ShareholderDocuments() {
             meetData.approval_status !== "approved"
           ) {
             toast.warning("Need approval to see saved documents.");
-          } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
-            toast.warning("No absentees found");
+          } else if (k === "leaveOfAbsence") {
+            toast.warning("This feature will launch soon");
           } else {
             setKey(k);
           }
@@ -831,7 +832,7 @@ export default function ShareholderDocuments() {
               style={{ alignContent: "right" }}
               onClick={patchShareholderAttendance}
             >
-              {buttonLoading ? (
+              {buttonSLoading ? (
                 <Spinner
                   as="span"
                   animation="border"
@@ -915,7 +916,7 @@ export default function ShareholderDocuments() {
             </Table>
           </div>
         </Tab>
-        <Tab eventKey="leaveOfAbsence" title="Leave of Absence">
+        <Tab eventKey="leaveOfAbsence" title="CRL">
           <div className="table-responsive mt-5">
             <br />
             <Table bordered hover className="Master-table">

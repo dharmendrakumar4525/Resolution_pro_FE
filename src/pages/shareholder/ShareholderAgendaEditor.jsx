@@ -49,6 +49,7 @@ export default function ShareholderAgendaEditor() {
   const { id } = useParams();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [prevCSR, setPrevCSR] = useState([]);
+  const [leaveUrl, setLeaveUrl] = useState("");
   const editor = useRef(null);
 
   const token = localStorage.getItem("refreshToken");
@@ -703,7 +704,27 @@ Name: \${name}</h6>
       console.error("Error fetching or converting one or more files:", error);
     }
   };
+  useEffect(() => {
+    const fetchLeaveAgendaUrl = async () => {
+      try {
+        const response = await fetch(
+          `${apiURL}/meeting-agenda-template/677f7ff12522b858279b628e`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setLeaveUrl(data?.fileName);
+      } catch (error) {
+        console.error("Error fetching Agenda:", error);
+      }
+    };
 
+    fetchLeaveAgendaUrl();
+  }, []);
   useEffect(() => {
     handleMultipleFilesAddOn(selectedData, spclSelectedData);
     processPlaceholders(editorContent);
@@ -951,6 +972,43 @@ Name: \${name}</h6>
       console.warn(`unable to save resolutions`);
     }
   };
+  const patchShareholderAttendance = async () => {
+    setButtonLoading(true);
+
+    try {
+      const url = `${apiURL}/shareholder-meeting/${id}`;
+
+      const absentees = meetInfo?.shareholder_participants.map(
+        (participant) => ({
+          shareholder: participant?.shareholder?.id,
+          templateName: `${participant?.shareholder?.name} CRL`,
+          meetingType: "shareholder_meeting",
+          templateFile: leaveUrl,
+        })
+      );
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          leave_of_absense: absentees,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("crl-template");
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      toast.error("Error updating attendance:", error);
+    } finally {
+      setButtonLoading(false);
+    }
+  };
 
   const saveDocument = async () => {
     setButtonLoading(true);
@@ -984,7 +1042,7 @@ Name: \${name}</h6>
 
       if (response.ok) {
         saveResolutions();
-
+        // patchShareholderAttendance();
         toast.success("Document saved successfully");
       } else {
         console.log("Failed to save the document.");
