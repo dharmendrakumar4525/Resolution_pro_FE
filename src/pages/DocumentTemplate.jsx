@@ -190,6 +190,8 @@ export default function DocumentTemplate() {
       "67624fcd0ad6adf0a26aceeb",
       "677f7e3d2522b858279b624a",
       "677f7e642522b858279b6250",
+      "677f7e7e2522b858279b6256",
+      "677f7e982522b858279b625c",
     ];
 
     setEditingRow(row);
