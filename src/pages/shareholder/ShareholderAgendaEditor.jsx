@@ -1200,7 +1200,7 @@ Name: \${name}</h6>
             <Form.Group controlId="agendaItems" className="mb-5">
               <Select
                 options={resolOptions}
-                placeholder="Select Ordinary Resolution"
+                placeholder="Select Ordinary Business"
                 value={previousSelectedOptions}
                 isMulti
                 onChange={handleAgendaItemChange}
@@ -1210,7 +1210,7 @@ Name: \${name}</h6>
             <Form.Group controlId="agendaItems" className="mb-5">
               <Select
                 options={resolOptions}
-                placeholder="Select Special Resolution"
+                placeholder="Select Special Business"
                 value={previousSpecialOptions}
                 isMulti
                 onChange={handleSpecialAgendaItemChange}
