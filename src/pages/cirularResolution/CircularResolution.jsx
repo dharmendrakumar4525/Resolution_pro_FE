@@ -345,6 +345,13 @@ export default function CircularResolution() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const statusOptions = [
+    { value: "", label: "Select Status" },
+    { value: "draft", label: "Draft" },
+    { value: "sent_for_approval", label: "Sent for Approval" },
+    { value: "rejected", label: "Rejected" },
+    { value: "approved", label: "Approved" },
+  ];
 
   return (
     <>
@@ -454,19 +461,24 @@ export default function CircularResolution() {
                         <Form.Label className="f-label">
                           Status<sup>*</sup>
                         </Form.Label>
-                        <Form.Control
-                          as="select"
-                          value={formData.status}
-                          onChange={handleChange}
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="sent_for_approval">
-                            Sent for Approval
-                          </option>
-                          <option value="rejected">Rejected</option>
-                          <option value="approved">Approved</option>
-                        </Form.Control>
+                        <Select
+                          value={statusOptions.find(
+                            (option) => option.value === formData.status
+                          )}
+                          onChange={(selectedOption) => {
+                            if (formData.status !== "approved") {
+                              handleChange({
+                                target: {
+                                  id: "status",
+                                  value: selectedOption.value,
+                                },
+                              });
+                            }
+                          }}
+                          options={statusOptions}
+                          isDisabled={formData.status === "approved"}
+                          isSearchable={false}
+                        />
                       </Form.Group>
                     </Col>
                     {formData?.status === "approved" && (
@@ -475,6 +487,7 @@ export default function CircularResolution() {
                           <Form.Label className="f-label">
                             Approved Date<sup>*</sup>
                           </Form.Label>
+
                           <Form.Control
                             type="date"
                             value={formData.approved_at || ""}

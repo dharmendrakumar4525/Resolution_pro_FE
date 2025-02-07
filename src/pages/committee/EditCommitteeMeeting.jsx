@@ -408,6 +408,7 @@ export default function EditCommitteeMeeting() {
 
                 <Form.Group controlId="agendaItems">
                   <Select
+                  isDisabled
                     options={agendaOptions}
                     placeholder="Select Meeting Document"
                     value={

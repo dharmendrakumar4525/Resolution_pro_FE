@@ -678,7 +678,9 @@ export default function CustomerMaintenanceForm() {
                           label: manager.name,
                         }))
                         .find(
-                          (option) => option.value === formData.alloted_manager
+                          (option) =>
+                            option.value === formData.alloted_manager.id ||
+                            option.value === formData.alloted_manager
                         )}
                       onChange={handleManagerChange}
                       placeholder="Select Client Manager"
@@ -760,7 +762,8 @@ export default function CustomerMaintenanceForm() {
                         }))
                         .find(
                           (option) =>
-                            option.value === formData.alloted_consultant
+                          option.value === formData.alloted_consultant.id ||
+                          option.value === formData.alloted_consultant
                         )}
                       onChange={handleConsultantChange}
                       placeholder="Select Client Consultant"

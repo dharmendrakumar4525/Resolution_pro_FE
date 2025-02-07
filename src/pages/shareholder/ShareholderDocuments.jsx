@@ -648,79 +648,6 @@ export default function ShareholderDocuments() {
             </Button>
           </div>
         </Tab>
-
-        <Tab eventKey="mom" title="MOM">
-          <div className="table-responsive mt-5">
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "30%" }}>Name</th>
-                  <th>Edit</th>
-                  <th>View</th>
-                  <th>Download-as PDF</th>
-                  <th>Download-as Docx</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>MOM Document</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleMOMEditClick(minutes.templateFile, 1)
-                      }
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
-                      disabled={!minutes?.filehtml}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    {minutes?.fileName && minutes?.fileName !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={minutes?.fileName}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {minutes?.filedocx ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={minutes?.filedocx}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        </Tab>
-
         <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
@@ -916,6 +843,80 @@ export default function ShareholderDocuments() {
             </Table>
           </div>
         </Tab>
+
+        <Tab eventKey="mom" title="MOM">
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "30%" }}>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MOM Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() =>
+                        handleMOMEditClick(minutes.templateFile, 1)
+                      }
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
+                      disabled={!minutes?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    {minutes?.fileName && minutes?.fileName !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {minutes?.filedocx ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
+        </Tab>
+
+       
         <Tab eventKey="leaveOfAbsence" title="CRL">
           <div className="table-responsive mt-5">
             <br />
@@ -1121,7 +1122,7 @@ export default function ShareholderDocuments() {
             </Table>
           </div>
         </Tab>
-        <Tab eventKey="acknowledgement" title="Acknowledgement">
+        {/* <Tab eventKey="acknowledgement" title="Acknowledgement">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
@@ -1197,7 +1198,7 @@ export default function ShareholderDocuments() {
               </tbody>
             </Table>
           </div>
-        </Tab>
+        </Tab> */}
       </Tabs>
       <div
         className="d-flex flex-column justify-content-end mt-3"

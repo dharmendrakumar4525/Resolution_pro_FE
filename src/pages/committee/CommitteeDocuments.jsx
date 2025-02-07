@@ -576,6 +576,152 @@ export default function CommitteeDocuments() {
             </Button>
           </div>
         </Tab>
+        <Tab eventKey="attendance" title="Attendance Register">
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "40%" }}>Name</th>
+                  <th style={{ width: "20%" }}>Present in the Meeting</th>
+                  <th style={{ width: "20%" }}>
+                    Present in the Meeting(through Video Call)
+                  </th>
+                  <th style={{ width: "20%" }}>Selected Chairman</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants?.map((participant, index) => (
+                  <tr key={index}>
+                    <td>{participant?.director?.name}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent")
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isPresent_vc}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isPresent_vc")
+                        }
+                        disabled={participant?.isPresent}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isChairman}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isChairman")
+                        }
+                        // disabled={participant?.isPresent}
+                        disabled={
+                          !participant.isChairman &&
+                          participants.some((p) => p.isChairman)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Button
+              className="mb-4 mt-2"
+              style={{ alignContent: "right" }}
+              onClick={patchAttendance}
+            >
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Mark Attendance"
+              )}
+            </Button>
+            <br />
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "30%" }}>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Attendance Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() =>
+                        handleAttendanceEditClick(attendance?.templateFile, 1)
+                      }
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() =>
+                        handleAttendanceView(attendance?.filehtml, 1)
+                      }
+                      disabled={!attendance?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    {attendance?.fileName ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={attendance?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {attendance?.filedocx ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={attendance?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
+        </Tab>
 
         <Tab eventKey="notice" title="Notice">
           <div className="table-responsive mt-5">
@@ -723,152 +869,7 @@ export default function CommitteeDocuments() {
           </div>
         </Tab>
 
-        <Tab eventKey="attendance" title="Attendance Register">
-          <div className="table-responsive mt-5">
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "40%" }}>Name</th>
-                  <th style={{ width: "20%" }}>Present in the Meeting</th>
-                  <th style={{ width: "20%" }}>
-                    Present in the Meeting(through Video Call)
-                  </th>
-                  <th style={{ width: "20%" }}>Selected Chairman</th>
-                </tr>
-              </thead>
-              <tbody>
-                {participants?.map((participant, index) => (
-                  <tr key={index}>
-                    <td>{participant?.director?.name}</td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={participant?.isPresent}
-                        onChange={(e) =>
-                          handleCheckboxChange(e, participant, "isPresent")
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={participant?.isPresent_vc}
-                        onChange={(e) =>
-                          handleCheckboxChange(e, participant, "isPresent_vc")
-                        }
-                        disabled={participant?.isPresent}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={participant?.isChairman}
-                        onChange={(e) =>
-                          handleCheckboxChange(e, participant, "isChairman")
-                        }
-                        // disabled={participant?.isPresent}
-                        disabled={
-                          !participant.isChairman &&
-                          participants.some((p) => p.isChairman)
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <Button
-              className="mb-4 mt-2"
-              style={{ alignContent: "right" }}
-              onClick={patchAttendance}
-            >
-              {buttonLoading ? (
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />
-              ) : (
-                "Mark Attendance"
-              )}
-            </Button>
-            <br />
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "30%" }}>Name</th>
-                  <th>Edit</th>
-                  <th>View</th>
-                  <th>Download-as PDF</th>
-                  <th>Download-as Docx</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Attendance Document</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleAttendanceEditClick(attendance?.templateFile, 1)
-                      }
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleAttendanceView(attendance?.filehtml, 1)
-                      }
-                      disabled={!attendance?.filehtml}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    {attendance?.fileName ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={attendance?.fileName}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {attendance?.filedocx ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={attendance?.filedocx}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        </Tab>
+       
         <Tab eventKey="leaveOfAbsence" title="Leave of Absence">
           <div className="table-responsive mt-5">
             <br />
