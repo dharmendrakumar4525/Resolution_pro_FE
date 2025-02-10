@@ -779,7 +779,7 @@ export default function AddShareholderMeeting() {
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-1">
                 <Form.Group controlId="client_name">
                   <Form.Label>
                     Client Name<sup>*</sup>
@@ -796,7 +796,7 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-1">
                 <Form.Group controlId="title">
                   <Form.Label>
                     Title <sup>*</sup>
@@ -809,7 +809,7 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4} className="mt-2">
+              <Col md={6} lg={4} className="mt-1">
                 <Form.Group controlId="shareholder_meeting_type">
                   <Form.Label>
                     Meeting Type<sup>*</sup>
@@ -964,8 +964,8 @@ export default function AddShareholderMeeting() {
                   </p>
                 )}
               </Col>
-              <Col md={6} lg={4}>
-                <Form.Group controlId="participants" className="mt-3">
+              <Col md={6} lg={4} className="mt-3">
+                <Form.Group controlId="participants">
                   <Form.Label>
                     Participants <sup>*</sup>
                   </Form.Label>
@@ -1112,7 +1112,7 @@ export default function AddShareholderMeeting() {
                   {formData.other_participants.map((participant, index) => (
                     <div key={index} className="participant-inputs">
                       <Row className="mt-2">
-                        <Col md={6} lg={4}>
+                        <Col md={6} lg={4} className="mt-3">
                           <Form.Control
                             type="text"
                             value={participant.name || ""}
@@ -1126,7 +1126,7 @@ export default function AddShareholderMeeting() {
                             placeholder="Enter Participant Name"
                           />
                         </Col>
-                        <Col md={6} lg={4}>
+                        <Col md={6} lg={4} className="mt-3">
                           <Form.Control
                             type="email"
                             value={participant.email || ""}
@@ -1140,7 +1140,7 @@ export default function AddShareholderMeeting() {
                             placeholder="Enter Participant Email"
                           />
                         </Col>
-                        <Col md={6} lg={4}>
+                        <Col md={6} lg={4} className="mt-3">
                           <Button
                             type="button"
                             variant="danger"
@@ -1164,7 +1164,7 @@ export default function AddShareholderMeeting() {
               </Col>
             </Row>
             <Row>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-3">
                 <Form.Group controlId="startTime">
                   <Form.Label className="f-label">
                     Start Time<sup>*</sup>
@@ -1177,7 +1177,7 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-3">
                 <Form.Group controlId="standard_time">
                   <Form.Label className="f-label">
                     Time Zone<sup>*</sup>
@@ -1191,7 +1191,7 @@ export default function AddShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-3">
                 <Form.Group controlId="location">
                   <Form.Label className="f-label">
                     Location<sup>*</sup>

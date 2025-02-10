@@ -26,7 +26,9 @@ export default function EditShareholderMeeting() {
   const [loading, setLoading] = useState(true);
   const [clientList, setClientList] = useState([]);
   const [shareholderList, setShareholderList] = useState([]);
-
+  const [selectedAuditor, setSelectedAuditor] = useState({});
+  const [selectedSecretary, setSelectedSecretary] = useState({});
+  const [selectedKompany, setSelectedKompany] = useState(false);
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -38,6 +40,9 @@ export default function EditShareholderMeeting() {
     title: "",
     client_name: "",
     meetingType: "shareholder_meeting",
+    shareholder_meeting_type: "",
+    auditor_participant: {},
+    secretary_participant: {},
     date: "",
     startTime: "",
     organizer: user.id,
@@ -112,6 +117,7 @@ export default function EditShareholderMeeting() {
       );
       const data = await response.json();
       setShareholderList(data.results);
+
       console.log(data.results, "shre");
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -136,7 +142,18 @@ export default function EditShareholderMeeting() {
       console.error("Error fetching directors:", error);
     }
   };
+  useEffect(() => {
+    if (formData?.client_name && clientList.length > 0) {
+      const selectedCompany = clientList.find(
+        (company) => company._id === formData?.client_name
+      );
 
+      if (selectedCompany) {
+        setSelectedKompany([selectedCompany]);
+        console.log([selectedCompany], "itz updated");
+      }
+    }
+  }, [formData?.client_name, clientList, rows]);
   const handleEditClick = (row) => {
     console.log(
       row?.client_name?.id,
@@ -182,6 +199,8 @@ export default function EditShareholderMeeting() {
         : [],
       location: row.location,
     });
+    setSelectedAuditor(row?.auditor_participant);
+    setSelectedSecretary(row?.secretary_participant);
     if (row.client_name?.id) {
       fetchDirectors(row.client_name.id);
       fetchShareholderList(row.client_name.id);
@@ -218,6 +237,7 @@ export default function EditShareholderMeeting() {
       other_participants: updatedParticipants,
     }));
   };
+
   const handleAgendaItemChange = (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevData) => ({
@@ -390,12 +410,43 @@ export default function EditShareholderMeeting() {
                 </Form.Group>
               </Col>
               <Col md={6} lg={4}>
+                <Form.Group controlId="shareholder_meeting_type">
+                  <Form.Label>
+                    Meeting Type<sup>*</sup>
+                  </Form.Label>
+                  <Select
+                    isDisabled
+                    id="meeting-type-select"
+                    options={[
+                      { value: "AGM", label: "Annual General Meeting" },
+                      { value: "EGM", label: "Extraordinary General Meeting" },
+                    ]}
+                    placeholder="Select Meeting Type"
+                    value={[
+                      { value: "AGM", label: "Annual General Meeting" },
+                      { value: "EGM", label: "Extraordinary General Meeting" },
+                    ].find(
+                      (option) =>
+                        option.value === formData?.shareholder_meeting_type
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        shareholder_meeting_type: selectedOption?.value || "",
+                      }))
+                    }
+                    isClearable
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} lg={4}>
                 <Form.Label>
                   Meeting Documents<sup>*</sup>
                 </Form.Label>
 
                 <Form.Group controlId="agendaItems">
                   <Select
+                    isDisabled
                     options={agendaOptions}
                     placeholder="Select Meeting Document"
                     value={
@@ -411,9 +462,7 @@ export default function EditShareholderMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
 
-            <Row className="mt-2">
               <Col md={6} lg={4}>
                 <Form.Group controlId="date">
                   <Form.Label>
@@ -580,57 +629,103 @@ export default function EditShareholderMeeting() {
                   </p>
                 )}
               </Col>
-            </Row>
-            <Row></Row>
-            <Col>
-              <Form.Group className="mt-2" controlId="other-participants">
-                <Form.Label>Other Participants</Form.Label>
-                {formData?.other_participants?.map((participant, index) => (
-                  <div key={index} className="participant-inputs">
-                    <Row className="mt-4">
-                      <Col md={6} lg={4}>
-                        <Form.Control
-                          type="text"
-                          value={participant.name || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "name",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Name"
-                        />
-                      </Col>
-                      <Col md={6} lg={4}>
-                        <Form.Control
-                          type="email"
-                          value={participant.email || ""}
-                          onChange={(e) =>
-                            handleParticipantChange(
-                              index,
-                              "email",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter Participant Email"
-                        />
-                      </Col>
-                      <Col md={6} lg={4}>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          onClick={() => handleRemoveParticipant(index)}
-                        >
-                          Remove
-                        </Button>
-                      </Col>
-                    </Row>
-                  </div>
-                ))}
-              </Form.Group>
-            </Col>
-            <Row>
+              <Col md={6} lg={4} className="mt-5">
+                <Form.Group controlId="include_secretary">
+                  <Form.Check
+                    type="checkbox"
+                    label="Include Secretary Participant"
+                    checked={Object.keys(selectedSecretary || {}).length > 0}
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        secretary_participant: isChecked
+                          ? {
+                              name:
+                                selectedKompany[0]?.sectory_detail?.name || "",
+                              isPresent: false,
+                              isPresent_vc: false,
+                            }
+                          : {},
+                      }));
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} lg={4} className="mt-5">
+                <Form.Group controlId="include_auditor">
+                  <Form.Check
+                    type="checkbox"
+                    label="Include Auditor Participant"
+                    checked={Object.keys(selectedAuditor || {}).length > 0}
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        auditor_participant: isChecked
+                          ? {
+                              name:
+                                selectedKompany[0]?.auditor_detail?.name || "",
+                              isPresent: false,
+                              isPresent_vc: false,
+                            }
+                          : {},
+                      }));
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Row>
+                <Form.Group className="mt-2" controlId="other-participants">
+                  <Form.Label>Other Participants</Form.Label>
+                  {formData?.other_participants?.map((participant, index) => (
+                    <div key={index} className="participant-inputs">
+                      <Row className="mt-4">
+                        <Col md={6} lg={4}>
+                          <Form.Control
+                            type="text"
+                            value={participant.name || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Name"
+                          />
+                        </Col>
+
+                        <Col md={6} lg={4}>
+                          <Form.Control
+                            type="email"
+                            value={participant.email || ""}
+                            onChange={(e) =>
+                              handleParticipantChange(
+                                index,
+                                "email",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Participant Email"
+                          />
+                        </Col>
+                        <Col md={6} lg={4}>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            onClick={() => handleRemoveParticipant(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Col>
+                      </Row>
+                    </div>
+                  ))}
+                </Form.Group>
+              </Row>
+
               <Button
                 className="mt-3"
                 style={{ width: "300px", marginBottom: "30px" }}
