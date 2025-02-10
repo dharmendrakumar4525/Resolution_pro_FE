@@ -158,7 +158,11 @@ export default function CustomerMaintenanceForm() {
           );
           const data = await response.json();
           console.log(data, "unfilterred");
-          setFormData(data);
+          setFormData((prevData) => ({
+            ...data,
+            alloted_consultant: data.alloted_consultant?.id,
+            alloted_manager: data.alloted_manager?.id,
+          }));
         } catch (error) {
           console.error("Error fetching customer data:", error);
           toast.error("Failed to load customer data");
@@ -679,7 +683,7 @@ export default function CustomerMaintenanceForm() {
                         }))
                         .find(
                           (option) =>
-                            option.value === formData.alloted_manager.id ||
+                            // option.value === formData.alloted_manager.id ||
                             option.value === formData.alloted_manager
                         )}
                       onChange={handleManagerChange}
@@ -762,8 +766,8 @@ export default function CustomerMaintenanceForm() {
                         }))
                         .find(
                           (option) =>
-                          option.value === formData.alloted_consultant.id ||
-                          option.value === formData.alloted_consultant
+                            // option.value === formData.alloted_consultant.id ||
+                            option.value === formData.alloted_consultant
                         )}
                       onChange={handleConsultantChange}
                       placeholder="Select Client Consultant"
