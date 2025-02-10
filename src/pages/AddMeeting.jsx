@@ -28,8 +28,8 @@ export default function AddMeeting() {
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [clientData, setClientData] = useState({});
-
+  const [clientDetail, setCLientDetail] = useState({});
+  const [serialPatch, setserialPatch] = useState({});
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
   const navigate = useNavigate();
@@ -147,9 +147,9 @@ export default function AddMeeting() {
         (company) => company._id === formData?.client_name
       );
 
-      // if (selectedCompany) {
-      //   countPreviousMeetings(rows, selectedCompany._id);
-      // }
+      if (selectedCompany) {
+        countPreviousMeetings(rows, selectedCompany._id);
+      }
     }
   }, [formData?.client_name, clientList, rows]);
   const fetchRegisteredAddress = async (cid) => {
@@ -161,12 +161,10 @@ export default function AddMeeting() {
         },
       });
       const data = await response.json();
-      setClientData(data);
-      let result = getOrdinalSuffix((data?.BM_last_serial?.serial_no || 0) + 1);
+      setCLientDetail(data);
       setFormData((prevData) => ({
         ...prevData,
         location: data.registered_address,
-        title: result + " " + "Board Meeting",
       }));
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -343,9 +341,9 @@ export default function AddMeeting() {
             const currentDate = new Date();
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-            console.log(clientData, "234");
+
             if (
-              (daysDifference < clientData?.BM_notice_period || 7) &&
+              (daysDifference < clientDetail?.BM_notice_period || 7) &&
               daysDifference >= 0
             ) {
               setFormData((prevFormData) => ({
@@ -430,7 +428,7 @@ export default function AddMeeting() {
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
             if (
-              (daysDifference < clientData?.BM_notice_period || 7) &&
+              (daysDifference < clientDetail?.BM_notice_period || 7) &&
               daysDifference >= 0
             ) {
               setFormData((prevFormData) => ({
@@ -538,6 +536,19 @@ export default function AddMeeting() {
         });
 
         if (response.ok) {
+          let BM_last_serial = serialPatch;
+          response = await fetch(
+            `${apiURL}/customer-maintenance/${formData?.client_name}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+
+              method: "PATCH",
+              body: JSON.stringify({ BM_last_serial }),
+            }
+          );
           toast.success("Meeting added successfully");
           navigate("/meeting");
         } else {
@@ -561,6 +572,71 @@ export default function AddMeeting() {
     const { id, name, value } = e.target;
 
     setFormData({ ...formData, [id || name]: value });
+    // if (
+    //   id == "date" &&
+    //   clientDetail &&
+    //   clientDetail?.BM_last_serial &&
+    //   formData.client_name
+    // ) {
+    //   let data = clientDetail.BM_last_serial;
+    //   data["rows"] = [...rows];
+    //   let outputData = updateSerialBasedOnFinancialYear(
+    //     data,
+    //     formData?.client_name,
+    //     value
+    //   );
+    //   setserialPatch(outputData);
+    //   let result = getOrdinalSuffix(outputData?.serial_no || 1);
+    //   setFormData((prevData) => ({
+    //     ...prevData,
+    //     title: result + " " + "Board Meeting",
+    //   }));
+    // }
+  };
+  const updateSerialBasedOnFinancialYear = (data, id, currentMeetingDate) => {
+    if (!data || !Array.isArray(data.rows)) return null; // Edge case handling
+
+    if (data?.type === "regular") {
+      let regularserial = data?.serial_no;
+      regularserial++;
+      return { serial_no: regularserial, type: "regular" };
+    }
+    // Find all meetings for the given client_name.id
+    const clientMeetings = data.rows.filter(
+      (row) => row.client_name?.id === id
+    );
+
+    if (clientMeetings.length === 0) return { serial_no: 1, type: "financial" }; // No meetings found
+
+    // Sort meetings by date (latest first)
+    clientMeetings.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Get the last meeting (latest date)
+    const lastMeeting = clientMeetings[0];
+
+    // Convert dates to JavaScript Date objects
+    const lastMeetingDate = new Date(lastMeeting.date);
+    const currentDate = new Date(currentMeetingDate);
+
+    // Function to get the financial year (April to March)
+    const getFinancialYear = (date) => {
+      const year = date.getFullYear();
+      return date.getMonth() >= 3 ? year : year - 1; // April (3) starts new financial year
+    };
+
+    // Compare financial years
+    const lastFinancialYear = getFinancialYear(lastMeetingDate);
+    const currentFinancialYear = getFinancialYear(currentDate);
+
+    let serial = 1;
+    // Update serial_no based on financial year match
+    if (lastFinancialYear === currentFinancialYear) {
+      serial = data.serial_no + 1; // Increase if same financial year
+    } else {
+      serial = 1; // Reset if new financial year
+    }
+    console.log(serial);
+    return { serial_no: serial, type: "financial" };
   };
 
   const handleClientChange = (selectedOption) => {
@@ -631,6 +707,20 @@ export default function AddMeeting() {
                 </Form.Group>
               </Col>
               <Col md={6} lg={4}>
+                <Form.Group controlId="date">
+                  <Form.Label>
+                    Date<sup>*</sup>
+                  </Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={formData?.date}
+                    onChange={handleChange}
+                    disabled={!formData?.client_name}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} lg={4}>
                 <Form.Group controlId="title">
                   <Form.Label>
                     Title<sup>*</sup>
@@ -643,7 +733,7 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4}>
+              <Col md={6} lg={4} className="mt-3">
                 <Form.Label>
                   Meeting Documents<sup>*</sup>
                 </Form.Label>
@@ -665,25 +755,8 @@ export default function AddMeeting() {
                   />
                 </Form.Group>
               </Col>
-            </Row>
 
-            <Row className="mt-2 mb-2"></Row>
-
-            <Row>
-              <Col md={6} lg={4}>
-                <Form.Group controlId="date">
-                  <Form.Label>
-                    Date<sup>*</sup>
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={formData?.date}
-                    onChange={handleChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6} lg={6}>
+              <Col md={6} lg={6} className="mt-3">
                 <Form.Group controlId="participants">
                   <Form.Label>
                     Participants<sup>*</sup>
