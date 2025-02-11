@@ -446,6 +446,7 @@ const TemplateViewer = () => {
             <button type="submit" className="btn btn-primary">
               Submit
             </button>
+            <br />
             <Button
               className="mt-4"
               variant="danger"
