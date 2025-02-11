@@ -18,7 +18,7 @@ import { FaEdit, FaTrash, FaPlus, FaEye, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
-
+import Select from "react-select";
 export default function Meeting() {
   const [rows, setRows] = useState([]);
 
@@ -161,7 +161,7 @@ export default function Meeting() {
       endTime: row?.endTime,
       organizer: row?.organizer,
       participants: row?.participants.id || [],
-      agendaItems: row?.agendaItems.map((agendaItem) => ({
+      agendaItems: row?.agendaItems?.map((agendaItem) => ({
         templateName: agendaItem.templateName,
         meetingType: agendaItem.meetingType,
         fileName: agendaItem.fileName,
@@ -181,11 +181,41 @@ export default function Meeting() {
   const handleRowClick = (row) => {
     navigate(`/documents/${row?.id}`);
   };
+
+  const handleChange = async (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      client_name: selectedOption ? selectedOption.value : "", // Handle case when selectedOption is null
+    }));
+
+    if (selectedOption && selectedOption.value !== "") {
+      const token = localStorage.getItem("refreshToken");
+      const response = await fetch(
+        `${apiURL}/meeting?page=${page}&limit=10&client_name=${selectedOption.value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setRows(data.results);
+      setTotalPages(data.totalPages);
+    } else {
+      setRefresh((prev) => !prev);
+    }
+  };
+
   const userPermissions =
     rolePermissions.find((perm) => perm.moduleName === "Board_Meeting")
       ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
 
   return (
     <>
@@ -194,6 +224,15 @@ export default function Meeting() {
 
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Board Meeting</h4>
+          <Select
+            options={clientOptions}
+            value={clientOptions.find(
+              (option) => option.value === formData.client_name
+            )}
+            onChange={handleChange}
+            isClearable
+            placeholder="Select Company"
+          />
           {hasPermission("add") && (
             <Button
               variant="primary"
@@ -215,7 +254,7 @@ export default function Meeting() {
           <div className="text-center mt-5">
             <h5>You do not have permission to view the data</h5>
           </div>
-        ) : rows.length === 0 ? (
+        ) : rows?.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -233,7 +272,7 @@ export default function Meeting() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
+                {rows?.map((row, index) => (
                   <OverlayTrigger
                     key={row?.id}
                     placement="top"

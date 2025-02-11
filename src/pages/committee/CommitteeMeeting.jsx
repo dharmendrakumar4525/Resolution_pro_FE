@@ -18,10 +18,11 @@ import { FaEdit, FaTrash, FaPlus, FaEye, FaFileWord } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
+import Select from "react-select";
 
 export default function CommitteeMeeting() {
   const [rows, setRows] = useState([]);
-
+  const [clientList, setClientList] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -37,6 +38,9 @@ export default function CommitteeMeeting() {
 
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    client_name: "",
+  });
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -61,6 +65,24 @@ export default function CommitteeMeeting() {
 
     fetchData(page);
   }, [page, refresh]);
+  useEffect(() => {
+    const fetchClientList = async () => {
+      try {
+        const response = await fetch(`${apiURL}/customer-maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setClientList(data.docs);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
+
+    fetchClientList();
+  }, []);
 
   const handleDeleteClick = async (row) => {
     try {
@@ -85,6 +107,30 @@ export default function CommitteeMeeting() {
       toast.error("Failed to delete item. Please try again.");
     }
   };
+  const handleChange = async (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      client_name: selectedOption ? selectedOption.value : "",
+    }));
+
+    if (selectedOption && selectedOption.value !== "") {
+      const token = localStorage.getItem("refreshToken");
+      const response = await fetch(
+        `${apiURL}/committee-meeting?page=${page}&limit=10&client_name=${selectedOption.value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setRows(data.results);
+      setTotalPages(data.totalPages);
+    } else {
+      setRefresh((prev) => !prev);
+    }
+  };
 
   const handleRedirectEdit = (row) => {
     navigate(`/edit-committee-meet/${row?.id}`, { state: { row } });
@@ -105,6 +151,10 @@ export default function CommitteeMeeting() {
       ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const clientOptions = clientList?.map((client) => ({
+    value: client._id,
+    label: client.company_name,
+  }));
 
   return (
     <>
@@ -113,6 +163,15 @@ export default function CommitteeMeeting() {
 
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Committee Meeting</h4>
+          <Select
+            options={clientOptions}
+            value={clientOptions.find(
+              (option) => option.value === formData.client_name
+            )}
+            onChange={handleChange}
+            isClearable
+            placeholder="Select Company"
+          />
           {hasPermission("add") && (
             <Button
               variant="primary"
@@ -134,7 +193,7 @@ export default function CommitteeMeeting() {
           <div className="text-center mt-5">
             <h5>You do not have permission to view the data</h5>
           </div>
-        ) : rows.length === 0 ? (
+        ) : rows?.length === 0 ? (
           <div className="text-center mt-5">
             <h5>No data available</h5>
           </div>
@@ -151,7 +210,7 @@ export default function CommitteeMeeting() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
+                {rows?.map((row, index) => (
                   <OverlayTrigger
                     key={row?.id}
                     placement="top"
