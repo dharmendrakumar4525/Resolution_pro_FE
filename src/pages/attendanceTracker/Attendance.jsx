@@ -244,9 +244,7 @@ export default function Attendance() {
                       <td>{row?.company_name}</td>
                       <td>{row?.cin}</td>
 
-                      <td className="">
-                        {row?.alloted_manager[0]?.name || "-"}
-                      </td>
+                      <td className="">{row?.alloted_manager?.name || "-"}</td>
                       <td>{row?.secretary_detail?.name || "-"}</td>
                       <td>{row?.auditor_detail?.name || "-"}</td>
                       <td>
