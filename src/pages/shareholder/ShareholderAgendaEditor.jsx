@@ -946,6 +946,14 @@ Name: \${name}</h6>
         templateFile: item.resolutionFile || "",
         meetingType: meetingType,
       }));
+      const shareholderCrl = meetInfo?.shareholder_participants.map(
+        (participant) => ({
+          shareholder: participant?.shareholder?.id,
+          templateName: `${participant?.shareholder?.name} CRL`,
+          meetingType: "shareholder_meeting",
+          templateFile: leaveUrl,
+        })
+      );
 
       const response = await fetch(url, {
         method: "PATCH",
@@ -956,6 +964,7 @@ Name: \${name}</h6>
         body: JSON.stringify({
           resolutions,
           special_resolutions: spclResolutions,
+          leave_of_absense: shareholderCrl,
         }),
       });
 
@@ -970,43 +979,6 @@ Name: \${name}</h6>
       }
     } catch {
       console.warn(`unable to save resolutions`);
-    }
-  };
-  const patchShareholderAttendance = async () => {
-    setButtonLoading(true);
-
-    try {
-      const url = `${apiURL}/shareholder-meeting/${id}`;
-
-      const absentees = meetInfo?.shareholder_participants.map(
-        (participant) => ({
-          shareholder: participant?.shareholder?.id,
-          templateName: `${participant?.shareholder?.name} CRL`,
-          meetingType: "shareholder_meeting",
-          templateFile: leaveUrl,
-        })
-      );
-
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          leave_of_absense: absentees,
-        }),
-      });
-
-      if (response.ok) {
-        console.log("crl-template");
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-    } catch (error) {
-      toast.error("Error updating attendance:", error);
-    } finally {
-      setButtonLoading(false);
     }
   };
 
@@ -1042,7 +1014,6 @@ Name: \${name}</h6>
 
       if (response.ok) {
         saveResolutions();
-        // patchShareholderAttendance();
         toast.success("Document saved successfully");
       } else {
         console.log("Failed to save the document.");

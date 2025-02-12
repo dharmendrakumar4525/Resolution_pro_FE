@@ -20,6 +20,7 @@ import Select from "react-select";
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
+  const [userList, setUserList] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -31,6 +32,9 @@ export default function CustomerMaintenance() {
     email: "",
     password: "",
     role: "",
+  });
+  const [searchFilter, setSearchFilter] = useState({
+    user_name: "",
   });
   const [roleList, setRoleList] = useState([]);
   const { rolePermissions } = useAuth();
@@ -64,6 +68,7 @@ export default function CustomerMaintenance() {
         });
         const data = await response.json();
         setRows(data.results);
+
         setTotalPages(data.totalPages);
       } catch (error) {
         toast.error("Error fetching data");
@@ -73,7 +78,25 @@ export default function CustomerMaintenance() {
     };
     fetchData();
   }, [page, refresh]);
+  useEffect(() => {
+    const fetchClientList = async () => {
+      try {
+        const response = await fetch(`${apiURL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setUserList(data.results);
+        console.log(data.results, "jkl");
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
 
+    fetchClientList();
+  }, []);
   const handleOpenAddModal = () => {
     setFormData({
       name: "",
@@ -91,7 +114,30 @@ export default function CustomerMaintenance() {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
+  const handleFilterChange = async (selectedOption) => {
+    setSearchFilter((prevData) => ({
+      ...prevData,
+      user_name: selectedOption ? selectedOption.value : "",
+    }));
 
+    if (selectedOption && selectedOption.value !== "") {
+      const token = localStorage.getItem("refreshToken");
+      const response = await fetch(
+        `${apiURL}/users?page=${page}&limit=10&name=${selectedOption.label}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setRows(data.results);
+      setTotalPages(data.totalPages);
+    } else {
+      setRefresh((prev) => !prev);
+    }
+  };
   const handleEditClick = (row) => {
     setEditingRow(row);
     setFormData({
@@ -210,7 +256,10 @@ export default function CustomerMaintenance() {
 
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
-  console.log(formData, "formData");
+  const userOptions = userList?.map((user) => ({
+    value: user.id,
+    label: user.name,
+  }));
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
@@ -218,6 +267,21 @@ export default function CustomerMaintenance() {
 
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Users</h4>
+          <Select
+            options={userOptions}
+            value={userOptions.find(
+              (option) => option.value === searchFilter.user_name
+            )}
+            onChange={handleFilterChange}
+            isClearable
+            placeholder="Search User"
+            styles={{
+              control: (base) => ({
+                ...base,
+                width: "250px",
+              }),
+            }}
+          />
           {hasPermission("add") && (
             <Button
               variant="primary"

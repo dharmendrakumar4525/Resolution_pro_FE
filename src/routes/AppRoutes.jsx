@@ -67,6 +67,7 @@ import Associates from "../pages/clientMaster/Associates";
 import Subsidiary from "../pages/clientMaster/Subsidiary";
 import DirectorForm from "../pages/clientMaster/DirectorForm";
 import ShareholderAttendanceEditor from "../pages/shareholder/ShareholderAttendanceEditor";
+import CrlEditor from "../pages/shareholder/CrlEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -709,6 +710,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Shareholders />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-crl/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<CrlEditor />} />
           ) : (
             <Navigate to="/login" />
           )
