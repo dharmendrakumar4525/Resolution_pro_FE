@@ -74,9 +74,7 @@ export default function CircularResolution() {
           if (user.role === "672c47c238903b464c9d2920") {
             return (
               (filterName === "" ||
-                row?.templateName
-                  ?.toLowerCase()
-                  .includes(filterName.toLowerCase())) &&
+                row?.title?.toLowerCase().includes(filterName.toLowerCase())) &&
               (filterStatus === "" || row?.status === filterStatus)
             );
           } else if (user.role === "672c47cb38903b464c9d2923") {
@@ -375,7 +373,8 @@ export default function CircularResolution() {
                 className="me-2"
               >
                 <option value="">All Statuses</option>
-                <option value="usable">Usable</option>
+                <option value="approved">Approved</option>
+                <option value="sent_for_approval">Sent for Approval</option>
                 <option value="draft">Draft</option>
                 <option value="rejected">Rejected</option>
               </Form.Select>

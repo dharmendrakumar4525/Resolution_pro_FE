@@ -148,9 +148,14 @@ export default function Attendance() {
     label: client.company_name,
   }));
   const handleChange = async (selectedOption) => {
-    setFormData({ ...formData, client_name: selectedOption.value || "" });
+    if (!selectedOption) {
+      setFormData({ ...formData, client_name: "" });
+      setRefresh((prev) => !prev);
+      return;
+    }
+    setFormData({ ...formData, client_name: selectedOption.value });
 
-    if (selectedOption.value !== "") {
+    if (selectedOption && selectedOption.value !== "") {
       const token = localStorage.getItem("refreshToken");
       const response = await fetch(
         `${apiURL}/customer-maintenance/${selectedOption.value}`,
@@ -162,7 +167,6 @@ export default function Attendance() {
         }
       );
       const data = await response.json();
-      console.log(data, "mba");
       setRows([data]);
     } else {
       setRefresh((prev) => !prev);
@@ -188,6 +192,12 @@ export default function Attendance() {
                   placeholder="Select Client"
                   onChange={handleChange}
                   isClearable
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      width: "350px",
+                    }),
+                  }}
                 />
               </>
             )}
@@ -234,9 +244,7 @@ export default function Attendance() {
                       <td>{row?.company_name}</td>
                       <td>{row?.cin}</td>
 
-                      <td className="">
-                        {row?.alloted_manager[0]?.name || "-"}
-                      </td>
+                      <td className="">{row?.alloted_manager?.name || "-"}</td>
                       <td>{row?.secretary_detail?.name || "-"}</td>
                       <td>{row?.auditor_detail?.name || "-"}</td>
                       <td>

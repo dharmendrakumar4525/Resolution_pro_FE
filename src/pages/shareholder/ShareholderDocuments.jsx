@@ -232,7 +232,7 @@ export default function ShareholderDocuments() {
     });
   };
   const handleAbsenceEdit = (item, index) => {
-    navigate(`/leave-edit/${id}`, {
+    navigate(`/shareholder-crl/${id}`, {
       state: {
         index,
         fileUrl: item?.templateFile,
@@ -592,6 +592,7 @@ export default function ShareholderDocuments() {
     "attendance",
     "resolution",
     "acknowledgement",
+    "leaveOfAbsence",
   ];
 
   return (
@@ -608,8 +609,6 @@ export default function ShareholderDocuments() {
             meetData.approval_status !== "approved"
           ) {
             toast.warning("Need approval to see saved documents.");
-          } else if (k === "leaveOfAbsence") {
-            toast.warning("This feature will launch soon");
           } else {
             setKey(k);
           }
@@ -916,7 +915,6 @@ export default function ShareholderDocuments() {
           </div>
         </Tab>
 
-       
         <Tab eventKey="leaveOfAbsence" title="CRL">
           <div className="table-responsive mt-5">
             <br />

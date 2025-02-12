@@ -243,7 +243,7 @@ export default function StatementTemplateGenerator() {
       <ToastContainer />
       <div className="parentContainer">
         <div className="leftContainer">
-          <h1 className="mb-4">Statement Template Generator</h1>
+          <h1 className="mb-4">Explanatory Statement Template Generator</h1>
 
           <JoditEditor
             ref={editor}
