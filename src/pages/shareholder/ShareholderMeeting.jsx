@@ -170,6 +170,12 @@ export default function ShareholderMeeting() {
             onChange={handleChange}
             isClearable
             placeholder="Select Company"
+            styles={{
+              control: (base) => ({
+                ...base,
+                width: "300px",
+              }),
+            }}
           />
           {hasPermission("add") && (
             <Button

@@ -170,7 +170,13 @@ export default function CommitteeMeeting() {
             )}
             onChange={handleChange}
             isClearable
-            placeholder="Select Company"
+            placeholder="Search Company Name"
+            styles={{
+              control: (base) => ({
+                ...base,
+                width: "300px",
+              }),
+            }}
           />
           {hasPermission("add") && (
             <Button
