@@ -68,6 +68,7 @@ import Subsidiary from "../pages/clientMaster/Subsidiary";
 import DirectorForm from "../pages/clientMaster/DirectorForm";
 import ShareholderAttendanceEditor from "../pages/shareholder/ShareholderAttendanceEditor";
 import CrlEditor from "../pages/shareholder/CrlEditor";
+import DirectorRelatedParty from "../pages/clientMaster/DirectorRelatedParty";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -680,6 +681,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Directors />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/directors/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<Directors />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/director-related-party-form/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DirectorRelatedParty />} />
           ) : (
             <Navigate to="/login" />
           )
