@@ -75,7 +75,7 @@ export default function AgendaTemplate() {
           } else if (user.role === "672c47cb38903b464c9d2923") {
             return (
               row?.status === "usable" ||
-              (row?.status === "draft" && row?.createdBy === user.id)
+              (row?.status === "draft" && row?.createdBy?.id === user.id)
             );
           } else {
             return row?.status === "usable";
