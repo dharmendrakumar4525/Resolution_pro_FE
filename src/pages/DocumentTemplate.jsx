@@ -288,29 +288,29 @@ export default function DocumentTemplate() {
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Document Template</h4>
-          {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin
-            <Form className="d-flex">
-              <Form.Control
-                type="text"
-                name="filterName"
-                placeholder="Search Template"
-                value={filterName}
-                onChange={handleFilterChange}
-                className="me-2"
-              />
-              <Form.Select
-                name="filterStatus"
-                value={filterStatus}
-                onChange={handleFilterChange}
-                className="me-2"
-              >
-                <option value="">All Statuses</option>
-                <option value="usable">Usable</option>
-                <option value="draft">Draft</option>
-                <option value="rejected">Rejected</option>
-              </Form.Select>
-            </Form>
-          )}
+          {/* {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin */}
+          <Form className="d-flex">
+            <Form.Control
+              type="text"
+              name="filterName"
+              placeholder="Search Template"
+              value={filterName}
+              onChange={handleFilterChange}
+              className="me-2"
+            />
+            <Form.Select
+              name="filterStatus"
+              value={filterStatus}
+              onChange={handleFilterChange}
+              className="me-2"
+            >
+              <option value="">All Statuses</option>
+              <option value="usable">Usable</option>
+              <option value="draft">Draft</option>
+              <option value="rejected">Rejected</option>
+            </Form.Select>
+          </Form>
+          {/* )} */}
           {/* {hasPermission("add") && (
             <Button
               variant="primary"
