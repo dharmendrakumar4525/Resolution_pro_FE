@@ -62,22 +62,23 @@ export default function DocumentTemplate() {
         const data = await response.json();
         const pageSize = 10;
         const filteredData = data.results.filter((row) => {
-          if (user.role === "672c47c238903b464c9d2920") {
-            return (
-              (filterName === "" ||
-                row?.templateName
-                  ?.toLowerCase()
-                  .includes(filterName.toLowerCase())) &&
-              (filterStatus === "" || row?.status === filterStatus)
-            );
-          } else if (user.role === "672c47cb38903b464c9d2923") {
-            return (
-              row?.status === "usable" ||
-              (row?.status === "draft" && row?.by === user.id)
-            );
-          } else {
-            return row?.status === "usable";
-          }
+          // if (user.role === "672c47c238903b464c9d2920") {
+          return (
+            (filterName === "" ||
+              row?.templateName
+                ?.toLowerCase()
+                .includes(filterName.toLowerCase())) &&
+            (filterStatus === "" || row?.status === filterStatus)
+          );
+          // } else if (user.role === "672c47cb38903b464c9d2923") {
+          //   return (
+          //     row?.status === "usable" ||
+          //     (row?.status === "draft" && row?.by === user.id)
+          //   );
+          // }
+          // else {
+          //   return row?.status === "usable";
+          // }
         });
 
         setRows(filteredData.slice((page - 1) * pageSize, page * pageSize));
@@ -462,7 +463,7 @@ export default function DocumentTemplate() {
                   <th>Meeting Type</th>
                   <th>File</th>
                   <th>Status</th>
-                  <th>By</th>
+                  {/* <th>By</th> */}
                   <th>Creation date</th>
 
                   <th>Actions</th>
@@ -484,7 +485,7 @@ export default function DocumentTemplate() {
                       </button>
                     </td>
                     <td>{row?.status}</td>
-                    <td>{row?.by?.name}</td>
+                    {/* <td>{row?.by?.name}</td> */}
                     <td>{new Date(row?.at).toLocaleDateString()}</td>
                     <td>
                       {hasPermission("edit") && (
