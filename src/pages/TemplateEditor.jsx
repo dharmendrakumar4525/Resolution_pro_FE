@@ -180,12 +180,21 @@ const DocumentEditor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiURL}/agenda`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        let keyword;
+        if (page === "committee") {
+          keyword = "committee_meeting";
+        } else {
+          keyword = "board_meeting";
+        }
+        const response = await fetch(
+          `${apiURL}/agenda?meetingType=${keyword}&status=usable`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
 
         console.log(data.results, "mkjl");
