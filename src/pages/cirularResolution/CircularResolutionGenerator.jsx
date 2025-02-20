@@ -332,7 +332,12 @@ export default function CircularResolution() {
     handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
   }, [selectedData, prevCSR, xresolution]);
-
+  useEffect(() => {
+    if (rows.length > 0 && editorContent) {
+      const updatedContent = processPlaceholders(editorContent);
+      setEditorContent(updatedContent);
+    }
+  }, [rows, editorContent]);
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
     const hasEmptyFields = Object.keys(inputFields).some(
