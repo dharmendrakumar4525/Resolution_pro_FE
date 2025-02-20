@@ -19,11 +19,13 @@ import { useNavigate } from "react-router-dom";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { useAuth } from "../../context/AuthContext";
 import { Refresh } from "@mui/icons-material";
+import Select from "react-select";
 
 export default function CustomerMaintenance() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [companyList, setCompanyList] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [managers, setManagers] = useState([]);
@@ -98,6 +100,29 @@ export default function CustomerMaintenance() {
 
     fetchData(page);
   }, [page, refresh]);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const url = `${apiURL}/customer-maintenance`;
+
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setCompanyList(data.docs);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -180,10 +205,24 @@ export default function CustomerMaintenance() {
     const { id, value } = e.target;
     console.log(e.target, "dsd");
     setFormData((prevData) => ({ ...prevData, [id]: value }));
-    if (!value == "") {
+    if (id === "alloted_manager" && !value == "") {
+      setFormData((prevData) => ({ ...prevData, name: " " }));
       const token = localStorage.getItem("refreshToken");
       const response = await fetch(
         `${apiURL}/customer-maintenance?alloted_manager=${value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setRows(data.docs);
+    } else if (id == "name" && !value == "") {
+      const token = localStorage.getItem("refreshToken");
+      const response = await fetch(
+        `${apiURL}/customer-maintenance?company_name=${value}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -202,31 +241,65 @@ export default function CustomerMaintenance() {
       ?.childList || [];
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
+  const companyOptions = companyList?.map((client) => ({
+    value: client.company_name,
+    label: client.company_name,
+  }));
+  const managerOptions = managers.map((manager) => ({
+    value: manager.id,
+    label: manager.name,
+  }));
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Client Records</h4>
+          <Select
+            options={companyOptions}
+            isClearable
+            value={companyOptions.find(
+              (option) => option.value === formData.name
+            )}
+            onChange={(selectedOption) =>
+              handleChange({
+                target: { id: "name", value: selectedOption?.value },
+              })
+            }
+            placeholder="Select Company Name"
+            styles={{
+              container: (base) => ({
+                ...base,
+                width: "300px",
+                marginLeft: "60px",
+              }),
+            }}
+          />
+
           <div>
             {userRole === "672c47c238903b464c9d2920" && (
-              <Form.Control
-                style={{ width: "300px", marginLeft: "60px" }}
-                as="select"
-                value={formData.alloted_manager.name}
-                onChange={(e) =>
+              <Select
+                isClearable
+                options={managerOptions}
+                value={managerOptions.find(
+                  (option) => option.value === formData.alloted_manager
+                )}
+                onChange={(selectedOption) =>
                   handleChange({
-                    target: { id: "alloted_manager", value: e.target.value },
+                    target: {
+                      id: "alloted_manager",
+                      value: selectedOption?.value,
+                    },
                   })
                 }
-              >
-                <option value="">Select Client Manager</option>
-                {/* Replace with actual managers data */}
-                {managers.map((manager) => (
-                  <option key={manager.id} value={manager.id}>
-                    {manager.name}
-                  </option>
-                ))}
-              </Form.Control>
+                placeholder="Select Client Manager"
+                styles={{
+                  container: (base) => ({
+                    ...base,
+                    width: "300px",
+                    marginLeft: "20px",
+                  }),
+                }}
+              />
             )}
           </div>
           {hasPermission("add") && (
