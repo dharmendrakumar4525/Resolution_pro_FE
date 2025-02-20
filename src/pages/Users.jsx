@@ -313,7 +313,6 @@ export default function CustomerMaintenance() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter Name"
-                  disabled={!!editingRow}
                 />
               </Form.Group>
 
@@ -326,7 +325,6 @@ export default function CustomerMaintenance() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter Email"
-                  disabled={!!editingRow}
                 />
               </Form.Group>
 

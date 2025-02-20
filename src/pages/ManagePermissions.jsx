@@ -194,67 +194,70 @@ const ManagePermissions = () => {
                 <p>No roles found.</p>
               )}
             </ul>
-          </div>
-          <Row>
-            {dashboardPermissions.map((permission, index) => (
-              <Col
-                key={index}
-                xs={12}
-                xl={8}
-                className="mb-3 mt-2"
-                // style={{ marginLeft: "40px" }}
-              >
-                <h3>
-                  {permission.moduleName
-                    .toLowerCase()
-                    .split("_")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")}{" "}
-                </h3>
-                <Row>
-                  {permission.childList.map((module) => (
-                    <Col
-                      xs={12}
-                      sm={6}
-                      md={4}
-                      lg={3}
-                      key={module.id}
-                      className="mb-2"
-                    >
-                      <div className="d-flex align-items-center">
-                        <InputGroup.Checkbox
-                          checked={
-                            selectedPermissions[permission.id]?.[module.id] ??
-                            module.isSelected
-                          }
-                          onChange={() =>
-                            handleCheckboxChange(permission.id, module.id)
-                          }
-                        />
-                        <span style={{ marginLeft: "10px" }}>
-                          {module.value}
-                        </span>
-                      </div>
-                    </Col>
-                  ))}
-                </Row>
-              </Col>
-            ))}
-          </Row>
 
-          <Button type="submit">
-            {buttonLoading ? (
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-            ) : (
-              "Update Role Permissions"
-            )}
-          </Button>
+            <Row>
+              {dashboardPermissions.map((permission, index) => (
+                <Col
+                  key={index}
+                  xs={12}
+                  xl={8}
+                  className="mb-3 mt-2"
+                  // style={{ marginLeft: "40px" }}
+                >
+                  <h3>
+                    {permission.moduleName
+                      .toLowerCase()
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}{" "}
+                  </h3>
+                  <Row>
+                    {permission.childList.map((module) => (
+                      <Col
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        lg={3}
+                        key={module.id}
+                        className="mb-2"
+                      >
+                        <div className="d-flex align-items-center">
+                          <InputGroup.Checkbox
+                            checked={
+                              selectedPermissions[permission.id]?.[module.id] ??
+                              module.isSelected
+                            }
+                            onChange={() =>
+                              handleCheckboxChange(permission.id, module.id)
+                            }
+                          />
+                          <span style={{ marginLeft: "10px" }}>
+                            {module.value}
+                          </span>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                </Col>
+              ))}
+            </Row>
+
+            <Button type="submit" disabled={roles.length <= 0}>
+              {buttonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Update Role Permissions"
+              )}
+            </Button>
+          </div>
         </form>
       </Container>
     </div>
