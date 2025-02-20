@@ -11,7 +11,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { apiURL } from "../../API/api";
-import { FaEdit, FaTrash, FaPlus, FaUser } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaUser, FaFile } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -57,6 +57,10 @@ export default function Directors() {
     e.stopPropagation();
     navigate(`/director-related-party-form/${row.id}`);
   };
+  const handleViewRelatedDocuments = (row, e) => {
+    e.stopPropagation();
+    navigate(`/director-documents/${row.id}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,8 +84,6 @@ export default function Directors() {
     };
     fetchData();
   }, [id]);
-
-  
 
   const handleDeleteClick = async (row) => {
     try {
@@ -137,9 +139,9 @@ export default function Directors() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
-                  <th>Email</th>
+                  {/* <th>Email</th> */}
                   <th>Designation</th>
-                  <th>Start Date</th>
+                  <th>Associated Docs</th>
                   <th>DIN/PAN</th>
                   <th>Related Parties</th>
                   <th>Actions</th>
@@ -149,19 +151,27 @@ export default function Directors() {
                 {rows?.map((row) => (
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
-                    <td>{row?.email}</td>
+                    {/* <td>{row?.email}</td> */}
                     <td>{row?.designation}</td>
-                    <td>{row?.begin_date}</td>
+                    <td>
+                      <button
+                        style={{ height: "100%" }}
+                        className="director-btn"
+                        onClick={(e) => handleViewRelatedDocuments(row, e)}
+                      >
+                        <FaFile />
+                      </button>
+                    </td>
                     <td>{row["din/pan"]}</td>
                     <td>
-                        <button
-                          style={{ height: "100%" }}
-                          className="director-btn"
-                          onClick={(e) => handleViewRelatedParties(row, e)}
-                        >
-                          <FaUser />
-                        </button>
-                      </td>
+                      <button
+                        style={{ height: "100%" }}
+                        className="director-btn"
+                        onClick={(e) => handleViewRelatedParties(row, e)}
+                      >
+                        <FaUser />
+                      </button>
+                    </td>
                     <td>
                       <Button
                         variant="outline-primary"

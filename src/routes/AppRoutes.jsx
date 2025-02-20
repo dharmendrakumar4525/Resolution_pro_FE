@@ -69,6 +69,9 @@ import DirectorForm from "../pages/clientMaster/DirectorForm";
 import ShareholderAttendanceEditor from "../pages/shareholder/ShareholderAttendanceEditor";
 import CrlEditor from "../pages/shareholder/CrlEditor";
 import DirectorRelatedParty from "../pages/clientMaster/DirectorRelatedParty";
+import DirectorDocuments from "../pages/clientMaster/directorDocuments/DirectorDocuments";
+import DIREditor from "../pages/clientMaster/directorDocuments/DIREditor";
+import MBPEditor from "../pages/clientMaster/directorDocuments/MBPEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -721,6 +724,36 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<DirectorForm />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/director-documents/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DirectorDocuments />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/mbp-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<MBPEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/dir-generate/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<DIREditor />} />
           ) : (
             <Navigate to="/login" />
           )
