@@ -267,14 +267,6 @@ export default function CircularResolution() {
     }
   };
 
-  // Update editorContent whenever rows or input content changes
-  useEffect(() => {
-    if (rows.length > 0 && editorContent) {
-      const updatedContent = processPlaceholders(editorContent);
-      setEditorContent(updatedContent);
-    }
-  }, [rows]);
-
   const handleEditorChange = (content) => {
     const updatedContent = processPlaceholders(content);
     setEditorContent(updatedContent);

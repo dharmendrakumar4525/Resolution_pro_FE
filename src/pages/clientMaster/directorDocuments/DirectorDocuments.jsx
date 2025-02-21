@@ -24,17 +24,8 @@ export default function DirectorDocuments() {
   const searchParams = new URLSearchParams(location.search);
   const tab = searchParams.get("tab");
   const [rows, setRows] = useState([]);
+  const [initial, setInitial] = useState(``);
   const [meetData, setMeetData] = useState([]);
-  const [notice, setNotice] = useState({});
-  const [attendance, setAttendance] = useState({});
-  const [minutes, setMinutes] = useState({});
-  const [buttonLoading, setButtonLoading] = useState(false);
-  const [acknowledgement, setAcknowledgement] = useState({});
-  const [resolutions, setResolutions] = useState([]);
-  const [participants, setParticipants] = useState([]);
-  const [leaveUrl, setLeaveUrl] = useState("");
-  const [participantAttendance, setParticipantAttendance] = useState([]);
-  const [leaveOfAbsence, setLeaveOfAbsence] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
@@ -68,47 +59,35 @@ export default function DirectorDocuments() {
         );
         const data = await response.json();
         setRows(data?.results || []);
+        // console.log(data?.results);
       } catch (error) {
         console.error(`Error fetching ${key} data:`, error);
       } finally {
         setLoading(false);
       }
     };
-    const fetchLeaveAgendaUrl = async () => {
-      try {
-        const response = await fetch(
-          `${apiURL}/meeting-agenda-template/676a5898db544a64c6baa096`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        setLeaveUrl(data?.fileName);
-      } catch (error) {
-        console.error("Error fetching Agenda:", error);
-      }
-    };
 
     fetchData();
-
-    fetchLeaveAgendaUrl();
   }, [key, refresh]);
 
-  const handleEditClick = (row, index) => {
-    navigate(`/template-edit/${id}`, {
-      state: { index, fileUrl: `${row?.templateFile}`, page: "board" },
+  const handleDirEditClick = (row, index) => {
+    navigate(`/dir-generate/${row?.id}`, {
+      state: { index, fileUrl: `${row?.templateFile}` },
     });
   };
-  const handleView = (row) => {
-    if (`${row?.filehtml}` == null) {
-      toast.warn("Please save the related document first");
-      return;
-    }
+  const handleMbpEditClick = (row, index) => {
+    navigate(`/mbp-generate/${row?.id}`, {
+      state: { index, fileUrl: `${row?.templateFile}` },
+    });
+  };
+  const handleDirView = (row) => {
     navigate(`/template-group-meeting-view/${id}`, {
-      state: { fileUrl: `${row?.filehtml}` },
+      state: { fileUrl: `${row?.DIR_doc?.filehtml}` },
+    });
+  };
+  const handleMbpView = (row) => {
+    navigate(`/template-group-meeting-view/${id}`, {
+      state: { fileUrl: `${row?.MBP_doc?.filehtml}` },
     });
   };
   const sendApproval = async (meetData) => {
@@ -159,31 +138,118 @@ export default function DirectorDocuments() {
       ) : rows.length === 0 ? (
         <NoDataContent />
       ) : (
-        <TableContent
-          rows={rows}
-          meetData={meetData}
-          handleEditClick={handleEditClick}
-          handleView={handleView}
-          sendApproval={sendApproval}
-        />
+        <div className="table-responsive mt-5">
+          <Table bordered hover className="Master-table">
+            <thead className="Master-Thead">
+              <tr>
+                <th style={{ width: "30%" }}>Name</th>
+                <th>Edit</th>
+                <th>View</th>
+                <th>Download-as PDF</th>
+                <th>Download-as Docx</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={row?._id}>
+                  <td>MBP-Form</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMbpEditClick(row, index)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMbpView(row)}
+                      disabled={!row?.MBP_doc?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${row?.MBP_doc?.fileName}`}
+                      download="customFileName.pdf"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      disabled={!row?.MBP_doc?.fileName}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${row?.MBP_doc?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      disabled={!row?.MBP_doc?.filedocx}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {rows.map((row, index) => (
+                <tr key={row?._id}>
+                  <td>Dir-8 Form</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleDirEditClick(row, index)}
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleDirView(row)}
+                      disabled={!row?.DIR_doc?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${row?.DIR_doc?.fileName}`}
+                      download="customFileName.pdf"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      disabled={!row?.DIR_doc?.fileName}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      as="a"
+                      href={`${row?.DIR_doc?.filedocx}`}
+                      download="customFileName.docx"
+                      rel="noopener noreferrer"
+                      disabled={!row?.DIR_doc?.filedocx}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
       )}
-      <div className="d-flex justify-content-end mb-3">
-        {/* <Button
-              variant="primary"
-              disabled={!allFilesAvailable}
-              onClick={() => handleDownloadAllPdf("pdf")}
-              className="me-2"
-            >
-              Download All as PDF
-            </Button>
-            <Button
-              variant="secondary"
-              disabled={!allDocxFilesAvailable}
-              onClick={() => handleDownloadAllDocx("docx")}
-            >
-              Download All as DOCX
-            </Button> */}
-      </div>
 
       <div
         className="d-flex flex-column justify-content-end mt-3"
@@ -217,131 +283,6 @@ function NoDataContent() {
   return (
     <div className="text-center mt-5">
       <h5>No data available</h5>
-    </div>
-  );
-}
-
-function TableContent({
-  meetData,
-  rows,
-  handleEditClick,
-  handleView,
-  sendApproval,
-}) {
-  console.log(meetData, "dsq");
-  return (
-    <div className="table-responsive mt-5">
-      <Table bordered hover className="Master-table">
-        <thead className="Master-Thead">
-          <tr>
-            <th style={{ width: "30%" }}>Name</th>
-            <th>Edit</th>
-            <th>View</th>
-            <th>Download-as PDF</th>
-            <th>Download-as Docx</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={row?._id}>
-              <td>MBP-Form</td>
-              <td>
-                <Button
-                  disabled={meetData?.approval_status == "approved"}
-                  variant="outline-primary"
-                  onClick={() => handleEditClick(row, index)}
-                >
-                  <FaEdit />
-                </Button>
-              </td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  onClick={() => handleView(row)}
-                  disabled={!row?.filehtml}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.fileName}`}
-                  download="customFileName.docx"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  disabled={meetData.approval_status !== "approved"}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-
-              <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.filedocx}`}
-                  download="customFileName.docx"
-                  rel="noopener noreferrer"
-                  disabled={meetData.approval_status !== "approved"}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-            </tr>
-          ))}
-          {rows.map((row, index) => (
-            <tr key={row?._id}>
-              <td>Dir-8 Form</td>
-              <td>
-                <Button
-                  disabled={meetData?.approval_status == "approved"}
-                  variant="outline-primary"
-                  onClick={() => handleEditClick(row, index)}
-                >
-                  <FaEdit />
-                </Button>
-              </td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  onClick={() => handleView(row)}
-                  disabled={!row?.filehtml}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.fileName}`}
-                  download="customFileName.docx"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  disabled={meetData.approval_status !== "approved"}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-
-              <td>
-                <Button
-                  variant="outline-primary"
-                  as="a"
-                  href={`${row?.filedocx}`}
-                  download="customFileName.docx"
-                  rel="noopener noreferrer"
-                  disabled={meetData.approval_status !== "approved"}
-                >
-                  <FaFileWord />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
     </div>
   );
 }

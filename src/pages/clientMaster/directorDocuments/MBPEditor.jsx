@@ -27,7 +27,6 @@ import Select from "react-select";
 export default function MBPEditor() {
   const [rows, setRows] = useState([]);
   const [resolutionList, setResolutionList] = useState([]);
-  const [xresolution, setXResolutions] = useState({});
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
@@ -40,48 +39,23 @@ export default function MBPEditor() {
   const [initializedContent, setInitializedContent] = useState(""); // CKEditor content
   const [inputFields, setInputFields] = useState({}); // Placeholder values
   const [confirmedFields, setConfirmedFields] = useState({});
-  const [agendaId, setAgendaId] = useState();
   const location = useLocation();
   const { id } = useParams();
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [circleResolution, setCircleResolution] = useState([]);
   const [prevCSR, setPrevCSR] = useState([]);
 
   const token = localStorage.getItem("refreshToken");
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
-  const page = location?.state?.page || "";
   const circularData = location?.state?.circular || "";
   const editor = useRef(null);
 
-  console.log(page, "123345");
-  console.log(circularData, "Kontent");
-  console.log(location, "locate");
   const navigate = useNavigate();
-  useEffect(() => {
-    setClientInfo(circularData?.client_name);
-  }, [circularData]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${apiURL}/agenda`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-
-        console.log(data.results, "mkjl");
-        setResolutionList(data.results);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
     const fetchVariables = async () => {
       try {
-        let url = `${apiURL}/circular-resolution/${id}`;
+        let url = `${apiURL}/director-docs/${id}`;
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,9 +64,7 @@ export default function MBPEditor() {
         });
         const data = await response.json();
         console.log(data, "saved-cs");
-        setXResolutions(data?.agenda);
-        setVariable(data?.variables);
-        setAgendaId(data?.agenda?.id);
+        setVariable(data?.MBP_doc?.variables || {});
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -115,13 +87,10 @@ export default function MBPEditor() {
 
     fetchDefinedVariables();
     fetchVariables();
-
-    fetchData();
   }, [token]);
 
   // Helper function to process placeholders
   const processPlaceholders = (content) => {
-    console.log("content-out", content, meetInfo);
     if (content) {
       const regex = /(?:\$\{([a-zA-Z0-9_]+)\})|(?:\#\{([a-zA-Z0-9_]+)\})/g;
       let match;
@@ -133,6 +102,7 @@ export default function MBPEditor() {
 
         const placeholder = match[2];
         const placeholder2 = match[1] || match[2];
+        console.log("content-out-match-fix", match);
 
         if (variable !== {}) {
           const filledVariable = variable[placeholder2];
@@ -140,7 +110,9 @@ export default function MBPEditor() {
           xValues = filledVariable;
         }
         // Check if it's a system variable
+        console.log(rows, "rows");
         const systemVariable = rows?.find((row) => row?.name === placeholder);
+        console.log("content-out-match-fix-var", systemVariable);
         if (systemVariable) {
           console.log(systemVariable, "system-var");
           let res = systemVariable.mca_name;
@@ -270,10 +242,11 @@ export default function MBPEditor() {
   // Update editorContent whenever rows or input content changes
   useEffect(() => {
     if (rows.length > 0 && editorContent) {
+      console.log(editorContent, "eddy");
       const updatedContent = processPlaceholders(editorContent);
       setEditorContent(updatedContent);
     }
-  }, [rows]);
+  }, [rows, editorContent]);
 
   const handleEditorChange = (content) => {
     const updatedContent = processPlaceholders(content);
@@ -291,47 +264,10 @@ export default function MBPEditor() {
   useEffect(() => {
     handleFileLoad(fileUrl);
   }, []);
-  const handleMultipleFilesAddOn = async (url) => {
-    try {
-      let combinedContent = "";
-      if (url) {
-        if (url?.title) {
-          const title = url?.title || "Untitled";
-          combinedContent += `<br/><p>${title}</p>\n`;
-        }
 
-        if (url?.templateFile) {
-          combinedContent += `<br/><div>${url?.templateFile}</div>\n`;
-        } else {
-          console.warn("Skipped processing due to missing templateFile:", url);
-        }
-
-        // Add resolution file content if available
-        if (url?.resolutionFile) {
-          combinedContent += `<br/><div>${url?.resolutionFile}</div>`;
-        } else {
-          console.warn(
-            "Skipped processing due to missing resolutionFile:",
-            url
-          );
-        }
-      }
-
-      if (initializedContent) {
-        console.log(initializedContent, "inik");
-        setEditorContent((initializedContent || "") + (combinedContent || ""));
-      }
-
-      console.log(editorContent, "ikea");
-    } catch (error) {
-      console.error("Error fetching or converting one or more files:", error);
-    }
-  };
-  console.log(selectedData, "dattt");
   useEffect(() => {
-    handleMultipleFilesAddOn(selectedData);
     processPlaceholders(editorContent);
-  }, [selectedData, prevCSR, xresolution]);
+  }, [selectedData, prevCSR, initializedContent]);
 
   const autofillPlaceholders = () => {
     // Check if all placeholders have values
@@ -397,69 +333,17 @@ export default function MBPEditor() {
     }));
   };
 
-  useEffect(() => {
-    if (!xresolution || !resolutionList?.length) return;
-
-    // Find the matching agenda from resolutionList based on xresolution.templateName
-    const agenda = resolutionList.find(
-      (item) => item.templateName == xresolution.templateName
-    );
-    // Construct the selected agenda
-    const selectedAgenda = {
-      title: agenda?.title || "",
-      templateFile: agenda?.fileName || "",
-      resolutionFile: agenda?.resolutionUrl || "",
-    };
-
-    // Find the matching resolution for the dropdown options
-    const match = resolutionList.find((option) => option.id === xresolution.id);
-
-    // Prepare the new dropdown option
-    const newSelect = match
-      ? [
-          {
-            label: match.templateName,
-            value: match.templateName,
-          },
-        ]
-      : [];
-
-    // Filter the options for previously selected resolutions
-    const selectedResolOptions = resolutionList
-      .map((res) => {
-        const matchLabels = resolOptions.find(
-          (option) => option.label === res.title
-        );
-        return matchLabels || null;
-      })
-      .filter(Boolean);
-    console.log(selectedAgenda, "mukul");
-    // Update state with a slight delay (if needed)
-    setTimeout(() => {
-      setSelectedData(selectedAgenda);
-      setPrevoiusSelectedOptions(newSelect);
-    }, 2000);
-  }, [resolutionList?.length, xresolution]);
-  console.log(selectedData, "selected");
-  const resolOptions = resolutionList?.map((resol) => ({
-    value: resol?.templateName,
-    label: resol?.templateName,
-  }));
-  console.log(placeVar, "place");
-
   const saveDocument = async () => {
     setButtonLoading(true);
     const docxBlob = htmlDocx.asBlob(editorContent);
 
     const formData = new FormData();
-
-    formData.append("file", docxBlob);
-    formData.append("htmlcontent", editorContent);
-    formData.append("agenda", agendaId);
+    formData.append("MBP_file", docxBlob);
+    formData.append("MBP_doc[filehtml]", editorContent);
     if (placeVar && Object.keys(placeVar).length > 0) {
-      formData.append("variables", JSON.stringify(placeVar));
+      formData.append("MBP_doc[variables]", JSON.stringify(placeVar));
     }
-    let url = `${apiURL}/circular-resolution/${id}`;
+    let url = `${apiURL}/director-docs/${id}`;
     try {
       const response = await fetch(url, {
         method: "PATCH",
@@ -471,7 +355,7 @@ export default function MBPEditor() {
 
       if (response.ok) {
         toast.success("Document saved successfully");
-        navigate("/circular-resolution");
+        navigate(-1);
       } else {
         console.log("Failed to save the document.");
       }
@@ -482,91 +366,98 @@ export default function MBPEditor() {
     }
   };
 
-  const handleAgendaItemChange = (selectedOption) => {
-    console.log(selectedOption, "resol-lis");
-    const agenda = selectedOption
-      ? resolutionList.find(
-          (item) => item.templateName === selectedOption.value
-        )
-      : null;
-
-    if (agenda) {
-      setAgendaId(agenda?.id);
-    }
-    const selectedAgenda = agenda
-      ? {
-          title: agenda.title || "",
-          templateFile: agenda.fileName || "",
-          resolutionFile: agenda.resolutionUrl || "",
-        }
-      : {};
-
-    console.log("Selected Agenda", selectedAgenda);
-
-    setSelectedData(selectedAgenda);
-    setPrevoiusSelectedOptions(selectedOption || null);
-  };
-
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
-  const config = {
-    style: {
-      padding: "20px",
-    },
-    toolbarSticky: false,
-    buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "font",
-      "fontsize",
-      "paragraph",
-      "|",
-      "align",
-      "undo",
-      "redo",
-      "|",
-      "hr",
-      "table",
-      "link",
-      "fullsize",
-    ],
-    removeButtons: [
-      "source",
-      "image",
-      "video",
-      "print",
-      "spellcheck",
-      "speechRecognize",
-      "about",
-      "undo",
-      "redo",
-      "showAll",
-      "file",
 
-      "ai-assistant",
-      "ai-commands",
-      "preview",
-      "dots",
-    ],
-    extraButtons: [],
-    uploader: { insertImageAsBase64URI: false },
-    showXPathInStatusbar: false,
-  };
+
+  useEffect(() => {
+    setEditorContent(`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Form MBP-1</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
+        <h2 style="text-align: center; text-decoration: underline;">FORM MBP - 1</h2>
+        <h3 style="text-align: center;">Notice of Interest by Director</h3>
+        <p style="text-align: center; font-style: italic;">[Pursuant to section 184 (1) and rule 9(1)]</p>
+        
+        <p>To</p>
+        <p><strong>The Board of Directors</strong><br>
+        SURYA ENERGY PHOTO VOLTAIC INDIA PRIVATE LIMITED</p>
+        
+        <p>Dear Sir(s),</p>
+        
+        <p>I, <strong>Thomas T. Karimpanal</strong>, son of Mr. Karimpanal Sebastian Thomas, resident of <strong>House No. 7 Amber Gardens #02-15, Singapore-439974</strong>, being a Director in the Company hereby give notice of my interest or concern in the following company or companies, bodies corporate, firms or other association of individuals:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr style="background-color: #f2f2f2;">
+                <th style="border: 1px solid #000; padding: 8px; text-align: left;">No.</th>
+                <th style="border: 1px solid #000; padding: 8px; text-align: left;">Names of the Companies / Bodies Corporate / Firms / Associations of Individuals</th>
+                <th style="border: 1px solid #000; padding: 8px; text-align: left;">Nature of Interest or Concern / Change in Interest or Concern</th>
+                <th style="border: 1px solid #000; padding: 8px; text-align: left;">Shareholding</th>
+                <th style="border: 1px solid #000; padding: 8px; text-align: left;">Date on Which Interest or Concern Arose / Changed</th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;">1</td>
+                <td style="border: 1px solid #000; padding: 8px;">Sun Photo Voltaic Energy India Private Limited</td>
+                <td style="border: 1px solid #000; padding: 8px;">Director</td>
+                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
+                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;">2</td>
+                <td style="border: 1px solid #000; padding: 8px;">Tuppadahalli Energy India Private Limited</td>
+                <td style="border: 1px solid #000; padding: 8px;">Director</td>
+                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
+                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;">3</td>
+                <td style="border: 1px solid #000; padding: 8px;">Acciona Wind Energy Private Limited</td>
+                <td style="border: 1px solid #000; padding: 8px;">Director</td>
+                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
+                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
+            </tr>
+        </table>
+        
+        <p><strong>Place:</strong> Madrid</p>
+        <p><strong>Date:</strong> 01-Apr-2024</p>
+        <p><strong>Signature:</strong> ______________</p>
+        <p><strong>Name:</strong> Thomas T. Karimpanal</p>
+        <p><strong>Director</strong></p>
+        <p><strong>DIN:</strong> 07974134</p>
+        
+        <hr style="margin: 30px 0;">
+        
+        <h3>Instructions for Filling Form MBP-1</h3>
+        <ul>
+            <li>Tabular column should be filled with details (Company Name, Address, and Nature of Interest) of all Indian as well as foreign companies/firms/proprietorships in which the director/relative is having an interest.</li>
+            <li>The term "interest or concern" includes:
+                <ul>
+                    <li>Companies in which the director/relative is a Director.</li>
+                    <li>Companies in which the director is a shareholder holding more than 2% of the paid-up share capital.</li>
+                    <li>Firms in which the director/relative is a partner.</li>
+                    <li>Proprietorships owned by the director/relative.</li>
+                </ul>
+            </li>
+            <li>If the number of companies/firms/proprietorships exceeds the provided rows, additional rows should be added.</li>
+            <li>If the director has no interests, mention “NIL” in the table.</li>
+        </ul>
+    </body>
+    </html>
+    `);
+  }, []);
+
   return (
     <Container className="mt-5">
-      <h1>Circular Resolution Generator</h1>
+      <h1>MBP Form</h1>
       <div className="parentContainer">
         <div className="leftContainer">
           <JoditEditor
             ref={editor}
-            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);
@@ -575,16 +466,6 @@ export default function MBPEditor() {
         </div>
         <div className="rightContainer">
           <div>
-            <Form.Group controlId="agendaItems" className="mb-5">
-              <Select
-                options={resolOptions}
-                placeholder="Select Agenda Documents"
-                value={previousSelectedOptions}
-                onChange={handleAgendaItemChange}
-                isClearable
-              />
-            </Form.Group>
-
             <h3>Detected Placeholders:</h3>
             {Object.keys(inputFields)?.length > 0 ? (
               Object.keys(inputFields)?.map((placeholder) => {
