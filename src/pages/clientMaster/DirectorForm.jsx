@@ -22,6 +22,7 @@ export default function DirectorForm() {
   const [formData, setFormData] = useState({
     company_id: `${clientId}`,
     name: "",
+    fathers_mothers_spouse_name: "",
     present_address: "",
     permanent_address: "",
     date_of_appointment: "",
@@ -140,25 +141,22 @@ export default function DirectorForm() {
         }
 
         // Second API call to post director-docs
-        const docResponse = await fetch(
-          `${apiURL}/director-docs`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
+        const docResponse = await fetch(`${apiURL}/director-docs`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            director_id: directorId,
+            MBP_doc: {
+              templateFile: "<p>Empty</p>",
             },
-            body: JSON.stringify({
-              director_id: directorId,
-              MBP_doc: {
-                templateFile: "<p>Empty</p>",
-              },
-              DIR_doc: {
-                templateFile: "<p>Empty</p>",
-              },
-            }),
-          }
-        );
+            DIR_doc: {
+              templateFile: "<p>Empty</p>",
+            },
+          }),
+        });
 
         if (!docResponse.ok) {
           toast.error("Failed to submit director document");
@@ -196,6 +194,23 @@ export default function DirectorForm() {
               <Form.Control
                 type="text"
                 value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter Name"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4} className="mt-2">
+            <Form.Group
+              controlId="fathers_mothers_spouse_name"
+              className="mb-3"
+            >
+              <Form.Label>
+                Father's Name<sup>*</sup>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.fathers_mothers_spouse_name}
                 onChange={handleChange}
                 placeholder="Enter Name"
                 required

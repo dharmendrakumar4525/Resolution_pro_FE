@@ -26,13 +26,12 @@ import Select from "react-select";
 
 export default function DIREditor() {
   const [rows, setRows] = useState([]);
-  const [resolutionList, setResolutionList] = useState([]);
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
+  const [directorInfo, setDirectorInfo] = useState([]);
+  const [dirRelatedParty, setDirRelatedParty] = useState([]);
   const [meetInfo, setMeetInfo] = useState({});
-  const [previousMeet, setPreviousMeet] = useState([]);
-  const [meetData, setMeetData] = useState([]);
   const [placeVar, setPlaceVar] = useState([]);
   const [selectedData, setSelectedData] = useState([]);
   const [editorContent, setEditorContent] = useState(""); // CKEditor content
@@ -53,7 +52,7 @@ export default function DIREditor() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchVariables = async () => {
+    const fetchData = async () => {
       try {
         let url = `${apiURL}/director-docs/${id}`;
         const response = await fetch(url, {
@@ -63,8 +62,12 @@ export default function DIREditor() {
           },
         });
         const data = await response.json();
-        console.log(data, "saved-cs");
+        // console.log(data, "saved-cs");
         setVariable(data?.DIR_doc?.variables || {});
+        setDirectorInfo(data?.director_id);
+        setDirRelatedParty(data?.related_parties);
+        setClientInfo(data?.director_id?.company_id);
+        // console.log(data?.related_parties, "ds");
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -86,7 +89,7 @@ export default function DIREditor() {
     };
 
     fetchDefinedVariables();
-    fetchVariables();
+    fetchData();
   }, [token]);
 
   // Helper function to process placeholders
@@ -112,7 +115,7 @@ export default function DIREditor() {
         // Check if it's a system variable
         console.log(rows, "rows");
         const systemVariable = rows?.find((row) => row?.name === placeholder);
-        console.log("content-out-match-fix-var", systemVariable);
+        // console.log("content-out-match-fix-var", systemVariable);
         if (systemVariable) {
           console.log(systemVariable, "system-var");
           let res = systemVariable.mca_name;
@@ -253,18 +256,6 @@ export default function DIREditor() {
     setEditorContent(updatedContent);
   };
 
-  // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
-    try {
-      setInitializedContent(url);
-    } catch (error) {
-      console.error("Error fetching or converting the file:", error);
-    }
-  };
-  useEffect(() => {
-    handleFileLoad(fileUrl);
-  }, []);
-
   useEffect(() => {
     processPlaceholders(editorContent);
   }, [selectedData, prevCSR, initializedContent]);
@@ -370,6 +361,46 @@ export default function DIREditor() {
     (placeholder) => !confirmedFields[placeholder]
   );
   useEffect(() => {
+    const formatDate = (isoDate) => {
+      return new Date(isoDate).toLocaleDateString("en-GB");
+    };
+    const tableRows = dirRelatedParty
+      ?.filter(
+        (party) => party.forms_to_be_collected === "both MBP-1 and DIR-8"
+      )
+      ?.map(
+        (party, index) => `
+    <tr>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          index + 1
+        }</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          party.related_party_name
+        }</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          party.nature_of_interest
+        }<br/>${formatDate(party.date_of_interest_arose_or_appointment)}</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${formatDate(
+          party.date_of_interest_changed_resigned_or_cessation
+        )}</td>
+    </tr>
+
+`
+      )
+      .join("");
+    setTimeout(() => {
+      document.getElementById("table-body").innerHTML = tableRows;
+    }, 1000);
+  }, [dirRelatedParty]);
+  function getFinancialYearStartDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const financialYearStart = month < 4 ? year - 1 : year;
+
+    return new Date(financialYearStart, 3, 1).toLocaleDateString("en-GB"); // 01/04/YYYY format
+  }
+  useEffect(() => {
     setEditorContent(`<h1 style="text-align:center">FORM 'DIR-8'</h1>
     <div style="text-align: center;">
     <u>Intimation by Director</u>
@@ -377,17 +408,29 @@ export default function DIREditor() {
 
     <p style="text-align:center"><strong>[Pursuant to Section 164(1) and Section 164(2) and rule 14(1) of Companies (Appointment and Qualification of Directors) Rules, 2014]</strong></p>
 
-    <p><strong>Registration No. of Company:</strong> U40103KA2010PTC053912</p>
-    <p><strong>Nominal Capital:</strong> Rs. 54,10,78,150</p>
-    <p><strong>Paid-up Capital:</strong> Rs. 53,74,15,900</p>
+    <p><strong>Registration No. of Company:</strong> ${
+      clientInfo?.registration_number
+    }</p>
+    <p><strong>Nominal Capital:</strong> ${
+      clientInfo?.authorised_capital_equity
+    }</p>
+    <p><strong>Paid-up Capital:</strong> ${
+      clientInfo?.paid_up_capital_equity
+    }</p>
 
-    <p><strong>Name of Company:</strong> Surya Energy Photo Voltaic India Private Limited</p>
-    <p><strong>Address of its Registered Office:</strong> Tower A, 3rd Floor, The Millenia, No. 1 & 2 Murphy Road, Ulsoor Bangalore 560008 Karnataka, INDIA</p>
+    <p><strong>Name of Company:</strong> ${clientInfo?.company_name}</p>
+    <p><strong>Address of its Registered Office:</strong> ${
+      clientInfo?.registered_address
+    }</p>
 
     <p><strong>To,</strong></p>
-    <p>The Board of Directors of SURYA ENERGY PHOTO VOLTAIC INDIA PRIVATE LIMITED</p>
+    <p>The Board of Directors of ${clientInfo?.company_name}</p>
 
-    <p>I, <strong>Thomas T. Karimpanal</strong>, son of Mr. Karimpanal Sebastian Thomas, resident of House No. 7 Amber Gardens #02-15, Singapore-439974, Director, in the Company hereby give notice that I am/was a director in the following companies during the last three years:</p>
+    <p>I, <strong>${directorInfo?.name}</strong>, son/daughter of ${
+      directorInfo?.fathers_mothers_spouse_name
+    }, resident of ${
+      directorInfo?.present_address
+    } , Director, in the Company hereby give notice that I am/was a director in the following companies during the last three years:</p>
 
     <table>
         <tr>
@@ -396,66 +439,24 @@ export default function DIREditor() {
             <th>Date of Appointment</th>
             <th>Date of Cessation</th>
         </tr>
-        <tr>
-            <td>1</td>
-            <td>Aerosite Energy Private Limited</td>
-            <td>02/11/2017</td>
-            <td>22/07/2022</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan="3"><strong>Director</strong> (26/09/2018 - Present)</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>Sun Photo Voltaic Energy India Private Limited</td>
-            <td>02/11/2017</td>
-            <td>-</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan="3"><strong>Director</strong> (28/09/2018 - Present)</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Tuppadahalli Energy India Private Limited</td>
-            <td>02/11/2017</td>
-            <td>-</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan="3"><strong>Director</strong> (26/09/2018 - Present)</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Acciona Wind Energy Private Limited</td>
-            <td>02/11/2017</td>
-            <td>-</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan="3"><strong>Director</strong> (28/09/2018 - Present)</td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Fujin Power Private Limited</td>
-            <td>02/11/2017</td>
-            <td>22/07/2022</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan="3"><strong>Director</strong> (26/09/2018 - Present)</td>
-        </tr>
+        
+    
+      <tbody id="table-body">
+      <tr>
+        <td colSpan="4">Loading data...</td>
+      </tr>
+    </tbody>
+      
     </table>
 
     <p>I further confirm that I have not incurred disqualification under section 164(1) and section 164(2) of the Companies Act, 2013 in any of the above companies, in the previous financial year, and that I, at present, stand free from any disqualification from being a director.</p>
 
     
-    <p><strong>Place:</strong> Madrid</p>
+    <p><strong>Place:</strong> ${clientInfo?.registered_address}</p>
     <p><strong>Signature:</strong> ______________</p>
-    <p><strong>Date:</strong> 31-Mar-2024</p>
-    <p><strong>Name:</strong> Thomas T. Karimpanal</p>
-    <p><strong>DIN:</strong> 07974134</p>
+    <p><strong>Date:</strong> ${getFinancialYearStartDate()}</p>
+    <p><strong>Name:</strong> ${directorInfo?.name}</p>
+    <p><strong>DIN:</strong> ${directorInfo && directorInfo["din/pan"]}</p>
 
     <h3>Instructions for Filling Form DIR-8</h3>
     <ul>
@@ -465,8 +466,8 @@ export default function DIREditor() {
         <li>Second table should list companies where the Director has been disqualified in the past three years.</li>
         <li>If the Director has no disqualifications, leave the table blank or fill as "NOT APPLICABLE".</li>
     </ul>`);
-  }, []);
-
+  }, [clientInfo]);
+  // console.log(clientInfo, "saved", dirRelatedParty);
   return (
     <Container className="mt-5">
       <h1>DIR Form</h1>

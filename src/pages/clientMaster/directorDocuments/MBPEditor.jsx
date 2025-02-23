@@ -30,6 +30,8 @@ export default function MBPEditor() {
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPrevoiusSelectedOptions] = useState([]);
   const [clientInfo, setClientInfo] = useState([]);
+  const [directorInfo, setDirectorInfo] = useState([]);
+  const [dirRelatedParty, setDirRelatedParty] = useState([]);
   const [meetInfo, setMeetInfo] = useState({});
   const [previousMeet, setPreviousMeet] = useState([]);
   const [meetData, setMeetData] = useState([]);
@@ -63,8 +65,11 @@ export default function MBPEditor() {
           },
         });
         const data = await response.json();
-        console.log(data, "saved-cs");
+        // console.log(data, "saved-cs");
         setVariable(data?.MBP_doc?.variables || {});
+        setDirectorInfo(data?.director_id);
+        setDirRelatedParty(data?.related_parties);
+        setClientInfo(data?.director_id?.company_id);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -110,7 +115,7 @@ export default function MBPEditor() {
           xValues = filledVariable;
         }
         // Check if it's a system variable
-        console.log(rows, "rows");
+        // console.log(rows, "rows");
         const systemVariable = rows?.find((row) => row?.name === placeholder);
         console.log("content-out-match-fix-var", systemVariable);
         if (systemVariable) {
@@ -253,18 +258,6 @@ export default function MBPEditor() {
     setEditorContent(updatedContent);
   };
 
-  // Load file content and process placeholders
-  const handleFileLoad = async (url) => {
-    try {
-      setInitializedContent(url);
-    } catch (error) {
-      console.error("Error fetching or converting the file:", error);
-    }
-  };
-  useEffect(() => {
-    handleFileLoad(fileUrl);
-  }, []);
-
   useEffect(() => {
     processPlaceholders(editorContent);
   }, [selectedData, prevCSR, initializedContent]);
@@ -369,8 +362,49 @@ export default function MBPEditor() {
   const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
     (placeholder) => !confirmedFields[placeholder]
   );
+  useEffect(() => {
+    const formatDate = (isoDate) => {
+      return new Date(isoDate).toLocaleDateString("en-GB");
+    };
+    const tableRows = dirRelatedParty
+      ?.map(
+        (party, index) => `
+    <tr>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          index + 1
+        }</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          party?.related_party_name
+        }</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          party?.nature_of_interest
+        }</td>
+        
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${
+          party?.shareholding_percentage
+        }</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: left;">${formatDate(
+          party?.date_of_interest_changed_resigned_or_cessation
+        )}</td>
+    </tr>
 
+`
+      )
+      .join("");
+    setTimeout(() => {
+      document.getElementById("table-body").innerHTML = tableRows;
+    }, 1000);
+    console.log(tableRows, "madd");
+  }, [dirRelatedParty]);
+  function getFinancialYearStartDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const financialYearStart = month < 4 ? year - 1 : year;
 
+    return new Date(financialYearStart, 3, 1).toLocaleDateString("en-GB"); // 01/04/YYYY format
+  }
+  // console.log(clientInfo, "saved", dirRelatedParty);
   useEffect(() => {
     setEditorContent(`<!DOCTYPE html>
     <html lang="en">
@@ -386,11 +420,15 @@ export default function MBPEditor() {
         
         <p>To</p>
         <p><strong>The Board of Directors</strong><br>
-        SURYA ENERGY PHOTO VOLTAIC INDIA PRIVATE LIMITED</p>
+        ${clientInfo?.company_name}</p>
         
         <p>Dear Sir(s),</p>
         
-        <p>I, <strong>Thomas T. Karimpanal</strong>, son of Mr. Karimpanal Sebastian Thomas, resident of <strong>House No. 7 Amber Gardens #02-15, Singapore-439974</strong>, being a Director in the Company hereby give notice of my interest or concern in the following company or companies, bodies corporate, firms or other association of individuals:</p>
+        <p>I, <strong>${directorInfo?.name}</strong>, son/daughter of ${
+      directorInfo?.fathers_mothers_spouse_name
+    }, resident of <strong>${
+      directorInfo?.present_address
+    } </strong>, being a Director in the Company hereby give notice of my interest or concern in the following company or companies, bodies corporate, firms or other association of individuals:</p>
         
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr style="background-color: #f2f2f2;">
@@ -400,35 +438,18 @@ export default function MBPEditor() {
                 <th style="border: 1px solid #000; padding: 8px; text-align: left;">Shareholding</th>
                 <th style="border: 1px solid #000; padding: 8px; text-align: left;">Date on Which Interest or Concern Arose / Changed</th>
             </tr>
-            <tr>
-                <td style="border: 1px solid #000; padding: 8px;">1</td>
-                <td style="border: 1px solid #000; padding: 8px;">Sun Photo Voltaic Energy India Private Limited</td>
-                <td style="border: 1px solid #000; padding: 8px;">Director</td>
-                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
-                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
-            </tr>
-            <tr>
-                <td style="border: 1px solid #000; padding: 8px;">2</td>
-                <td style="border: 1px solid #000; padding: 8px;">Tuppadahalli Energy India Private Limited</td>
-                <td style="border: 1px solid #000; padding: 8px;">Director</td>
-                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
-                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
-            </tr>
-            <tr>
-                <td style="border: 1px solid #000; padding: 8px;">3</td>
-                <td style="border: 1px solid #000; padding: 8px;">Acciona Wind Energy Private Limited</td>
-                <td style="border: 1px solid #000; padding: 8px;">Director</td>
-                <td style="border: 1px solid #000; padding: 8px;">NIL</td>
-                <td style="border: 1px solid #000; padding: 8px;">02/11/2017</td>
-            </tr>
+           
+           
+            <tbody id="table-body"></tbody>
+           
         </table>
         
-        <p><strong>Place:</strong> Madrid</p>
-        <p><strong>Date:</strong> 01-Apr-2024</p>
+        <p><strong>Place:</strong>${clientInfo?.registered_address}</p>
+        <p><strong>Date:</strong> ${getFinancialYearStartDate()}</p>
         <p><strong>Signature:</strong> ______________</p>
-        <p><strong>Name:</strong> Thomas T. Karimpanal</p>
+        <p><strong>Name:</strong> ${directorInfo?.name}</p>
         <p><strong>Director</strong></p>
-        <p><strong>DIN:</strong> 07974134</p>
+        <p><strong>DIN:</strong>${directorInfo && directorInfo["din/pan"]}</p>
         
         <hr style="margin: 30px 0;">
         
