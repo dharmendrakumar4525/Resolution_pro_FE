@@ -11,7 +11,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { apiURL } from "../../API/api";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaUser, FaFile } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -53,6 +53,14 @@ export default function Directors() {
 
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
+  const handleViewRelatedParties = (row, e) => {
+    e.stopPropagation();
+    navigate(`/director-related-party-form/${row.id}`);
+  };
+  const handleViewRelatedDocuments = (row, e) => {
+    e.stopPropagation();
+    navigate(`/director-documents/${row.id}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,134 +84,6 @@ export default function Directors() {
     };
     fetchData();
   }, [id]);
-
-  const handleOpenAddModal = () => {
-    setFormData({
-      company_id: `${id}`,
-      name: "",
-      present_address: "",
-      permanent_address: "",
-      date_of_appointment: "",
-      date_of_cessation: "",
-      date_of_regularisation_AGM: "",
-      designation: "",
-      designation_change_date: "",
-      remuneration_details: "",
-      WTD_tenure: {
-        from: "",
-        to: "",
-      },
-      MD_tenure: {
-        from: "",
-        to: "",
-      },
-      DSC_expiry_date: "",
-      BM_due_date: "",
-      KYC_filling_date: "",
-      related_party_name: "",
-      related_party_address: "",
-      "din/pan": "",
-      email: "",
-      is_manual: true,
-    });
-
-    setEditingRow(null);
-    setOpenAddModal(true);
-  };
-
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-
-    if (id.includes(".")) {
-      const [parent, child] = id.split(".");
-      setFormData({
-        ...formData,
-        [parent]: {
-          ...formData[parent],
-          [child]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [id]: value,
-      });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setButtonLoading(true);
-    try {
-      if (editingRow) {
-        await fetch(`${apiURL}/director-data/${editingRow?.id}`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify(formData),
-        });
-        setRows((prevRows) =>
-          prevRows.map((row) =>
-            row?.id === editingRow?.id ? { ...row, ...formData } : row
-          )
-        );
-        toast.success("Director updated successfully");
-      } else {
-        const response = await fetch(`${apiURL}/director-data`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to add director");
-        }
-        const data = await response.json();
-        setRows((prevRows) => [...prevRows, data]);
-        toast.success("Director added successfully");
-      }
-      setOpenAddModal(false);
-      setFormData({
-        company_id: `${id}`,
-        name: "",
-        present_address: "",
-        permanent_address: "",
-        date_of_appointment: "",
-        date_of_cessation: "",
-        date_of_regularisation_AGM: "",
-        designation: "",
-        designation_change_date: "",
-        remuneration_details: "",
-        WTD_tenure: {
-          from: "",
-          to: "",
-        },
-        MD_tenure: {
-          from: "",
-          to: "",
-        },
-        DSC_expiry_date: "",
-        BM_due_date: "",
-        KYC_filling_date: "",
-        related_party_name: "",
-        related_party_address: "",
-        "din/pan": "",
-        email: "",
-        is_manual: true,
-      });
-    } catch (error) {
-      toast.error("Failed to add/update director. Please try again.");
-    } finally {
-      setButtonLoading(false); // Hide button spinner
-    }
-  };
 
   const handleDeleteClick = async (row) => {
     try {
@@ -259,23 +139,39 @@ export default function Directors() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Name</th>
-                  <th>Email</th>
+                  {/* <th>Email</th> */}
                   <th>Designation</th>
-                  <th>Start Date</th>
+                  <th>Associated Docs</th>
                   <th>DIN/PAN</th>
-                  <th>End Date</th>
+                  <th>Related Parties</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rows?.map((row) => (
                   <tr key={row?.id}>
                     <td>{row?.name}</td>
-                    <td>{row?.email}</td>
+                    {/* <td>{row?.email}</td> */}
                     <td>{row?.designation}</td>
-                    <td>{row?.begin_date}</td>
+                    <td>
+                      <button
+                        style={{ height: "100%" }}
+                        className="director-btn"
+                        onClick={(e) => handleViewRelatedDocuments(row, e)}
+                      >
+                        <FaFile />
+                      </button>
+                    </td>
                     <td>{row["din/pan"]}</td>
-                    <td>{row?.end_date || "-"}</td>
+                    <td>
+                      <button
+                        style={{ height: "100%" }}
+                        className="director-btn"
+                        onClick={(e) => handleViewRelatedParties(row, e)}
+                      >
+                        <FaUser />
+                      </button>
+                    </td>
                     <td>
                       <Button
                         variant="outline-primary"

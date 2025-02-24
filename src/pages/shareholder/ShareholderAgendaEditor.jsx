@@ -30,6 +30,7 @@ export default function ShareholderAgendaEditor() {
   const [directorList, setDirectorList] = useState([]);
   const [xresolution, setXResolutions] = useState([]);
   const [xSpecialResolution, setXSpecialResolutions] = useState([]);
+  const [templateName, setTemplateName] = useState("");
   const [variable, setVariable] = useState([]);
   const [previousSelectedOptions, setPreviousSelectedOptions] = useState([]);
   const [previousSpecialOptions, setPreviousSpecialOptions] = useState([]);
@@ -134,7 +135,7 @@ export default function ShareholderAgendaEditor() {
             new Date(meeting.date) < targetDate &&
             meeting?.client_name?.id === specificMeetInfo?.client_name?.id
         );
-
+        console.log(meetInfo, "meetInfo");
         const newDate = closestPreviousMeeting.reduce((prev, curr) => {
           const prevDate = prev ? new Date(prev?.date) : new Date(0);
           const currDate = new Date(curr?.date);
@@ -218,7 +219,7 @@ export default function ShareholderAgendaEditor() {
           },
         });
         const data = await response.json();
-
+        setTemplateName(data?.agendaItems[0]?.templateName);
         setXResolutions(data?.resolutions);
         setXSpecialResolutions(data?.special_resolutions);
         setVariable(data?.variables);
@@ -249,6 +250,7 @@ export default function ShareholderAgendaEditor() {
 
     fetchData();
   }, [token]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -586,10 +588,11 @@ export default function ShareholderAgendaEditor() {
   };
   const handleMultipleFilesAddOn = async (urls, spclUrls) => {
     let count = 1;
-    let spclCount = 1;
+    // let spclCount = 1;
     let spclResolutionContent = "";
     let statementCount = 1;
     let statementSpecial = "";
+    let combinedContent = "";
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -599,6 +602,53 @@ export default function ShareholderAgendaEditor() {
       return `${day}/${month}/${year}`; // Fo
       // const result = `${day}/${month}/${year}`;
     }
+    function getFinancialYearEndDate(meetingDate) {
+      const meeting = new Date(meetingDate);
+      const year = meeting.getFullYear();
+      const month = meeting.getMonth() + 1; // JS months are 0-based
+
+      let fyEndYear = month >= 1 && month <= 3 ? year : year + 1;
+      return `31/3/${fyEndYear}`;
+    }
+
+    if (urls) {
+      if (urls.length >= 1 || templateName === "AGM Physical Agenda") {
+        combinedContent += `<br/><h5><u>ORDINARY BUSINESS</u></h5>`;
+      }
+      if (templateName === "AGM Physical Agenda") {
+        combinedContent += `<br/><p>${count}. To receive, consider and adopt the audited Balance Sheet as at ${getFinancialYearEndDate(
+          meetInfo?.date
+        )}, the Statement of Profit and Loss for the Financial Year ended ${getFinancialYearEndDate(
+          meetInfo?.date
+        )}, Statement of changes in equity and Statement of Cash flow of the Company for the Year ended on even date together with the Schedules and Notes to Accounts and the Report of the Auditors and Directors (including annexures) thereon.</p>\n`;
+        count++;
+      }
+
+      for (const url of urls) {
+        if (url?.title) {
+          const title = url?.title || "Untitled";
+          combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+          count++;
+        }
+
+        if (url?.templateFile) {
+          combinedContent += `<div>${url?.templateFile}</div>\n`;
+        } else {
+          console.warn("Skipped processing due to missing templateFile:", url);
+        }
+
+        // Add resolution file content if available
+        if (url?.resolutionFile) {
+          combinedContent += `<div>${url?.resolutionFile}</div>`;
+        } else {
+          console.warn(
+            "Skipped processing due to missing resolutionFile:",
+            url
+          );
+        }
+      }
+    }
+
     if (spclUrls?.length >= 1) {
       spclResolutionContent += `<br/><h5><u>SPECIAL BUSINESS</u></h5><br/>`;
 
@@ -606,8 +656,8 @@ export default function ShareholderAgendaEditor() {
         if (url?.title) {
           const title = url?.title || "Untitled";
 
-          spclResolutionContent += `<br/><p>${spclCount}. ${title}</p>`;
-          spclCount++;
+          spclResolutionContent += `<br/><p>${count}. ${title}</p>`;
+          count++;
         }
 
         if (url?.templateFile) {
@@ -636,40 +686,6 @@ export default function ShareholderAgendaEditor() {
     }
 
     try {
-      let combinedContent = "";
-      if (urls) {
-        if (urls.length >= 1) {
-          combinedContent += `<br/><h5><u>ORDINARY BUSINESS</u></h5>`;
-        }
-
-        for (const url of urls) {
-          if (url?.title) {
-            const title = url?.title || "Untitled";
-            combinedContent += `<br/><p>${count}. ${title}</p>\n`;
-            count++;
-          }
-
-          if (url?.templateFile) {
-            combinedContent += `<div>${url?.templateFile}</div>\n`;
-          } else {
-            console.warn(
-              "Skipped processing due to missing templateFile:",
-              url
-            );
-          }
-
-          // Add resolution file content if available
-          if (url?.resolutionFile) {
-            combinedContent += `<div>${url?.resolutionFile}</div>`;
-          } else {
-            console.warn(
-              "Skipped processing due to missing resolutionFile:",
-              url
-            );
-          }
-        }
-      }
-
       let footerContent = `
       <div style="text-align: right;">
       <br/><h5>By the order of the Board

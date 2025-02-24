@@ -22,6 +22,7 @@ export default function DirectorForm() {
   const [formData, setFormData] = useState({
     company_id: `${clientId}`,
     name: "",
+    fathers_mothers_spouse_name: "",
     present_address: "",
     permanent_address: "",
     date_of_appointment: "",
@@ -41,8 +42,6 @@ export default function DirectorForm() {
     DSC_expiry_date: "",
     BM_due_date: "",
     KYC_filling_date: "",
-    related_party_name: "",
-    related_party_address: "",
     "din/pan": "",
     email: "",
     is_manual: true, // Default value
@@ -125,23 +124,61 @@ export default function DirectorForm() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify(formData),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add director");
-          return;
+          toast.error("Failed to add director");
         }
+
+        const responseData = await response.json(); // Extract the response JSON
+        console.log(responseData, "response-submitted");
+
+        const directorId = responseData.id || responseData._id; // Adjust based on actual response
+
+        if (!directorId) {
+          toast.error("Director ID not found in response");
+        }
+
+        // Second API call to post director-docs
+        const docResponse = await fetch(`${apiURL}/director-docs`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            director_id: directorId,
+            MBP_doc: {
+              templateFile: "<p>Empty</p>",
+            },
+            DIR_doc: {
+              templateFile: "<p>Empty</p>",
+            },
+          }),
+        });
+
+        if (!docResponse.ok) {
+          toast.error("Failed to submit director document");
+        }
+
         toast.success("Director added successfully");
         navigate(-1);
       }
     } catch (error) {
-      toast.error("Failed to add/update director. Please try again.");
+      console.error("Failed to add/update director. Please try again.");
     } finally {
       setButtonLoading(false); // Hide button spinner
     }
   };
+  const designationOptions = [
+    { value: "Additional Director", label: "Additional Director" },
+    { value: "Director", label: "Director" },
+    { value: "Managing Director", label: "Managing Director" },
+    { value: "Whole-Time Director", label: "Whole-Time Director" },
+    { value: "Company Secretary", label: "Company Secretary" },
+  ];
+
   return (
     <div className="pt-3 ps-3 pe-3 mb-3">
       <h2 className="mb-2">{directorId ? "Edit Director" : "Add Director"}</h2>
@@ -157,6 +194,23 @@ export default function DirectorForm() {
               <Form.Control
                 type="text"
                 value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter Name"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4} className="mt-2">
+            <Form.Group
+              controlId="fathers_mothers_spouse_name"
+              className="mb-3"
+            >
+              <Form.Label>
+                Father's Name<sup>*</sup>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.fathers_mothers_spouse_name}
                 onChange={handleChange}
                 placeholder="Enter Name"
                 required
@@ -196,12 +250,22 @@ export default function DirectorForm() {
               <Form.Label>
                 Designation<sup>*</sup>
               </Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.designation}
-                onChange={handleChange}
-                placeholder="Enter Designation"
-                required
+              <Select
+                options={designationOptions}
+                isClearable
+                value={designationOptions.find(
+                  (option) => option.value === formData?.designation
+                )}
+                onChange={(selectedOption) =>
+                  handleChange({
+                    target: {
+                      id: "designation",
+                      value: selectedOption ? selectedOption.value : "",
+                    },
+                  })
+                }
+                placeholder="Select Designation"
+                isSearchable
               />
             </Form.Group>
           </Col>
@@ -356,31 +420,6 @@ export default function DirectorForm() {
                 type="date"
                 value={formData?.BM_due_date?.split("T")[0]}
                 onChange={handleChange}
-              />
-            </Form.Group>
-          </Col>
-
-          {/* Row 4 */}
-
-          <Col md={4} className="mt-2">
-            <Form.Group controlId="related_party_name" className="mb-3">
-              <Form.Label>Related Party Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.related_party_name}
-                onChange={handleChange}
-                placeholder="Enter Related Party Name"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={4} className="mt-2">
-            <Form.Group controlId="related_party_address" className="mb-3">
-              <Form.Label>Related Party Address</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.related_party_address}
-                onChange={handleChange}
-                placeholder="Enter Related Party Address"
               />
             </Form.Group>
           </Col>
