@@ -42,9 +42,9 @@ export default function CustomerMaintenanceForm() {
       name: null,
       email: null,
     },
-    alloted_consultant: "",
-    alloted_consultant_2: "",
-    alloted_manager: "",
+    alloted_consultant: null,
+    alloted_consultant_2: null,
+    alloted_manager: null,
     books_of_account: "",
     total_paid_up_capital_last_audited: null,
     net_worth_lau: null,
@@ -86,19 +86,19 @@ export default function CustomerMaintenanceForm() {
     items_req_secial_resol_AOA: "",
     special_provision_AOA: "",
     BM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     CM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     AGM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     EGM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
   });
@@ -175,7 +175,7 @@ export default function CustomerMaintenanceForm() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-
+      const updatedValue = value === "" ? null : value; 
     if (id === "promoters_MGT_names") {
       // Split the input value by commas and update the array in the state
       setFormData((prevData) => ({
@@ -218,7 +218,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         BM_last_serial: {
           ...prevData.BM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("CM_last_serial")) {
@@ -228,7 +228,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         CM_last_serial: {
           ...prevData.CM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("AGM_last_serial")) {
@@ -238,7 +238,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         AGM_last_serial: {
           ...prevData.AGM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("EGM_last_serial")) {
@@ -248,7 +248,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         EGM_last_serial: {
           ...prevData.EGM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else {
