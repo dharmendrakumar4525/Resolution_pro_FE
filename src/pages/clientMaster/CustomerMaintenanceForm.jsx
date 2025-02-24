@@ -42,8 +42,9 @@ export default function CustomerMaintenanceForm() {
       name: null,
       email: null,
     },
-    alloted_consultant: "",
-    alloted_manager: "",
+    alloted_consultant: null,
+    alloted_consultant_2: null,
+    alloted_manager: null,
     books_of_account: "",
     total_paid_up_capital_last_audited: null,
     net_worth_lau: null,
@@ -85,19 +86,19 @@ export default function CustomerMaintenanceForm() {
     items_req_secial_resol_AOA: "",
     special_provision_AOA: "",
     BM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     CM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     AGM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
     EGM_last_serial: {
-      type: "",
+      type: null,
       serial_no: null,
     },
   });
@@ -174,7 +175,7 @@ export default function CustomerMaintenanceForm() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-
+      const updatedValue = value === "" ? null : value; 
     if (id === "promoters_MGT_names") {
       // Split the input value by commas and update the array in the state
       setFormData((prevData) => ({
@@ -217,7 +218,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         BM_last_serial: {
           ...prevData.BM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("CM_last_serial")) {
@@ -227,7 +228,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         CM_last_serial: {
           ...prevData.CM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("AGM_last_serial")) {
@@ -237,7 +238,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         AGM_last_serial: {
           ...prevData.AGM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else if (id.startsWith("EGM_last_serial")) {
@@ -247,7 +248,7 @@ export default function CustomerMaintenanceForm() {
         ...prevData,
         EGM_last_serial: {
           ...prevData.EGM_last_serial,
-          [fieldName]: value,
+          [fieldName]: updatedValue,
         },
       }));
     } else {
@@ -263,11 +264,17 @@ export default function CustomerMaintenanceForm() {
   };
 
   const handleConsultantChange = (selectedOption) => {
-    console.log("Consultat=nt", selectedOption.value);
+    console.log("Consultant", selectedOption.value);
 
     setFormData((prevData) => ({
       ...prevData,
       alloted_consultant: selectedOption?.value,
+    }));
+  };
+  const handleConsultant2Change = (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      alloted_consultant_2: selectedOption?.value,
     }));
   };
 
@@ -422,10 +429,10 @@ export default function CustomerMaintenanceForm() {
           {step === 1 && (
             <>
               <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="company_name">
                     <Form.Label>
-                      Company Name<sup>*</sup>
+                      Name of the Client Company<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="text"
@@ -436,7 +443,7 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="pan">
                     <Form.Label>
                       PAN <sup>*</sup>
@@ -451,7 +458,7 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="registered_address">
                     <Form.Label>
                       Registered Address<sup>*</sup>
@@ -465,23 +472,7 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
-                  <Form.Group controlId="registration_number">
-                    <Form.Label>
-                      Registeration Number<sup>*</sup>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData?.registration_number}
-                      onChange={handleChange}
-                      placeholder="Enter Registeration Number"
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="roc_code">
                     <Form.Label>
                       ROC Code<sup>*</sup>
@@ -495,10 +486,10 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="company_subcategory">
                     <Form.Label>
-                      Company Subcategory<sup>*</sup>
+                      Sub-Category of the Company<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="text"
@@ -512,12 +503,10 @@ export default function CustomerMaintenanceForm() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="authorised_capital_equity">
                     <Form.Label>
-                      Authorised Capital (Equity)<sup>*</sup>
+                      Authorised Share Capital (Equity)<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="number"
@@ -533,10 +522,10 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="authorised_capital_preference_capital">
                     <Form.Label>
-                      Authorised Capital (Preference)<sup>*</sup>
+                      Authorised Share Capital (Preference)<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="number"
@@ -551,10 +540,10 @@ export default function CustomerMaintenanceForm() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="paid_up_capital_equity">
                     <Form.Label>
-                      Paid Up Capital (Equity)<sup>*</sup>
+                      Paid Up Share Capital (Equity)<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="number"
@@ -569,13 +558,10 @@ export default function CustomerMaintenanceForm() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="paid_up_capital_preference_capital">
                     <Form.Label>
-                      Paid Up Capital (Preference)<sup>*</sup>
+                      Paid Up Share Capital (Preference)<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="number"
@@ -586,11 +572,14 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="date_of_balance_sheet">
-                    <Form.Label>Date of Balance Sheet</Form.Label>
+                    <Form.Label>
+                      Date of Balance Sheet<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       type="date"
+                      required
                       value={formData?.date_of_balance_sheet?.split("T")[0]}
                       onChange={handleChange}
                       // isInvalid={!!errors.date_of_balance_sheet}
@@ -601,7 +590,7 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="class_of_company">
                     <Form.Label>
                       Class of Company<sup>*</sup>
@@ -619,9 +608,7 @@ export default function CustomerMaintenanceForm() {
                 </Form.Control.Feedback> */}
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="cin">
                     <Form.Label>
                       CIN<sup>*</sup>
@@ -635,9 +622,20 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
+                  <Form.Group controlId="email_id">
+                    <Form.Label>Email ID of the Client Company</Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={formData?.email_id}
+                      onChange={handleChange}
+                      placeholder="Enter Email Address"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="secretary_detail.name">
-                    <Form.Label>Company Secretary Name</Form.Label>
+                    <Form.Label>Name of the CS</Form.Label>
                     <Form.Control
                       type="text"
                       name="secretary_detail.name"
@@ -650,9 +648,9 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="secretary_detail.email">
-                    <Form.Label>Company Secretary Email</Form.Label>
+                    <Form.Label>Email ID of the CS</Form.Label>
                     <Form.Control
                       type="email"
                       name="secretary_detail.email"
@@ -664,13 +662,9 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="alloted_manager">
-                    <Form.Label>
-                      Client Manager<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Client Manager</Form.Label>
                     <Select
                       options={managers.map((manager) => ({
                         value: manager.id,
@@ -692,9 +686,9 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="auditor_detail.name">
-                    <Form.Label>Auditor Name</Form.Label>
+                    <Form.Label>Name of the Auditor</Form.Label>
                     <Form.Control
                       type="text"
                       name="auditor_detail.name"
@@ -707,9 +701,9 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="auditor_detail.email">
-                    <Form.Label>Auditor Email</Form.Label>
+                    <Form.Label>Email ID of the Auditor</Form.Label>
                     <Form.Control
                       type="email"
                       name="auditor_detail.email"
@@ -721,27 +715,31 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
+                  <Form.Group controlId="registration_number">
+                    <Form.Label>Reg No. of the Firm</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData?.registration_number}
+                      onChange={handleChange}
+                      placeholder="Enter Registeration Number"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="date_of_incorporation">
-                    <Form.Label>
-                      Date of Incorporation<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>DOI of the Company</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.date_of_incorporation.split("T")[0]}
                       onChange={handleChange}
                       placeholder="Enter Date of Incorporation"
-                      required
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="date_of_last_agm">
-                    <Form.Label>
-                      Date of Last AGM<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Date of Last AGM</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.date_of_last_agm?.split("T")[0]}
@@ -749,11 +747,9 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="alloted_consultants">
-                    <Form.Label>
-                      Client Consultant<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Client Consultant 1</Form.Label>
                     <Select
                       options={consultants.map((consultant) => ({
                         value: consultant.id,
@@ -775,11 +771,34 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col md={6} lg={4}>
+                <Col md={6} lg={4} className="mt-3">
+                  <Form.Group controlId="alloted_consultants_2">
+                    <Form.Label>Client Consultant 2</Form.Label>
+                    <Select
+                      options={consultants.map((consultant) => ({
+                        value: consultant.id,
+                        label: consultant.name,
+                      }))}
+                      value={consultants
+                        .map((consultant) => ({
+                          value: consultant.id,
+                          label: consultant.name,
+                        }))
+                        .find(
+                          (option) =>
+                            // option.value === formData.alloted_consultant.id ||
+                            option.value === formData.alloted_consultant_2
+                        )}
+                      onChange={handleConsultant2Change}
+                      placeholder="Select Client Consultant"
+                      isClearable
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="holding_company_detail_name">
-                    <Form.Label>Holding Company Name</Form.Label>
+                    <Form.Label>Name of the Holding Company</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.holding_company_detail?.name || ""}
@@ -789,9 +808,9 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col md={6} lg={4}>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="holding_company_detail_address">
-                    <Form.Label>Holding Company Address</Form.Label>
+                    <Form.Label>Address of the Holding Company</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.holding_company_detail?.address || ""}
@@ -800,7 +819,7 @@ export default function CustomerMaintenanceForm() {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={6} lg={4}>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="holding_company_detail_CIN_FCRN">
                     <Form.Label>Holding Company CIN/FCRN</Form.Label>
                     <Form.Control
@@ -812,114 +831,79 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
               </Row>
-              <Row className="mb-3" style={{ width: "34%" }}>
-                <Col>
-                  <Form.Group controlId="email_id">
-                    <Form.Label>
-                      Email Address<sup>*</sup>
-                    </Form.Label>
-                    <Form.Control
-                      type="email"
-                      value={formData?.email_id}
-                      onChange={handleChange}
-                      placeholder="Enter Email Address"
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
             </>
           )}
           {step === 2 && (
             <>
               <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="books_of_account">
-                    <Form.Label>
-                      Books of Account<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Books of Accounts maintained at ?</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.books_of_account}
                       onChange={handleChange}
                       placeholder="Enter Books of Account"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="total_paid_up_capital_last_audited">
                     <Form.Label>
-                      Total Paid-Up Capital (Last Audited)<sup>*</sup>
+                      Total Paid-Up Capital (Last Audited)
                     </Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.total_paid_up_capital_last_audited}
                       onChange={handleChange}
                       placeholder="Enter Total Paid-Up Capital (Last Audited)"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="net_worth_lau">
-                    <Form.Label>
-                      Net Worth (Last Audited)<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Net Worth (Last Audited)</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.net_worth_lau}
                       onChange={handleChange}
                       placeholder="Enter Net Worth (Last Audited)"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="turnover_lau">
-                    <Form.Label>
-                      Turnover (Last Audited)<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Turnover (Last Audited)</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.turnover_lau}
                       onChange={handleChange}
                       placeholder="Enter Turnover (Last Audited)"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="net_profit_lau">
-                    <Form.Label>
-                      Net Profit (Last Audited)<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Net Profit (Last Audited)</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.net_profit_lau}
                       onChange={handleChange}
                       placeholder="Enter Net Profit (Last Audited)"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="company_type">
-                    <Form.Label>
-                      Company Type<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Company Type</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData?.company_type}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select Company Type</option>
                       <option value="small_company">Small Company</option>
@@ -929,235 +913,175 @@ export default function CustomerMaintenanceForm() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="isin">
-                    <Form.Label>
-                      ISIN<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>ISIN</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.isin}
                       onChange={handleChange}
                       placeholder="Enter ISIN"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="RTA_name">
-                    <Form.Label>
-                      RTA Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>RTA Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.RTA_name}
                       onChange={handleChange}
                       placeholder="Enter RTA Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="DP_name">
-                    <Form.Label>
-                      DP Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>DP Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.DP_name}
                       onChange={handleChange}
                       placeholder="Enter DP Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="depositry_name">
-                    <Form.Label>
-                      Depository Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Depository Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.depositry_name}
                       onChange={handleChange}
                       placeholder="Enter Depository Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="BM_notice_period">
-                    <Form.Label>
-                      BM Notice Period<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>BM Notice Period</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.BM_notice_period}
                       onChange={handleChange}
                       placeholder="Enter BM Notice Period"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="CM_notice_period">
-                    <Form.Label>
-                      CM Notice Period<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>CM Notice Period</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.CM_notice_period}
                       onChange={handleChange}
                       placeholder="Enter CM Notice Period"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="AGM_notice_period">
-                    <Form.Label>
-                      AGM Notice Period<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>AGM Notice Period</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.AGM_notice_period}
                       onChange={handleChange}
                       placeholder="Enter AGM Notice Period"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="EGM_notice_period">
-                    <Form.Label>
-                      EGM Notice Period<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>EGM Notice Period</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.EGM_notice_period}
                       onChange={handleChange}
                       placeholder="Enter EGM Notice Period"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="client_prev_name">
-                    <Form.Label>
-                      Client Previous Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Client Previous Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.client_prev_name}
                       onChange={handleChange}
                       placeholder="Enter Client Previous Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="client_effective_date">
-                    <Form.Label>
-                      Client Effective Date<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Duration of previous name</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.client_effective_date?.split("T")[0]}
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="BM_next_due_date">
-                    <Form.Label>
-                      BM Next Due Date<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>BM Next Due Date</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.BM_next_due_date?.split("T")[0]}
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="AGM_next_due_date">
-                    <Form.Label>
-                      AGM Next Due Date<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>AGM Next Due Date</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.AGM_next_due_date?.split("T")[0]}
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="promoters_MGT_names">
-                    <Form.Label>
-                      Promoters (MGT Names)<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Name of the promoters as per MGT-7</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.promoters_MGT_names.join(", ")}
                       onChange={handleChange}
                       placeholder="Enter Promoters (MGT Names)"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="BM_calender_year_no">
-                    <Form.Label>
-                      BM Calendar Year No.<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>No of BM held in the CY</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.BM_calender_year_no}
                       onChange={handleChange}
                       placeholder="Enter BM Calendar Year No."
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="business_nature">
-                    <Form.Label>
-                      Nature of Business<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Main business activity</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.business_nature}
                       onChange={handleChange}
                       placeholder="Enter Nature of Business"
-                      required
                     />
                   </Form.Group>
                 </Col>
@@ -1167,172 +1091,132 @@ export default function CustomerMaintenanceForm() {
           {step === 3 && (
             <>
               <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="cost_auditor_detail_name">
-                    <Form.Label>
-                      Cost Auditor Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Cost Auditor Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.cost_auditor_detail?.name}
                       onChange={handleChange}
                       placeholder="Enter Cost Auditor Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="cost_auditor_detail_address">
-                    <Form.Label>
-                      Cost Auditor Address<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Cost Auditor Address</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.cost_auditor_detail?.address}
                       onChange={handleChange}
                       placeholder="Enter Cost Auditor Address"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="cost_auditor_detail_from">
-                    <Form.Label>
-                      Cost Auditor From<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Cost Auditor From</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.cost_auditor_detail?.from?.split("T")[0]}
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="cost_auditor_detail_to">
-                    <Form.Label>
-                      Cost Auditor To<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Cost Auditor To</Form.Label>
                     <Form.Control
                       type="date"
                       value={formData?.cost_auditor_detail?.to?.split("T")[0]}
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="internal_auditor_detail_name">
-                    <Form.Label>
-                      Internal Auditor Name<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Internal Auditor Name</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.internal_auditor_detail?.name}
                       onChange={handleChange}
                       placeholder="Enter Internal Auditor Name"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="internal_auditor_detail_address">
-                    <Form.Label>
-                      Internal Auditor Address<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Internal Auditor Address</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.internal_auditor_detail?.address}
                       onChange={handleChange}
                       placeholder="Enter Internal Auditor Address"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="internal_auditor_detail_from">
-                    <Form.Label>
-                      Internal Auditor From<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Internal Auditor From</Form.Label>
                     <Form.Control
                       type="date"
                       value={
                         formData?.internal_auditor_detail?.from?.split("T")[0]
                       }
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="internal_auditor_detail_to">
-                    <Form.Label>
-                      Internal Auditor To<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Internal Auditor To</Form.Label>
                     <Form.Control
                       type="date"
                       value={
                         formData?.internal_auditor_detail?.to?.split("T")[0]
                       }
                       onChange={handleChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="items_req_secial_resol_AOA">
                     <Form.Label>
-                      Items Requiring Special Resolution (AOA)<sup>*</sup>
+                      Items Requiring Special Resolution (AOA)
                     </Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.items_req_secial_resol_AOA}
                       onChange={handleChange}
                       placeholder="Enter Items Requiring Special Resolution (AOA)"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="special_provision_AOA">
-                    <Form.Label>
-                      Special Provision (AOA)<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>Special Provision (AOA)</Form.Label>
                     <Form.Control
                       type="text"
                       value={formData?.special_provision_AOA}
                       onChange={handleChange}
                       placeholder="Enter Special Provision (AOA)"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="BM_last_serial_type">
-                    <Form.Label>
-                      BM Last Serial Type<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>BM Last Serial Type</Form.Label>
                     <Form.Control
                       as="select"
                       value={formData?.BM_last_serial?.type}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select BM Last Serial Type</option>
                       <option value="regular">Regular</option>
@@ -1341,35 +1225,26 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="BM_last_serial_serial_no">
-                    <Form.Label>
-                      BM Last Serial No<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>BM Last Serial No</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.BM_last_serial?.serial_no}
                       onChange={handleChange}
                       placeholder="Enter BM Last Serial No"
-                      required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="CM_last_serial_type">
-                    <Form.Label>
-                      CM Last Serial Type<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>CM Last Serial Type</Form.Label>
                     <Form.Control
                       as="select"
                       type="text"
                       value={formData?.CM_last_serial?.type}
                       onChange={handleChange}
                       placeholder="Enter CM Last Serial Type"
-                      required
                     >
                       <option value="">Select BM Last Serial Type</option>
                       <option value="regular">Regular</option>
@@ -1378,33 +1253,27 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="CM_last_serial_serial_no">
-                    <Form.Label>
-                      CM Last Serial No<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>No of CM held in the CY</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.CM_last_serial?.serial_no}
                       onChange={handleChange}
                       placeholder="Enter CM Last Serial No"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="AGM_last_serial_type">
-                    <Form.Label>
-                      AGM Last Serial Type<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>AGM Last Serial Type</Form.Label>
                     <Form.Control
                       as="select"
                       type="text"
                       value={formData?.AGM_last_serial?.type}
                       onChange={handleChange}
                       placeholder="Enter AGM Last Serial Type"
-                      required
                     >
                       <option value="">Select AGM Last Serial Type</option>
                       <option value="regular">Regular</option>
@@ -1412,36 +1281,27 @@ export default function CustomerMaintenanceForm() {
                     </Form.Control>
                   </Form.Group>
                 </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="AGM_last_serial_serial_no">
-                    <Form.Label>
-                      AGM Last Serial No<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>No of AGM held in the CY</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.AGM_last_serial?.serial_no}
                       onChange={handleChange}
                       placeholder="Enter AGM Last Serial No"
-                      required
                     />
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="EGM_last_serial_type">
-                    <Form.Label>
-                      EGM Last Serial Type<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>EGM Last Serial Type</Form.Label>
                     <Form.Control
                       as="select"
                       type="text"
                       value={formData?.EGM_last_serial?.type}
                       onChange={handleChange}
                       placeholder="Enter EGM Last Serial Type"
-                      required
                     >
                       <option value="">Select EGM Last Serial Type</option>
                       <option value="regular">Regular</option>
@@ -1450,17 +1310,14 @@ export default function CustomerMaintenanceForm() {
                   </Form.Group>
                 </Col>
 
-                <Col>
+                <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="EGM_last_serial_serial_no">
-                    <Form.Label>
-                      EGM Last Serial No<sup>*</sup>
-                    </Form.Label>
+                    <Form.Label>No of EGM held in the CY</Form.Label>
                     <Form.Control
                       type="number"
                       value={formData?.EGM_last_serial?.serial_no}
                       onChange={handleChange}
                       placeholder="Enter EGM Last Serial No"
-                      required
                     />
                   </Form.Group>
                 </Col>
