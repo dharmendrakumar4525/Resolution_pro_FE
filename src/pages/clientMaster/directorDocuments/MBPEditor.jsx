@@ -470,7 +470,7 @@ export default function MBPEditor() {
     </body>
     </html>
     `);
-  }, []);
+  }, [clientInfo]);
 
   return (
     <Container className="mt-5">
