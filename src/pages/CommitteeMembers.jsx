@@ -214,7 +214,12 @@ export default function CommitteeMembers() {
               <tbody>
                 {rows.map((row, index) => (
                   <tr key={row?.id}>
-                    <td>{row?.client_name?.company_name}</td>
+                    <td style={{
+                          width: "20%",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                        }}>{row?.client_name?.company_name}</td>
                     <td>{row?.committee.name}</td>
                     <td>
                       <button

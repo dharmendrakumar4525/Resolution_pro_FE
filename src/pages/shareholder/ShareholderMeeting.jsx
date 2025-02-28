@@ -208,7 +208,16 @@ export default function ShareholderMeeting() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Meeting Name</th>
-                  <th>Client Name</th>
+                  <th
+                    style={{
+                      width: "20%",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    Client Name
+                  </th>
                   <th>Meeting Type</th>
                   <th>Start Time</th>
                   <th>Date</th>
@@ -224,7 +233,16 @@ export default function ShareholderMeeting() {
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.title}</td>
-                      <td>{row?.client_name?.company_name}</td>
+                      <td
+                        style={{
+                          width: "20%",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {row?.client_name?.company_name}
+                      </td>
                       <td>{row?.shareholder_meeting_type}</td>
                       <td style={{ textAlign: "center" }}>{row?.startTime}</td>
                       <td>{new Date(row?.date).toLocaleDateString()}</td>
