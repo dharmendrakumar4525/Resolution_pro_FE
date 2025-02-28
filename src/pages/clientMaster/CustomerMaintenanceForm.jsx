@@ -175,7 +175,7 @@ export default function CustomerMaintenanceForm() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-      const updatedValue = value === "" ? null : value; 
+    const updatedValue = value === "" ? null : value;
     if (id === "promoters_MGT_names") {
       // Split the input value by commas and update the array in the state
       setFormData((prevData) => ({
@@ -309,8 +309,8 @@ export default function CustomerMaintenanceForm() {
     e.preventDefault();
     setButtonLoading(true);
     const incorporationDate = new Date(formData?.date_of_incorporation);
-    const lastAGMDate = new Date(formData?.date_of_last_agm);
-    const bsDate = new Date(formData?.date_of_balance_sheet);
+    // const lastAGMDate = new Date(formData?.date_of_last_agm);
+    // const bsDate = new Date(formData?.date_of_balance_sheet);
     if (
       parseFloat(formData.paid_up_capital_equity) >
       parseFloat(formData.authorised_capital_equity)
@@ -332,19 +332,19 @@ export default function CustomerMaintenanceForm() {
       setButtonLoading(false);
       return;
     }
-    if (lastAGMDate <= incorporationDate) {
-      toast.error("Date of Last AGM must be after the Date of Incorporation.");
-      setButtonLoading(false);
-      return;
-    }
+    // if (lastAGMDate <= incorporationDate) {
+    //   toast.error("Date of Last AGM must be after the Date of Incorporation.");
+    //   setButtonLoading(false);
+    //   return;
+    // }
 
-    if (bsDate <= incorporationDate) {
-      toast.error(
-        "Balance Sheet Date must be after the Date of Incorporation."
-      );
-      setButtonLoading(false);
-      return;
-    }
+    // if (bsDate <= incorporationDate) {
+    //   toast.error(
+    //     "Balance Sheet Date must be after the Date of Incorporation."
+    //   );
+    //   setButtonLoading(false);
+    //   return;
+    // }
     const form = e.currentTarget;
     if (form.checkValidity() === false) {
       e.stopPropagation();
