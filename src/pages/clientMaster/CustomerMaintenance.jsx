@@ -328,11 +328,20 @@ export default function CustomerMaintenance() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Company Name</th>
+                  <th
+                    style={{
+                      width: "20%",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    Company Name
+                  </th>
 
                   <th>Client Manager</th>
-                  <th>Secretary </th>
-                  <th>Auditor</th>
+                  {/* <th>Secretary </th> */}
+                  {/* <th style={{ width: "150px" }}>Auditor</th> */}
                   <th>Directors</th>
                   <th>Shareholders</th>
                   <th>Associates</th>
@@ -348,13 +357,22 @@ export default function CustomerMaintenance() {
                     overlay={<Tooltip>Click to view</Tooltip>}
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
-                      <td>{row?.company_name}</td>
+                      <td
+                        style={{
+                          width: "20%",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {row?.company_name}
+                      </td>
 
                       <td className="">
                         {row?.alloted_manager[0]?.name || "-"}
                       </td>
-                      <td>{row?.secretary_detail?.name || "-"}</td>
-                      <td>{row?.auditor_detail?.name || "-"}</td>
+                      {/* <td>{row?.secretary_detail?.name || "-"}</td>
+                      <td>{row?.auditor_detail?.name || "-"}</td> */}
                       <td>
                         <button
                           style={{ height: "100%" }}

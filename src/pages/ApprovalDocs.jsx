@@ -90,7 +90,16 @@ export default function ApprovalDocs() {
           <tbody>
             {rows.map((row, index) => (
               <tr key={row?.id}>
-                <td>{row?.company_id?.company_name}</td>
+                <td
+                  style={{
+                    width: "30%",
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {row?.company_id?.company_name}
+                </td>
                 <td>{row?.meeting_id?.title}</td>
                 <td>{row?.meeting_type}</td>
 
