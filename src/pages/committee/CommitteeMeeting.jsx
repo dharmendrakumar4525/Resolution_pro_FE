@@ -209,7 +209,16 @@ export default function CommitteeMeeting() {
               <thead className="Master-Thead">
                 <tr>
                   <th>Meeting Name</th>
-                  <th>Client Name</th>
+                  <th
+                    style={{
+                      width: "20%",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    Client Name
+                  </th>
                   <th>Start Time</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -224,7 +233,16 @@ export default function CommitteeMeeting() {
                   >
                     <tr key={row?.id} onClick={() => handleRowClick(row)}>
                       <td>{row?.title}</td>
-                      <td>{row?.client_name?.company_name}</td>
+                      <td
+                        style={{
+                          width: "20%",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {row?.client_name?.company_name}
+                      </td>
                       <td style={{ textAlign: "center" }}>{row?.startTime}</td>
                       <td>{new Date(row?.date).toLocaleDateString()}</td>
 
