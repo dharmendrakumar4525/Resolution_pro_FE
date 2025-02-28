@@ -105,7 +105,14 @@ export default function AgendaTemplate() {
   };
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
-    navigate(`/agenda-generate/${row?.id}`, { state: row?.fileName });
+    navigate(`/agenda-generate/${row?.id}`, {
+      state: {
+        fileName: row?.fileName,
+        resolutionUrl: row?.resolutionUrl,
+        statementUrl: row?.statementUrl,
+        meetingType: row?.meetingType,
+      },
+    });
   };
   const handleViewResolutionTemplate = (row, e) => {
     e.stopPropagation();
@@ -430,13 +437,31 @@ export default function AgendaTemplate() {
             <Table bordered hover responsive className="Master-table mt-5">
               <thead className="Master-Thead">
                 <tr>
-                  <th>Name</th>
-                  <th>Title</th>
+                  <th
+                    style={{
+                      width: "20%",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    Name
+                  </th>
+                  <th
+                    style={{
+                      width: "30%",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    Title
+                  </th>
 
                   <th>Meeting Type</th>
-                  <th>Agenda Template</th>
-                  <th>Resolution Template</th>
-                  <th>Statement Template</th>
+                  <th>Template</th>
+                  {/* <th>Resolution Template</th>
+                  <th>Statement Template</th> */}
                   <th>Status</th>
                   <th>By</th>
                   {/* <th>Creation date</th> */}
@@ -456,8 +481,26 @@ export default function AgendaTemplate() {
           row?.status
         )}
       </td> */}
-                    <td>{row?.templateName}</td>
-                    <td className="title-wrap">{row?.title}</td>
+                    <td
+                      style={{
+                        width: "20%",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {row?.templateName}
+                    </td>
+                    <td
+                      style={{
+                        width: "30%",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {row?.title}
+                    </td>
                     <td>{row?.meetingType}</td>
                     <td>
                       <button
@@ -469,7 +512,7 @@ export default function AgendaTemplate() {
                         />
                       </button>
                     </td>
-                    <td>
+                    {/* <td>
                       <button
                         className="director-btn"
                         onClick={(e) => handleViewResolutionTemplate(row, e)}
@@ -489,7 +532,7 @@ export default function AgendaTemplate() {
                           style={{ height: "40px", alignContent: "center" }}
                         />
                       </button>
-                    </td>
+                    </td> */}
                     <td>{row?.status}</td>
                     <td>{row?.createdBy?.name}</td>
                     {/* <td>{new Date(row?.createdAt).toLocaleDateString()}</td> */}
