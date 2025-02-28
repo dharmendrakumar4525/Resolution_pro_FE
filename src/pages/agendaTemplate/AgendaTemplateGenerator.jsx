@@ -43,19 +43,26 @@ const AgendaTemplateGenerator = () => {
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [editorContent, setEditorContent] = useState("");
+  const [resEditorContent, setResEditorContent] = useState("");
+  const [statEditorContent, setStatEditorContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentDocName, setCurrentDocName] = useState("");
   const [inputFields, setInputFields] = useState({});
   const [confirmedFields, setConfirmedFields] = useState({});
   const [docFile, setDocFile] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [resolutionButtonLoading, setResolutionButtonLoading] = useState(false);
+  const [statementButtonLoading, setStatementButtonLoading] = useState(false);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const editor = useRef(null);
-
-  const fileUrl = location.state;
+  const fileUrl = location.state.fileName;
+  const resolutionUrl = location.state.resolutionUrl;
+  const statementUrl = location.state.statementUrl;
+  const meetingType = location.state.meetingType;
+  console.log(resolutionUrl, statementUrl, meetingType, "bccc");
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -82,43 +89,9 @@ const AgendaTemplateGenerator = () => {
 
     fetchData(page);
   }, [page, token]);
-  const handleEditorChange = (content) => {
-    setEditorContent(content);
 
-    // Regex to detect placeholders in the format ${placeholder}
-    const regex = /\$\{([a-zA-Z0-9_]+)\}/g;
-    let match;
-    const fields = {};
-
-    while ((match = regex.exec(content)) !== null) {
-      const placeholder = match[1];
-      fields[placeholder] = inputFields[placeholder] || "";
-    }
-
-    setInputFields(fields);
-  };
-
-  const handleInputChange = (placeholder, value) => {
-    setInputFields((prevState) => ({
-      ...prevState,
-      [placeholder]: value,
-    }));
-  };
   const handlePageChange = (newPage) => {
     setPage(newPage);
-  };
-
-  const handleConfirm = (placeholder) => {
-    const value = inputFields[placeholder] || placeholder;
-    const updatedContent = editorContent.replace(
-      new RegExp(`\\$\\{${placeholder}\\}`, "g"),
-      value
-    );
-    setEditorContent(updatedContent);
-    setConfirmedFields((prevState) => ({
-      ...prevState,
-      [placeholder]: true,
-    }));
   };
 
   const handleFileLoad = async (url) => {
@@ -129,9 +102,26 @@ const AgendaTemplateGenerator = () => {
     }
   };
 
+  const handleResolutionFileLoad = async (url) => {
+    try {
+      setResEditorContent(url);
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+  const handleStatementFileLoad = async (url) => {
+    try {
+      setStatEditorContent(url);
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+
   useEffect(() => {
     handleFileLoad(fileUrl);
-  }, [fileUrl]);
+    handleResolutionFileLoad(resolutionUrl);
+    handleStatementFileLoad(statementUrl);
+  }, []);
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
 
@@ -164,7 +154,6 @@ const AgendaTemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/agenda-template");
       } else {
         toast.error("Failed to save the document.");
       }
@@ -174,68 +163,79 @@ const AgendaTemplateGenerator = () => {
       setButtonLoading(false);
     }
   };
-  // Save changes to an existing document
-  const saveChanges = () => {
-    const updatedDocs = documents.map((doc) =>
-      doc.name === currentDocName ? { ...doc, content: editorContent } : doc
-    );
-    setDocuments(updatedDocs);
-    setEditorContent("");
-    setCurrentDocName("");
-    setIsEditing(false);
+  const saveResDocument = async () => {
+    setResolutionButtonLoading(true);
+    const formData = new FormData();
+    formData.append("resolutionUrl", resEditorContent);
+
+    try {
+      // Make a PATCH request with the document
+      const response = await fetch(`${apiURL}/agenda/${id}`, {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: formData,
+      });
+      console.log(formData, "tokennn2");
+      if (response.ok) {
+        toast.success("Resolution saved successfully!");
+
+        // Optionally update your document list
+        const newDoc = {
+          name: currentDocName,
+          content: editorContent,
+        };
+
+        setDocuments([...documents, newDoc]);
+      } else {
+        toast.error("Failed to save the document.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while saving the document.");
+    } finally {
+      setResolutionButtonLoading(false);
+    }
   };
 
-  const hasUnconfirmedPlaceholders = Object.keys(inputFields).some(
-    (placeholder) => !confirmedFields[placeholder]
-  );
-  const config = {
-    style: {
-      padding: "20px",
-    },
-    toolbarSticky: false,
-    buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "font",
-      "fontsize",
-      "paragraph",
-      "|",
-      "align",
-      "undo",
-      "redo",
-      "|",
-      "hr",
-      "table",
-      "link",
-      "fullsize",
-    ],
-    removeButtons: [
-      "source",
-      "image",
-      "video",
-      "print",
-      "spellcheck",
-      "speechRecognize",
-      "about",
-      "undo",
-      "redo",
-      "showAll",
-      "file",
+  const saveStatementDocument = async () => {
+    setStatementButtonLoading(true);
 
-      "ai-assistant",
-      "ai-commands",
-      "preview",
-      "dots",
-    ],
-    extraButtons: [],
-    uploader: { insertImageAsBase64URI: false },
-    showXPathInStatusbar: false,
+    const formData = new FormData();
+    formData.append("statementUrl", editorContent);
+
+    try {
+      // Make a PATCH request with the document
+      const response = await fetch(`${apiURL}/agenda/${id}`, {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: formData,
+      });
+      console.log(formData, "tokennn2");
+      if (response.ok) {
+        toast.success("Statement saved successfully!");
+
+        // Optionally update your document list
+        const newDoc = {
+          name: currentDocName,
+          content: editorContent,
+        };
+
+        setDocuments([...documents, newDoc]);
+      } else {
+        toast.error("Failed to save the document.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while saving the document.");
+    } finally {
+      setStatementButtonLoading(false);
+    }
   };
 
   return (
@@ -247,7 +247,6 @@ const AgendaTemplateGenerator = () => {
 
           <JoditEditor
             ref={editor}
-            //config={config}
             value={editorContent}
             onChange={(newContent) => {
               setEditorContent(newContent);
@@ -267,8 +266,76 @@ const AgendaTemplateGenerator = () => {
               "Save Agenda"
             )}
           </Button>
+          <div className="mt-5">
+            <h1 className="mb-4">Resolution Template Generator</h1>
+
+            <JoditEditor
+              ref={editor}
+              //config={config}
+              value={resEditorContent}
+              onChange={(newContent) => {
+                setResEditorContent(newContent);
+              }}
+            />
+
+            <Button
+              variant="secondary"
+              onClick={saveResDocument}
+              className="mt-5"
+            >
+              {resolutionButtonLoading ? (
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                "Save Resolution"
+              )}
+            </Button>
+          </div>
+          <div className="mt-5">
+            {meetingType === "shareholder_meeting" && (
+              <>
+                <h1 className="mb-4">
+                  Explanatory Statement Template Generator
+                </h1>
+
+                <JoditEditor
+                  ref={editor}
+                  value={statEditorContent}
+                  onChange={(newContent) => {
+                    setStatEditorContent(newContent);
+                  }}
+                />
+
+                <Button
+                  variant="secondary"
+                  onClick={saveStatementDocument}
+                  className="mt-5"
+                >
+                  {statementButtonLoading ? (
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    "Save Statement"
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-        <div className="rightContainer">
+        <div
+          className="rightContainer"
+          style={{ position: "fixed", marginLeft: "55%", bottom: "10%" }}
+        >
           <h4 className="h4-heading-style mt-4">System Variables</h4>
 
           {loading ? (
@@ -310,7 +377,7 @@ const AgendaTemplateGenerator = () => {
             </div>
           )}
           <Button variant="danger" onClick={() => navigate(-1)}>
-            Exit Without Saving
+            Go Back
           </Button>
         </div>
       </div>
