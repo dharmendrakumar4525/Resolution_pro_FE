@@ -128,7 +128,9 @@ export default function DirectorForm() {
         });
 
         if (!response.ok) {
-          toast.error("Failed to add director");
+          const errorData = await response.json();
+          toast.error(errorData?.message || "Failed to add director");
+          return;
         }
 
         const responseData = await response.json(); // Extract the response JSON
