@@ -365,9 +365,6 @@ export default function DIREditor() {
       return new Date(isoDate).toLocaleDateString("en-GB");
     };
     const tableRows = dirRelatedParty
-      ?.filter(
-        (party) => party.forms_to_be_collected === "both MBP-1 and DIR-8"
-      )
       ?.map(
         (party, index) => `
     <tr>
