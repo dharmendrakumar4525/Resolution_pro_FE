@@ -335,12 +335,11 @@ export default function ShareholderAgendaEditor() {
           let formulaRes = systemVariable.formula;
           let value;
           function getOrdinalSuffix(number) {
-            const suffixes = ["TH", "ST", "ND", "RD"];
+            const suffixes = ["th", "st", "nd", "rd"];
             const value = number % 100;
-            return (
-              number +
-              (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-            );
+            const suffix =
+              suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+            return `${number}<sup style="color:black">${suffix}</sup>`;
           }
           if (res == "count") {
             const selectedId = id; // Replace with the id of the current meeting
@@ -608,7 +607,7 @@ export default function ShareholderAgendaEditor() {
       const month = meeting.getMonth() + 1; // JS months are 0-based
 
       let fyEndYear = month >= 1 && month <= 3 ? year : year + 1;
-      return `31/3/${fyEndYear}`;
+      return `31 March ${fyEndYear}`;
     }
 
     if (urls) {
@@ -690,7 +689,7 @@ export default function ShareholderAgendaEditor() {
       <div style="text-align: right;">
       <br/><h5>By the order of the Board
       of </h5>
-       #{company_name}
+      <b> #{company_name}</b>
 <h6>
 Name: \${name}</h6>
 <h6> Director</h6>
