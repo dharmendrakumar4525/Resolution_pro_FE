@@ -316,12 +316,11 @@ const DocumentEditor = () => {
           let formulaRes = systemVariable.formula;
           let value;
           function getOrdinalSuffix(number) {
-            const suffixes = ["TH", "ST", "ND", "RD"];
+            const suffixes = ["th", "st", "nd", "rd"];
             const value = number % 100;
-            return (
-              number +
-              (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0])
-            );
+            const suffix =
+              suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+            return `${number}<sup style="color:black">${suffix}</sup>`;
           }
           if (res == "count") {
             const selectedId = id; // Replace with the id of the current meeting
@@ -583,14 +582,14 @@ const DocumentEditor = () => {
     if (page == "board") {
       if (prevCSR.length >= 1) {
         let formattedDate = await getFormattedDate(prevCSR[0]?.date);
-        csrContent += `<h5>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</h5>
+        csrContent += `<b>${count}. To note the minutes of previous Corporate Social Responsibility Committee Meeting held on ${formattedDate}</b>
 
-      The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
+      <br/>The minutes of the previous meeting of the Corporate Social Responsibility Committee of the Board of Directors (“CSR Committee") held on ${formattedDate}, is proposed to be placed before the Board of Directors for noting. The same is enclosed as Annexure-2.`;
         count++;
       }
     }
     if (circleResolution?.length >= 1) {
-      csrContent += `<br/><h5>${count}. To take note of the resolutions passed by the board by way of Circulation</h5>
+      csrContent += `<br/><b>${count}. To take note of the resolutions passed by the board by way of Circulation</b><br/>
 
       As per the provisions of the Companies Act, 2013, circular resolutions, if any, passed by the Board shall be noted at the subsequent meeting and recorded in the minutes of such meeting. Accordingly, the Board is requested to note the below circular resolutions approved by the Board between the meeting held on #{prev_board_meeting} and this meeting. The same is enclosed as Annexure-3.`;
 
@@ -619,9 +618,9 @@ const DocumentEditor = () => {
           if (url?.title) {
             const title = url?.title || "Untitled";
             if (title === "For #{company_name}") {
-              combinedContent += `<p>${title}</p>\n`;
+              combinedContent += `<b>${title}</b>\n`;
             } else {
-              combinedContent += `<br/><p>${count}. ${title}</p>\n`;
+              combinedContent += `<br/><p><strong>${count}. ${title}</strong></p>\n`;
               count++;
             }
           }
@@ -648,7 +647,7 @@ const DocumentEditor = () => {
       }
 
       let footerContent = `
-      <br/><p>For #{company_name}</p><p></p>
+      <br/><p>For <b>#{company_name}</b></p><p></p>
 
 
 <h6>
