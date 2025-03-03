@@ -247,7 +247,9 @@ export default function DirectorRelatedParty() {
                     controlId="forms_to_be_collected"
                     className="mb-3"
                   >
-                    <Form.Label>Forms to be Collected</Form.Label>
+                    <Form.Label>
+                      Forms to be Collected<sup>*</sup>
+                    </Form.Label>
                     <Form.Select
                       value={formData.forms_to_be_collected}
                       onChange={handleChange}
@@ -256,7 +258,7 @@ export default function DirectorRelatedParty() {
                       <option value="" disabled>
                         Select Form
                       </option>
-                      <option value="MBP-1">MBP-1</option>
+                      <option value="DIR-8">DIR-8</option>
                       <option value="both MBP-1 and DIR-8">
                         Both MBP-1 and DIR-8
                       </option>
@@ -273,7 +275,6 @@ export default function DirectorRelatedParty() {
                     <Form.Select
                       value={formData.type_of_related_party}
                       onChange={handleChange}
-                      required
                     >
                       <option value="" disabled>
                         Select Type
@@ -310,19 +311,24 @@ export default function DirectorRelatedParty() {
                     controlId="related_party_address"
                     className="mb-3"
                   >
-                    <Form.Label>Address</Form.Label>
+                    <Form.Label>
+                      Address<sup>*</sup>
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       value={formData.related_party_address}
                       onChange={handleChange}
                       placeholder="Enter Address"
+                      required
                     />
                   </Form.Group>
                 </Col>
 
                 <Col md={6} className="mt-2">
                   <Form.Group controlId="nature_of_interest" className="mb-3">
-                    <Form.Label>Nature of Interest</Form.Label>
+                    <Form.Label>
+                      Nature of Interest<sup>*</sup>
+                    </Form.Label>
                     <Form.Select
                       value={formData.nature_of_interest}
                       onChange={handleChange}
@@ -351,12 +357,13 @@ export default function DirectorRelatedParty() {
                     className="mb-3"
                   >
                     <Form.Label>
-                      Date of Interest Arose / Appointment
+                      Date of Interest Arose / Appointment<sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="date"
                       value={formData.date_of_interest_arose_or_appointment}
                       onChange={handleChange}
+                      required
                     />
                   </Form.Group>
                 </Col>
@@ -368,6 +375,7 @@ export default function DirectorRelatedParty() {
                   >
                     <Form.Label>
                       Date of Interest Changed / Resigned / Cessation
+                      <sup>*</sup>
                     </Form.Label>
                     <Form.Control
                       type="date"
@@ -375,6 +383,7 @@ export default function DirectorRelatedParty() {
                         formData.date_of_interest_changed_resigned_or_cessation
                       }
                       onChange={handleChange}
+                      required
                     />
                   </Form.Group>
                 </Col>
