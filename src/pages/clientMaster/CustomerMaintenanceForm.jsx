@@ -402,6 +402,17 @@ export default function CustomerMaintenanceForm() {
     }
     setValidated(true);
   };
+  const subCategoryOptions = [
+    { value: "Non-government Company", label: "Non-government Company" },
+    {
+      value: "Subsidiary of a foreign company",
+      label: "Subsidiary of a foreign company",
+    },
+  ];
+  const companyTypeOptions = [
+    { value: "small_company", label: "Small Company" },
+    { value: "non_small_company", label: "Non-Small Company" },
+  ];
   return (
     <Container>
       <div className="customer-form-container mt-4">
@@ -491,16 +502,19 @@ export default function CustomerMaintenanceForm() {
                     <Form.Label>
                       Sub-Category of the Company<sup>*</sup>
                     </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData?.company_subcategory}
-                      onChange={handleChange}
-                      placeholder="Enter Company Subcategory"
-                      isInvalid={!!errors.company_subcategory}
+                    <Select
+                      options={subCategoryOptions}
+                      value={subCategoryOptions.find(
+                        (option) =>
+                          option.value === formData?.company_subcategory
+                      )}
+                      onChange={(selectedOption) =>
+                        setFormData((prevData) => ({
+                          ...prevData,
+                          company_subcategory: selectedOption?.value || null,
+                        }))
+                      }
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.company_subcategory}
-                    </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
                 <Col md={6} lg={4} className="mt-3">
@@ -900,17 +914,18 @@ export default function CustomerMaintenanceForm() {
                 <Col md={6} lg={4} className="mt-3">
                   <Form.Group controlId="company_type">
                     <Form.Label>Company Type</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={formData?.company_type}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Company Type</option>
-                      <option value="small_company">Small Company</option>
-                      <option value="non_small_company">
-                        Non-Small Company
-                      </option>
-                    </Form.Control>
+                    <Select
+                      options={companyTypeOptions}
+                      value={companyTypeOptions.find(
+                        (option) => option.value === formData?.company_type
+                      )}
+                      onChange={(selectedOption) =>
+                        setFormData((prevData) => ({
+                          ...prevData,
+                          company_type: selectedOption?.value || null,
+                        }))
+                      }
+                    />
                   </Form.Group>
                 </Col>
                 <Col md={6} lg={4} className="mt-3">
