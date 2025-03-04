@@ -29,6 +29,7 @@ export default function Associates() {
     name: "",
     address: "",
     CIN_FCRN: "",
+    shareholding_percentage: "",
   });
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
@@ -62,6 +63,7 @@ export default function Associates() {
       name: "",
       address: "",
       CIN_FCRN: "",
+      shareholding_percentage: "",
     });
     setEditingRow(null);
     setOpenAddModal(true);
@@ -84,15 +86,25 @@ export default function Associates() {
     setButtonLoading(true);
     try {
       if (editingRow) {
-        await fetch(`${apiURL}/client-associate-company/${editingRow?.id}`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        const response = await fetch(
+          `${apiURL}/client-associate-company/${editingRow?.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
 
-          body: JSON.stringify(formData),
-        });
+            body: JSON.stringify(formData),
+          }
+        );
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          toast.error(errorMessage.message);
+          setButtonLoading(false);
+
+          return;
+        }
         setRefresh((prev) => !prev);
 
         toast.success("Associate updated successfully");
@@ -124,6 +136,7 @@ export default function Associates() {
         name: "",
         address: "",
         CIN_FCRN: "",
+        shareholding_percentage: "",
       });
     } catch (error) {
       toast.error(error.message);
@@ -168,6 +181,7 @@ export default function Associates() {
       name: row?.name || "",
       address: row?.address || "",
       CIN_FCRN: row?.CIN_FCRN || "",
+      shareholding_percentage: row?.shareholding_percentage || "",
     });
     setOpenAddModal(true);
   };
@@ -200,12 +214,26 @@ export default function Associates() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="name" className="mb-3">
-                <Form.Label>Name</Form.Label>
+                <Form.Label>
+                  Name<sup>*</sup>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter Name"
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="CIN_FCRN" className="mb-3">
+                <Form.Label>
+                  CIN/FCRN<sup>*</sup>
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.CIN_FCRN}
+                  onChange={handleChange}
+                  placeholder="Enter CIN/FCRN"
                   required
                 />
               </Form.Group>
@@ -219,14 +247,13 @@ export default function Associates() {
                   placeholder="Enter Address"
                 />
               </Form.Group>
-
-              <Form.Group controlId="CIN_FCRN" className="mb-3">
-                <Form.Label>CIN/FCRN</Form.Label>
+              <Form.Group controlId="shareholding_percentage" className="mb-3">
+                <Form.Label>Shareholding percentage</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={formData.CIN_FCRN}
+                  type="number"
+                  value={formData.shareholding_percentage}
                   onChange={handleChange}
-                  placeholder="Enter CIN/FCRN"
+                  placeholder="Enter Shareholding percentage"
                 />
               </Form.Group>
 
