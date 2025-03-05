@@ -294,6 +294,7 @@ const NoticeEditor = () => {
     const handleMultipleFilesAddOn = async (dynamicResolution) => {
       try {
         let count = 5;
+
         const fetchPromises = await dynamicResolution.map(async (url) => {
           if (url?.templateName) {
             const content = `<p>${count}. ${url.templateName}</p>`;
@@ -319,7 +320,13 @@ const NoticeEditor = () => {
 `;
 
         console.log(initializedContent, "hjkl");
-        setEditorContent(initializedContent + combinedContent + footerContent);
+        if (meetInfo?.notes?.templateName == "Short Notice") {
+          setEditorContent(initializedContent + footerContent);
+        } else {
+          setEditorContent(
+            initializedContent + combinedContent + footerContent
+          );
+        }
       } catch (error) {
         console.error("Error combining content:", error);
       }
