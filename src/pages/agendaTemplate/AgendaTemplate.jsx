@@ -24,17 +24,18 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
+import Select from "react-select";
 
 export default function AgendaTemplate() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [agendaList, setAgendaList] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [refresh, setRefresh] = useState(true);
-  const [filterName, setFilterName] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [formData, setFormData] = useState({
@@ -46,6 +47,10 @@ export default function AgendaTemplate() {
     status: "",
     by: user.id,
   });
+  const [filterSearch, setFilterSearch] = useState({
+    agenda_name: "",
+    meetingType: "",
+  });
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
@@ -54,25 +59,23 @@ export default function AgendaTemplate() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/agenda`, {
+        let url = `${apiURL}/agenda`;
+
+        if (filterSearch.meetingType) {
+          url += `?meetingType=${filterSearch.meetingType}`;
+        }
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
+
         const data = await response.json();
         console.log(data, "daata");
         const pageSize = 10;
         const filteredData = data.results.filter((row) => {
-          if (user.role === "672c47c238903b464c9d2920") {
-            return (
-              (filterName === "" ||
-                row?.templateName
-                  ?.toLowerCase()
-                  .includes(filterName.toLowerCase())) &&
-              (filterStatus === "" || row?.status === filterStatus)
-            );
-          } else if (user.role === "672c47cb38903b464c9d2923") {
+          if (user.role === "672c47cb38903b464c9d2923") {
             return (
               row?.status === "usable" ||
               (row?.status === "draft" && row?.createdBy?.id === user.id)
@@ -92,13 +95,41 @@ export default function AgendaTemplate() {
     };
 
     fetchAllData();
-  }, [page, user.role, user.id, refresh, filterName, filterStatus]);
+  }, [
+    page,
+    user.role,
+    user.id,
+    refresh,
+    filterStatus,
+    filterSearch.meetingType,
+  ]);
+  useEffect(() => {
+    const fetchAgendaFilterData = async () => {
+      setLoading(true);
+      try {
+        const url = `${apiURL}/agenda`;
+
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setAgendaList(data.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAgendaFilterData();
+  }, []);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    if (name == "filterName") {
-      setFilterName(value);
-    } else if (name === "filterStatus") {
+    if (name === "filterStatus") {
       setFilterStatus(value);
     }
     setPage(1);
@@ -279,21 +310,96 @@ export default function AgendaTemplate() {
   const hasPermission = (action) =>
     userPermissions.some((perm) => perm.value === action && perm.isSelected);
   console.log(rows, "rows");
+
+  const agendaOptions = agendaList?.map((agenda) => ({
+    value: agenda.id,
+    label: agenda.templateName,
+  }));
+  const meetingTypes = [
+    { value: "board_meeting", label: "Board Meeting" },
+    { value: "committee_meeting", label: "Committee Meeting" },
+    { value: "shareholder_meeting", label: "Shareholder Meeting" },
+  ];
+  const handleFilterNameChange = async ({ target }) => {
+    if (!target) return;
+    const { id, value } = target || {};
+
+    setFilterSearch((prevData) => ({ ...prevData, [id]: value }));
+
+    if (id === "agenda_name" && value) {
+      const token = localStorage.getItem("refreshToken");
+
+      try {
+        const response = await fetch(`${apiURL}/agenda/${value}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch data");
+
+        const data = await response.json();
+        // console.log(data);
+        setRows([data]);
+      } catch (error) {
+        console.error("Error fetching agenda:", error);
+      }
+    } else {
+      setRefresh((prev) => !prev);
+    }
+  };
   return (
     <>
       <Container fluid className="styled-table pt-3 mt-4 pb-3">
         <div className="d-flex align-items-center justify-content-between mt-3 head-box">
           <h4 className="h4-heading-style">Agenda Template</h4>
-          {user.role === "672c47c238903b464c9d2920" && ( // Render filter only for admin
+          <Select
+            options={agendaOptions}
+            isClearable
+            value={agendaOptions.find(
+              (option) => option.value === filterSearch.agenda_name
+            )}
+            onChange={(selectedOption) =>
+              handleFilterNameChange({
+                target: {
+                  id: "agenda_name",
+                  value: selectedOption ? selectedOption.value : "",
+                },
+              })
+            }
+            placeholder="Search Agenda"
+            styles={{
+              container: (base) => ({
+                ...base,
+                width: "300px",
+              }),
+            }}
+          />
+          <Select
+            options={meetingTypes}
+            isClearable
+            value={meetingTypes.find(
+              (option) => option.value === filterSearch.meetingType
+            )}
+            onChange={(selectedOption) =>
+              handleFilterNameChange({
+                target: {
+                  id: "meetingType",
+                  value: selectedOption ? selectedOption.value : "",
+                },
+              })
+            }
+            placeholder="Select Meeting Type"
+            styles={{
+              container: (base) => ({
+                ...base,
+                width: "300px",
+              }),
+            }}
+          />
+          {user.role === "672c47c238903b464c9d2920" && (
             <Form className="d-flex">
-              <Form.Control
-                type="text"
-                name="filterName"
-                placeholder="Search Template"
-                value={filterName}
-                onChange={handleFilterChange}
-                className="me-2"
-              />
               <Form.Select
                 name="filterStatus"
                 value={filterStatus}
