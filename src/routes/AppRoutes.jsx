@@ -72,6 +72,7 @@ import DirectorRelatedParty from "../pages/clientMaster/DirectorRelatedParty";
 import DirectorDocuments from "../pages/clientMaster/directorDocuments/DirectorDocuments";
 import DIREditor from "../pages/clientMaster/directorDocuments/DIREditor";
 import MBPEditor from "../pages/clientMaster/directorDocuments/MBPEditor";
+import ShareholderForm from "../pages/clientMaster/ShareholderForm";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -689,16 +690,7 @@ const AppRoutes = () => {
           )
         }
       />
-      <Route
-        path="/directors/:id"
-        element={
-          isAuthenticated ? (
-            <RouteWithSidebar element={<Directors />} />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
+
       <Route
         path="/director-related-party-form/:id"
         element={
@@ -764,6 +756,26 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<Shareholders />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-form/:shareholderId"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderForm />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-form"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderForm />} />
           ) : (
             <Navigate to="/login" />
           )
