@@ -73,6 +73,7 @@ import DirectorDocuments from "../pages/clientMaster/directorDocuments/DirectorD
 import DIREditor from "../pages/clientMaster/directorDocuments/DIREditor";
 import MBPEditor from "../pages/clientMaster/directorDocuments/MBPEditor";
 import ShareholderForm from "../pages/clientMaster/ShareholderForm";
+import ShareholderMomEditor from "../pages/shareholder/ShareholderMomEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -224,6 +225,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<ShareholderResolutionEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/shareholder-mom-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShareholderMomEditor />} />
           ) : (
             <Navigate to="/login" />
           )
