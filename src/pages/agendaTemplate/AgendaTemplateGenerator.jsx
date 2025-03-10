@@ -45,6 +45,7 @@ const AgendaTemplateGenerator = () => {
   const [editorContent, setEditorContent] = useState("");
   const [resEditorContent, setResEditorContent] = useState("");
   const [statEditorContent, setStatEditorContent] = useState("");
+  const [momEditorContent, setMOMEditorContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentDocName, setCurrentDocName] = useState("");
   const [inputFields, setInputFields] = useState({});
@@ -53,6 +54,7 @@ const AgendaTemplateGenerator = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [resolutionButtonLoading, setResolutionButtonLoading] = useState(false);
   const [statementButtonLoading, setStatementButtonLoading] = useState(false);
+  const [momButtonLoading, setMOMButtonLoading] = useState(false);
   const token = localStorage.getItem("refreshToken");
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,8 +63,10 @@ const AgendaTemplateGenerator = () => {
   const fileUrl = location.state.fileName;
   const resolutionUrl = location.state.resolutionUrl;
   const statementUrl = location.state.statementUrl;
+  const momUrl = location.state.momUrl;
   const meetingType = location.state.meetingType;
-  console.log(resolutionUrl, statementUrl, meetingType, "bccc");
+  // console.log(resolutionUrl, statementUrl, meetingType, "bccc");
+  const previousPage = location.state?.agendaPage || 1;
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -116,11 +120,24 @@ const AgendaTemplateGenerator = () => {
       console.error("Error fetching or converting the file:", error);
     }
   };
+  const handleMOMFileLoad = async (url) => {
+    try {
+      setMOMEditorContent(url);
+    } catch (error) {
+      console.error("Error fetching or converting the file:", error);
+    }
+  };
+  useEffect(() => {
+    if (location.state?.page) {
+      setPage(location.state.page);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     handleFileLoad(fileUrl);
     handleResolutionFileLoad(resolutionUrl);
     handleStatementFileLoad(statementUrl);
+    handleMOMFileLoad(momUrl);
   }, []);
 
   // Parse HTML content to docx-compatible Paragraphs and TextRuns
@@ -146,14 +163,6 @@ const AgendaTemplateGenerator = () => {
       console.log(formData, "tokennn2");
       if (response.ok) {
         toast.success("Agenda saved successfully!");
-
-        // Optionally update your document list
-        const newDoc = {
-          name: currentDocName,
-          content: editorContent,
-        };
-
-        setDocuments([...documents, newDoc]);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -182,14 +191,6 @@ const AgendaTemplateGenerator = () => {
       console.log(formData, "tokennn2");
       if (response.ok) {
         toast.success("Resolution saved successfully!");
-
-        // Optionally update your document list
-        const newDoc = {
-          name: currentDocName,
-          content: editorContent,
-        };
-
-        setDocuments([...documents, newDoc]);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -204,7 +205,7 @@ const AgendaTemplateGenerator = () => {
     setStatementButtonLoading(true);
 
     const formData = new FormData();
-    formData.append("statementUrl", editorContent);
+    formData.append("statementUrl", statEditorContent);
 
     try {
       // Make a PATCH request with the document
@@ -220,14 +221,6 @@ const AgendaTemplateGenerator = () => {
       console.log(formData, "tokennn2");
       if (response.ok) {
         toast.success("Statement saved successfully!");
-
-        // Optionally update your document list
-        const newDoc = {
-          name: currentDocName,
-          content: editorContent,
-        };
-
-        setDocuments([...documents, newDoc]);
       } else {
         toast.error("Failed to save the document.");
       }
@@ -236,6 +229,38 @@ const AgendaTemplateGenerator = () => {
     } finally {
       setStatementButtonLoading(false);
     }
+  };
+  const saveMOMDocument = async () => {
+    setMOMButtonLoading(true);
+
+    const formData = new FormData();
+    formData.append("momUrl", momEditorContent);
+
+    try {
+      // Make a PATCH request with the document
+      const response = await fetch(`${apiURL}/agenda/${id}`, {
+        method: "PATCH",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: formData,
+      });
+      console.log(formData, "tokennn2");
+      if (response.ok) {
+        toast.success("MOM saved successfully!");
+      } else {
+        toast.error("Failed to save the document.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while saving the document.");
+    } finally {
+      setMOMButtonLoading(false);
+    }
+  };
+  const handleBack = () => {
+    navigate("/agenda-template", { state: { page: previousPage } });
   };
 
   return (
@@ -331,6 +356,37 @@ const AgendaTemplateGenerator = () => {
               </>
             )}
           </div>
+          <div className="mt-5">
+            <>
+              <h1 className="mb-4">MOM Template Generator</h1>
+
+              <JoditEditor
+                ref={editor}
+                value={momEditorContent}
+                onChange={(newContent) => {
+                  setMOMEditorContent(newContent);
+                }}
+              />
+
+              <Button
+                variant="secondary"
+                onClick={saveMOMDocument}
+                className="mt-5"
+              >
+                {momButtonLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  "Save MOM"
+                )}
+              </Button>
+            </>
+          </div>
         </div>
         <div
           className="rightContainer"
@@ -376,7 +432,7 @@ const AgendaTemplateGenerator = () => {
               </Pagination>
             </div>
           )}
-          <Button variant="danger" onClick={() => navigate(-1)}>
+          <Button variant="danger" onClick={handleBack}>
             Go Back
           </Button>
         </div>
