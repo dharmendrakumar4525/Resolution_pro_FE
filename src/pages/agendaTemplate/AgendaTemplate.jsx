@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiURL } from "../../API/api";
 import {
   Button,
@@ -54,6 +54,7 @@ export default function AgendaTemplate() {
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
+  const location = useLocation();
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -127,6 +128,12 @@ export default function AgendaTemplate() {
     fetchAgendaFilterData();
   }, []);
 
+  useEffect(() => {
+    if (location?.state?.page) {
+      setPage(location?.state.page);
+    }
+  }, [location?.state]);
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     if (name === "filterStatus") {
@@ -141,7 +148,9 @@ export default function AgendaTemplate() {
         fileName: row?.fileName,
         resolutionUrl: row?.resolutionUrl,
         statementUrl: row?.statementUrl,
+        momUrl: row?.momUrl,
         meetingType: row?.meetingType,
+        agendaPage: page,
       },
     });
   };
