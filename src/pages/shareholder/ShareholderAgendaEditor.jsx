@@ -601,12 +601,12 @@ export default function ShareholderAgendaEditor() {
       return `${day}/${month}/${year}`; // Fo
       // const result = `${day}/${month}/${year}`;
     }
-    function getFinancialYearEndDate(meetingDate) {
+    function getPreviousFinancialYearEndDate(meetingDate) {
       const meeting = new Date(meetingDate);
       const year = meeting.getFullYear();
       const month = meeting.getMonth() + 1; // JS months are 0-based
 
-      let fyEndYear = month >= 1 && month <= 3 ? year : year + 1;
+      let fyEndYear = month >= 1 && month <= 3 ? year : year ;
       return `31 March ${fyEndYear}`;
     }
 
@@ -617,7 +617,7 @@ export default function ShareholderAgendaEditor() {
       if (templateName === "AGM Physical Agenda") {
         combinedContent += `<br/><p>${count}. To receive, consider and adopt the audited Balance Sheet as at ${getFinancialYearEndDate(
           meetInfo?.date
-        )}, the Statement of Profit and Loss for the Financial Year ended ${getFinancialYearEndDate(
+        )}, the Statement of Profit and Loss for the Financial Year ended ${getPreviousFinancialYearEndDate(
           meetInfo?.date
         )}, Statement of changes in equity and Statement of Cash flow of the Company for the Year ended on even date together with the Schedules and Notes to Accounts and the Report of the Auditors and Directors (including annexures) thereon.</p>\n`;
         count++;
