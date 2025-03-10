@@ -188,7 +188,7 @@ export default function ShareholderDocuments() {
     });
   };
   const handleMOMEditClick = (url, index) => {
-    navigate(`/mom-edit/${id}`, {
+    navigate(`/shareholder-mom-edit/${id}`, {
       state: {
         index,
         fileUrl: url,
