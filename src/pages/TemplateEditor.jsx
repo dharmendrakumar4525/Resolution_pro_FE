@@ -320,7 +320,7 @@ const DocumentEditor = () => {
             const value = number % 100;
             const suffix =
               suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
-            return `${number}<sup style="color:black">${suffix}</sup>`;
+            return `${number}<sup style="color:#4a5073">${suffix}</sup>`;
           }
           if (res == "count") {
             const selectedId = id; // Replace with the id of the current meeting
@@ -386,7 +386,7 @@ const DocumentEditor = () => {
               const date = dateObj.getDate();
               const year = dateObj.getFullYear();
 
-              return `${day}, ${month} ${getOrdinalSuffix(date)} ${year}`;
+              return `${day}, ${month} ${date}, ${year}`;
             }
 
             let result = getFormattedDate(meetInfo[res]);
