@@ -26,6 +26,7 @@ export default function CommitteeDocuments() {
   const [rows, setRows] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [notice, setNotice] = useState({});
+  const [shortNotice, setShortNotice] = useState({});
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -69,6 +70,7 @@ export default function CommitteeDocuments() {
         console.log(data, "agena");
         setParticipants(data?.participants || []);
         setNotice(data?.notes || {});
+        setShortNotice(data?.shortNotice || {});
         setMinutes(data?.mom || {});
         setAcknowledgement(data?.acknowledgement || {});
         setAttendance(data?.attendance || {});
@@ -170,6 +172,29 @@ export default function CommitteeDocuments() {
   };
 
   const handleNoticeView = (url, index) => {
+    if (url == null) {
+      toast.warn("Please save the related document first");
+      return;
+    }
+    navigate(`/template-group-meeting-view/${id}}`, {
+      state: {
+        index,
+        fileUrl: url,
+        page: "committee",
+      },
+    });
+  };
+  const handleShortNoticeEditClick = (url, index) => {
+    navigate(`/short-notice-edit/${id}`, {
+      state: {
+        index,
+        fileUrl: url,
+        page: "committee",
+      },
+    });
+  };
+
+  const handleShortNoticeView = (url, index) => {
     if (url == null) {
       toast.warn("Please save the related document first");
       return;
@@ -515,6 +540,7 @@ export default function CommitteeDocuments() {
     ...resolutions.map((row) => row?.filedocx),
   ].every((file) => file); // Check if all files are available
   const approvalTabs = [
+    "shortNotice",
     "notice",
     "mom",
     "attendance",
@@ -576,6 +602,82 @@ export default function CommitteeDocuments() {
             </Button>
           </div>
         </Tab>
+        {Object.keys(shortNotice).length > 0 && (
+          <Tab eventKey="shortNotice" title="Short Notice">
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th style={{ width: "30%" }}>Name</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                    <th>Download-as PDF</th>
+                    <th>Download-as Docx</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Short Notice</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeEditClick(
+                            shortNotice?.templateFile,
+                            1
+                          )
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeView(shortNotice?.filehtml, 1)
+                        }
+                        disabled={!shortNotice?.filehtml}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={shortNotice?.fileName}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          onClick={handleDownload}
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </Tab>
+        )}
         <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
@@ -737,11 +839,7 @@ export default function CommitteeDocuments() {
               </thead>
               <tbody>
                 <tr>
-                  <td>
-                    {notice.templateName === "Short Notice"
-                      ? "Short Notice"
-                      : "Notice"}
-                  </td>
+                  <td> Notice</td>
                   <td>
                     <Button
                       variant="outline-primary"
@@ -869,7 +967,6 @@ export default function CommitteeDocuments() {
           </div>
         </Tab>
 
-       
         <Tab eventKey="leaveOfAbsence" title="Leave of Absence">
           <div className="table-responsive mt-5">
             <br />

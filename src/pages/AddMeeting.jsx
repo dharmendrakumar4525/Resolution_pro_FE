@@ -55,6 +55,11 @@ export default function AddMeeting() {
       meetingType: "board_meeting",
       templateFile: "",
     },
+    shortNotice: {
+      templateName: "Notice",
+      meetingType: "board_meeting",
+      templateFile: "",
+    },
     mom: {
       templateName: "MOM",
       meetingType: "board_meeting",
@@ -341,14 +346,30 @@ export default function AddMeeting() {
             const currentDate = new Date();
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+            console.log(
+              formData.shortNotice,
+              "daysdiffererence",
+              daysDifference,
+              clientDetail?.BM_notice_period
+            );
 
             if (
-              (daysDifference < clientDetail?.BM_notice_period || 7) &&
+              daysDifference <
+                (clientDetail?.BM_notice_period !== undefined
+                  ? clientDetail.BM_notice_period
+                  : 7) &&
               daysDifference >= 0
             ) {
+              console.log(formData.shortNotice, "1");
+
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -361,6 +382,7 @@ export default function AddMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -428,12 +450,20 @@ export default function AddMeeting() {
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
             if (
-              (daysDifference < clientDetail?.BM_notice_period || 7) &&
+              daysDifference <
+                (clientDetail?.BM_notice_period !== undefined
+                  ? clientDetail.BM_notice_period
+                  : 7) &&
               daysDifference >= 0
             ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -446,6 +476,7 @@ export default function AddMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }

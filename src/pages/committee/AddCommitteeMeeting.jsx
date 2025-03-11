@@ -29,7 +29,7 @@ export default function AddCommitteeMeeting() {
   const [agendaList, setAgendaList] = useState([]);
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [clientDetail, setCLientDetail] = useState({});
+  const [clientDetail, setClientDetail] = useState({});
   const [serialPatch, setserialPatch] = useState({});
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
@@ -50,6 +50,11 @@ export default function AddCommitteeMeeting() {
     agendaItems: [],
     variables: {},
     notes: {
+      templateName: "Notice",
+      meetingType: "committee_meeting",
+      templateFile: "",
+    },
+    shortNotice: {
       templateName: "Notice",
       meetingType: "committee_meeting",
       templateFile: "",
@@ -331,12 +336,19 @@ export default function AddCommitteeMeeting() {
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
             if (
-              (daysDifference < clientDetail?.CM_notice_period || 7) &&
-              daysDifference >= 0
+              daysDifference <
+              (clientDetail?.CM_notice_period !== undefined
+                ? clientDetail.CM_notice_period
+                : 7)
             ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -349,6 +361,7 @@ export default function AddCommitteeMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -424,6 +437,11 @@ export default function AddCommitteeMeeting() {
                 ...prevFormData,
                 notes: {
                   ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
+                  ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
                 },
@@ -435,6 +453,7 @@ export default function AddCommitteeMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -621,11 +640,11 @@ export default function AddCommitteeMeeting() {
         },
       });
       const data = await response.json();
-      setCLientDetail(data);
       setFormData((prevData) => ({
         ...prevData,
         location: data.registered_address,
       }));
+      setClientDetail(data);
     } catch (error) {
       console.error("Error fetching clients:", error);
     }
