@@ -74,6 +74,7 @@ import DIREditor from "../pages/clientMaster/directorDocuments/DIREditor";
 import MBPEditor from "../pages/clientMaster/directorDocuments/MBPEditor";
 import ShareholderForm from "../pages/clientMaster/ShareholderForm";
 import ShareholderMomEditor from "../pages/shareholder/ShareholderMomEditor";
+import ShortNoticeEditor from "../pages/ShortNoticeEditor";
 
 // import DocImgGenerator from "../pages/DocImgGenerator";
 
@@ -375,6 +376,16 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <RouteWithSidebar element={<NoticeEditor />} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/short-notice-edit/:id"
+        element={
+          isAuthenticated ? (
+            <RouteWithSidebar element={<ShortNoticeEditor />} />
           ) : (
             <Navigate to="/login" />
           )

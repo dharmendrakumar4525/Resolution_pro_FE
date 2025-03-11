@@ -180,10 +180,10 @@ export default function CustomerMaintenanceForm() {
       // Split the input value by commas and update the array in the state
       setFormData((prevData) => ({
         ...prevData,
-        [id]: value.split(",").map((item) => item.trim()), // Trim spaces from each item
+        [id]: value?.split(",").map((item) => item.trim()), // Trim spaces from each item
       }));
     } else if (id.startsWith("cost_auditor_detail")) {
-      const fieldName = id.split("cost_auditor_detail_")[1];
+      const fieldName = id?.split("cost_auditor_detail_")[1];
       setFormData((prevData) => ({
         ...prevData,
         cost_auditor_detail: {
@@ -192,7 +192,7 @@ export default function CustomerMaintenanceForm() {
         },
       }));
     } else if (id.startsWith("internal_auditor_detail")) {
-      const fieldName = id.split("internal_auditor_detail_")[1];
+      const fieldName = id?.split("internal_auditor_detail_")[1];
 
       setFormData((prevData) => ({
         ...prevData,
@@ -202,7 +202,7 @@ export default function CustomerMaintenanceForm() {
         },
       }));
     } else if (id.startsWith("holding_company_detail")) {
-      const fieldName = id.split("holding_company_detail_")[1];
+      const fieldName = id?.split("holding_company_detail_")[1];
 
       setFormData((prevData) => ({
         ...prevData,
@@ -212,7 +212,7 @@ export default function CustomerMaintenanceForm() {
         },
       }));
     } else if (id.startsWith("BM_last_serial")) {
-      const fieldName = id.split("BM_last_serial_")[1];
+      const fieldName = id?.split("BM_last_serial_")[1];
 
       setFormData((prevData) => ({
         ...prevData,
@@ -232,7 +232,7 @@ export default function CustomerMaintenanceForm() {
         },
       }));
     } else if (id.startsWith("AGM_last_serial")) {
-      const fieldName = id.split("AGM_last_serial_")[1];
+      const fieldName = id?.split("AGM_last_serial_")[1];
 
       setFormData((prevData) => ({
         ...prevData,
@@ -242,7 +242,7 @@ export default function CustomerMaintenanceForm() {
         },
       }));
     } else if (id.startsWith("EGM_last_serial")) {
-      const fieldName = id.split("EGM_last_serial_")[1];
+      const fieldName = id?.split("EGM_last_serial_")[1];
 
       setFormData((prevData) => ({
         ...prevData,
@@ -745,7 +745,7 @@ export default function CustomerMaintenanceForm() {
                     <Form.Label>DOI of the Company</Form.Label>
                     <Form.Control
                       type="date"
-                      value={formData?.date_of_incorporation.split("T")[0]}
+                      value={formData?.date_of_incorporation?.split("T")[0]}
                       onChange={handleChange}
                       placeholder="Enter Date of Incorporation"
                     />

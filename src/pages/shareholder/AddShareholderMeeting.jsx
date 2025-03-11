@@ -30,6 +30,7 @@ export default function AddShareholderMeeting() {
   const [directorList, setDirectorList] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [selectedKompany, setSelectedKompany] = useState(false);
+  const [clientDetail, setClientDetail] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const token = localStorage.getItem("refreshToken");
@@ -53,6 +54,11 @@ export default function AddShareholderMeeting() {
     agendaItems: [],
     variables: {},
     notes: {
+      templateName: "Notice",
+      meetingType: "shareholder_meeting",
+      templateFile: "",
+    },
+    shortNotice: {
       templateName: "Notice",
       meetingType: "shareholder_meeting",
       templateFile: "",
@@ -347,10 +353,21 @@ export default function AddShareholderMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              daysDifference <
+                (clientDetail?.AGM_notice_period !== undefined
+                  ? clientDetail.AGM_notice_period
+                  : 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -363,6 +380,7 @@ export default function AddShareholderMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -430,10 +448,21 @@ export default function AddShareholderMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              daysDifference <
+                (clientDetail?.EGM_notice_period !== undefined
+                  ? clientDetail.EGM_notice_period
+                  : 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -446,6 +475,7 @@ export default function AddShareholderMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -513,10 +543,21 @@ export default function AddShareholderMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              daysDifference <
+                (clientDetail?.AGM_notice_period !== undefined
+                  ? clientDetail.AGM_notice_period
+                  : 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -529,6 +570,7 @@ export default function AddShareholderMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -596,10 +638,21 @@ export default function AddShareholderMeeting() {
             const timeDifference = formDate - currentDate;
             const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-            if (daysDifference < 7 && daysDifference >= 0) {
+            if (
+              daysDifference <
+                (clientDetail?.EGM_notice_period !== undefined
+                  ? clientDetail.EGM_notice_period
+                  : 7) &&
+              daysDifference >= 0
+            ) {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 notes: {
+                  ...prevFormData.notes,
+                  templateFile: noticeTemplate.fileName,
+                  templateName: "Notice",
+                },
+                shortNotice: {
                   ...prevFormData.notes,
                   templateFile: shortNoticeTemplate.fileName,
                   templateName: "Short Notice",
@@ -612,6 +665,7 @@ export default function AddShareholderMeeting() {
                   ...prevFormData.notes,
                   templateFile: noticeTemplate.fileName,
                 },
+                shortNotice: null,
               }));
             }
           }
@@ -740,6 +794,7 @@ export default function AddShareholderMeeting() {
         ...prevData,
         location: data.registered_address,
       }));
+      setClientDetail(data);
     } catch (error) {
       console.error("Error fetching clients:", error);
     }

@@ -254,7 +254,7 @@ const DocumentEditor = () => {
   const countPreviousMeetings = (meetData, selectedId) => {
     // Find the current meeting by id
     const currentMeeting = meetData.find(
-      (meeting) => meeting.id === selectedId
+      (meeting) => meeting?.id === selectedId
     );
 
     if (!currentMeeting) {
@@ -265,7 +265,7 @@ const DocumentEditor = () => {
     // Extract client_name.id and createdAt from the current meeting
     const { client_name, createdAt: currentCreatedAt } = currentMeeting;
 
-    if (!client_name || !client_name.id) {
+    if (!client_name || !client_name?.id) {
       console.error(
         "client_name or client_name.id is missing in the current meeting."
       );
@@ -275,7 +275,7 @@ const DocumentEditor = () => {
     // Filter and count meetings matching the criteria
     const previousMeetings = meetData.filter(
       (meeting) =>
-        meeting.client_name.id === client_name.id && // Same client
+        meeting.client_name?.id === client_name?.id && // Same client
         new Date(meeting.date) < new Date(currentMeeting?.date) // Created before the current meeting
     );
 
