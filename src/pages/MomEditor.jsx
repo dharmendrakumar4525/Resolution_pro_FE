@@ -95,7 +95,7 @@ const MOMEditor = () => {
         }
         setMeetInfo(specificMeetInfo);
         setDynamicResolution(specificMeetInfo.resolutions);
-        console.log(specificMeetInfo.resolutions, "spcl-res");
+        console.log(specificMeetInfo, "spcl-res");
 
         const targetDate = new Date(specificMeetInfo?.date);
 
@@ -381,6 +381,49 @@ const MOMEditor = () => {
               ...prevData, // Spread the existing state
               [systemVariable.name]: value, // Add the new key-value pair
             }));
+          } else if (res == "chairperson_name") {
+            let newChairman = meetInfo?.participants?.filter(
+              (member) => member?.isChairman == true
+            );
+            console.log(newChairman, "chairman");
+            let result = newChairman[0]?.director?.name;
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
+          } else if (res == "mom_absentees") {
+            let momAbsentees =
+              meetInfo?.participants
+                ?.filter(
+                  (director) => !director?.isPresent && !director?.isPresent_vc
+                )
+                ?.map((director) => `Mr. ${director?.director?.name}`)
+                .join(", ")
+                .replace(/,([^,]*)$/, " and$1") || "";
+            console.log(momAbsentees, "momAbsentees");
+            let result = momAbsentees;
+            value = result;
+            updatedContent = updatedContent.replace(
+              new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+              value
+            );
+            setConfirmedFields((prevState) => ({
+              ...prevState,
+              [placeholder]: true,
+            }));
+            setPlaceVar((prevData) => ({
+              ...prevData, // Spread the existing state
+              [systemVariable.name]: value, // Add the new key-value pair
+            }));
           } else if (res == "date") {
             function getFormattedDate(dateString) {
               const dateObj = new Date(dateString);
@@ -578,10 +621,17 @@ const MOMEditor = () => {
     let count = 5;
     let csrCount = 1;
     let csrContent = "";
-    let headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
+    let headerMOM = "";
+    if (Object.keys(meetInfo).length > 0) {
+      if (meetInfo?.meetingType == "board_meeting") {
+        headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
 
-    MINUTES OF THE #{counter} MEETING OF THE BOARD OF DIRECTORS OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date} AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
- 
+
+    MINUTES OF THE #{counter} MEETING OF THE BOARD OF DIRECTORS OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
+      meetInfo?.agendaItems[0]?.templateName == "BM Agenda Physical"
+        ? ""
+        : "THROUGH VIDEO CONFERENCE"
+    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
     </p>
     <p>
     DIRECTORS PRESENT
@@ -600,11 +650,102 @@ const MOMEditor = () => {
          .join("") ?? ""
      }
      </ol>
-
-    
-    INVITEE
     </p>
     `;
+      } else if (meetInfo?.meetingType == "committee_meeting") {
+        headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
+
+
+    MINUTES OF THE #{counter} MEETING OF THE CORPORATE SOCIAL RESPONSIBILITY COMMITTEE (“CSR COMMITTEE”) OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
+      meetInfo?.agendaItems[0]?.templateName == "Committee Agenda Physical"
+        ? ""
+        : "THROUGH VIDEO CONFERENCE"
+    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
+    </p>
+    <p>
+   
+MEMBERS PRESENT
+     <ol>
+     ${
+       meetInfo?.participants
+         ?.filter((director) => director?.isPresent || director?.isPresent_vc)
+         ?.map((director) => `<li>${director.director?.name}</li>`)
+         .join("") ?? ""
+     }
+     </ol>
+    </p>
+    `;
+      } else if (
+        meetInfo?.meetingType == "shareholder_meeting" &&
+        meetInfo?.shareholder_meeting_type == "AGM"
+      ) {
+        headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
+
+
+    MINUTES OF THE #{counter} ANNUAL GENERAL MEETING OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
+      meetInfo?.agendaItems[0]?.templateName == "AGM Physical Agenda"
+        ? ""
+        : "THROUGH VIDEO CONFERENCE"
+    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
+    </p>
+    <p>
+   
+    Directors Present:
+     <ol>
+     ${
+       meetInfo?.participants
+         ?.filter((director) => director?.isPresent || director?.isPresent_vc)
+         ?.map((director) => `<li>${director.director?.name}</li>`)
+         .join("") ?? ""
+     }
+     </ol>
+    <p>
+   
+    Members Present:
+     <ol>
+     ${
+       meetInfo?.shareholder_participants
+         ?.filter(
+           (shareholder) => shareholder?.isPresent || shareholder?.isPresent_vc
+         )
+         ?.map((shareholder) => `<li>${shareholder?.shareholder?.name}</li>`)
+         .join("") ?? ""
+     }
+     </ol>
+
+    </p>
+    `;
+      } else {
+        headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
+
+
+    MINUTES OF THE #{counter} MEETING OF THE BOARD OF DIRECTORS OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
+      meetInfo?.agendaItems[0]?.templateName == "BM Agenda Physical"
+        ? ""
+        : "THROUGH VIDEO CONFERENCE"
+    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
+    </p>
+    <p>
+    DIRECTORS PRESENT
+    <ol>
+    ${meetInfo?.participants
+      ?.map((director) => `<li>${director.director.name}</li>`)
+      .join("")}
+</ol>
+    
+     IN ATTENDANCE
+     <ol>
+     ${
+       meetInfo?.participants
+         ?.filter((director) => director?.isPresent || director?.isPresent_vc)
+         ?.map((director) => `<li>${director.director?.name}</li>`)
+         .join("") ?? ""
+     }
+     </ol>
+    </p>
+    `;
+      }
+    }
 
     function getFormattedDate(dateString) {
       const dateObj = new Date(dateString);
@@ -670,13 +811,22 @@ const MOMEditor = () => {
       }
 
       let footerContent = `
+      <strong>${count}. VOTE OF THANKS</strong><p>
+There being no further business, the meeting was declared closed with vote of thanks to the Chair.</p>
+
       <br/><p>For <b>#{company_name}</b></p><p></p>
 
 
 <h6>
-Name: \${name}</h6>
-<h6> Director</h6>
-<h6> DIN: \${din_pan}</h6>
+Date of entry in the Minutes Book: 
+<br/>
+<br/>
+Chairperson
+<br/>
+Date: 
+<br/>
+Place: 
+
 `;
       if (initializedContent) {
         console.log(initializedContent, "inik");

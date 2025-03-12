@@ -652,7 +652,7 @@ const DocumentEditor = () => {
 
 <h6>
 Name: \${name}</h6>
-<h6> Director</h6>
+<h6> \${designation}</h6>
 <h6> DIN: \${din_pan}</h6>
 `;
       if (initializedContent) {
@@ -937,11 +937,13 @@ Name: \${name}</h6>
 
       const value = values?.director?.name || placeholder2;
       const value2 = values?.director?.["din/pan"] || placeholder2;
+      const value3 = values?.director?.designation || placeholder2;
 
       setInputFields((prevData) => ({
         ...prevData, // Spread the existing state
         ["name"]: value,
         ["din_pan"]: value2,
+        ["designation"]: value3,
       }));
     }
   };

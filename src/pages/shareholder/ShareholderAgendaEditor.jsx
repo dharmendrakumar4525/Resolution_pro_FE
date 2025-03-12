@@ -339,7 +339,7 @@ export default function ShareholderAgendaEditor() {
             const value = number % 100;
             const suffix =
               suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
-            return `${number}<sup style="color:color:#4a5073">${suffix}</sup>`;
+            return `${number}<sup style="color:#4a5073">${suffix}</sup>`;
           }
           if (res == "count") {
             const selectedId = id; // Replace with the id of the current meeting
@@ -606,7 +606,7 @@ export default function ShareholderAgendaEditor() {
       const year = meeting.getFullYear();
       const month = meeting.getMonth() + 1; // JS months are 0-based
 
-      let fyEndYear = month >= 1 && month <= 3 ? year : year ;
+      let fyEndYear = month >= 1 && month <= 3 ? year : year;
       return `31 March ${fyEndYear}`;
     }
 
