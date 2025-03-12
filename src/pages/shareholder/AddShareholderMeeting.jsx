@@ -414,7 +414,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "677f87d7d3115f06a4c3717a"
+            (item) => item.id === "67d145fc08da6e00277f6197"
           );
 
           if (momTemplate) {
@@ -440,7 +440,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "677f80882522b858279b629d"
+            (item) => item.id === "67d145ca08da6e00277f6188"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);
@@ -604,7 +604,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const momTemplate = data?.results?.find(
-            (item) => item.id === "677f87d7d3115f06a4c3717a"
+            (item) => item.id === "67d1461208da6e00277f619d"
           );
 
           if (momTemplate) {
@@ -630,7 +630,7 @@ export default function AddShareholderMeeting() {
             }));
           }
           const shortNoticeTemplate = data?.results?.find(
-            (item) => item.id === "677f80882522b858279b629d"
+            (item) => item.id === "67d145dd08da6e00277f618e"
           );
           if (formData?.date) {
             const formDate = new Date(formData?.date);
