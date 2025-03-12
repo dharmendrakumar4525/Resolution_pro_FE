@@ -385,8 +385,9 @@ const MOMEditor = () => {
             let newChairman = meetInfo?.participants?.filter(
               (member) => member?.isChairman == true
             );
-            console.log(newChairman, "chairman");
-            let result = newChairman[0]?.director?.name;
+            let result = Array.isArray(meetInfo?.participants)
+              ? newChairman[0]?.director?.name
+              : " ";
             value = result;
             updatedContent = updatedContent.replace(
               new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
@@ -410,7 +411,7 @@ const MOMEditor = () => {
                 .join(", ")
                 .replace(/,([^,]*)$/, " and$1") || "";
             console.log(momAbsentees, "momAbsentees");
-            let result = momAbsentees;
+            let result = momAbsentees || " ";
             value = result;
             updatedContent = updatedContent.replace(
               new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
