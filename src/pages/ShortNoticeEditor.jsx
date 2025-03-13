@@ -462,7 +462,7 @@ export default function ShortNoticeEditor() {
 
   return (
     <Container className="mt-5">
-      <h1>Short Notice Document</h1>
+      <h1>Shorter Notice Consent</h1>
       {/* <Button onClick={handleFileAddOn}>Add On</Button>
       <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
       <div className="parentContainer">
@@ -531,7 +531,7 @@ export default function ShortNoticeEditor() {
                   aria-hidden="true"
                 />
               ) : (
-                "Save Notice"
+                "Save Consent"
               )}
             </Button>
             {hasUnconfirmedPlaceholders && (
