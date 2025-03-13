@@ -638,6 +638,7 @@ const MOMEditor = () => {
     DIRECTORS PRESENT
     <ol>
     ${meetInfo?.participants
+      ?.filter((director) => director?.isPresent || director?.isPresent_vc)
       ?.map((director) => `<li>${director.director.name}</li>`)
       .join("")}
 </ol>
@@ -645,12 +646,12 @@ const MOMEditor = () => {
      IN ATTENDANCE
      <ol>
      ${
-       meetInfo?.participants
-         ?.filter((director) => director?.isPresent || director?.isPresent_vc)
-         ?.map((director) => `<li>${director.director?.name}</li>`)
+       meetInfo?.other_participants
+         ?.map((invitee) => `<li>${invitee?.name}</li>`)
          .join("") ?? ""
      }
      </ol>
+    
     </p>
     `;
       } else if (meetInfo?.meetingType == "committee_meeting") {
@@ -720,21 +721,15 @@ MEMBERS PRESENT
         headerMOM = `<p style="text-align:center;font-weight:800">#{company_name}<br/>
 
 
-    MINUTES OF THE #{counter} MEETING OF THE BOARD OF DIRECTORS OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
-      meetInfo?.agendaItems[0]?.templateName == "BM Agenda Physical"
+    MINUTES OF THE #{counter} EXTRAORDINARY GENERAL MEETING OF #{company_name} (“COMPANY”) FOR THE FINANCIAL YEAR #{current_financial_year} HELD AT SHORTER NOTICE AT #{meeting_time} ON #{meeting_day_date}  ${
+      meetInfo?.agendaItems[0]?.templateName == "EGM Physical Agenda"
         ? ""
         : "THROUGH VIDEO CONFERENCE"
     } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
     </p>
     <p>
-    DIRECTORS PRESENT
-    <ol>
-    ${meetInfo?.participants
-      ?.map((director) => `<li>${director.director.name}</li>`)
-      .join("")}
-</ol>
-    
-     IN ATTENDANCE
+   
+    Directors Present:
      <ol>
      ${
        meetInfo?.participants
@@ -743,6 +738,20 @@ MEMBERS PRESENT
          .join("") ?? ""
      }
      </ol>
+    <p>
+   
+    Members Present:
+     <ol>
+     ${
+       meetInfo?.shareholder_participants
+         ?.filter(
+           (shareholder) => shareholder?.isPresent || shareholder?.isPresent_vc
+         )
+         ?.map((shareholder) => `<li>${shareholder?.shareholder?.name}</li>`)
+         .join("") ?? ""
+     }
+     </ol>
+
     </p>
     `;
       }
