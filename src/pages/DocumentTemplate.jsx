@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { apiURL } from "../API/api";
 import {
   Button,
@@ -48,6 +48,7 @@ export default function DocumentTemplate() {
   const { rolePermissions } = useAuth();
   const navigate = useNavigate();
   const token = localStorage.getItem("refreshToken");
+  const location = useLocation();
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -92,6 +93,11 @@ export default function DocumentTemplate() {
 
     fetchAllData();
   }, [page, user.role, user.id, refresh, filterName, filterStatus]);
+  useEffect(() => {
+    if (location?.state?.page) {
+      setPage(location?.state.page);
+    }
+  }, [location?.state]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -104,7 +110,9 @@ export default function DocumentTemplate() {
   };
   const handleViewTemplate = (row, e) => {
     e.stopPropagation();
-    navigate(`/template-generate/${row?.id}`, { state: row?.fileName });
+    navigate(`/template-generate/${row?.id}`, {
+      state: { fileName: row?.fileName, documentPage: page },
+    });
   };
 
   const handleOpenAddModal = () => {

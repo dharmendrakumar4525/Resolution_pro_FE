@@ -54,8 +54,9 @@ const TemplateGenerator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const fileUrl = location.state;
+  const fileUrl = location.state?.fileName;
   const editor = useRef(null);
+  const previousPage = location?.state?.documentPage || 1;
   useEffect(() => {
     const fetchData = async (pageNo) => {
       try {
@@ -295,7 +296,7 @@ const TemplateGenerator = () => {
         };
 
         setDocuments([...documents, newDoc]);
-        navigate("/document-template");
+        navigate("/document-template", { state: { page: previousPage } });
       } else {
         toast.error("Failed to save the document.");
       }
@@ -367,6 +368,9 @@ const TemplateGenerator = () => {
     extraButtons: [],
     uploader: { insertImageAsBase64URI: false },
     showXPathInStatusbar: false,
+  };
+  const handleBack = () => {
+    navigate("/document-template", { state: { page: previousPage } });
   };
 
   return (
@@ -460,7 +464,7 @@ const TemplateGenerator = () => {
               </Pagination>
             </div>
           )}
-          <Button variant="danger" onClick={() => navigate(-1)}>
+          <Button variant="danger" onClick={handleBack}>
             Exit Without Saving
           </Button>
         </div>
