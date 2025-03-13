@@ -525,6 +525,9 @@ export default function MeetingDocuments() {
     "resolution",
     "acknowledgement",
   ];
+  const hasAttendee = meetData?.participants?.some(
+    (director) => director.isPresent || director.isPresent_vc
+  );
 
   return (
     <>
@@ -543,6 +546,8 @@ export default function MeetingDocuments() {
             toast.warning("Need approval to see saved documents.");
           } else if (k === "leaveOfAbsence" && leaveOfAbsence.length === 0) {
             toast.warning("No absentees found");
+          } else if (k === "mom" && !hasAttendee) {
+            toast.warning("Please mark attendance first");
           } else {
             setKey(k);
           }

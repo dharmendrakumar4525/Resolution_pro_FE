@@ -344,6 +344,8 @@ export default function ShareholderDocuments() {
           if (!p.isPresent) {
             return { ...p, isPresent_vc: isChecked };
           }
+        } else if (field === "isChairman") {
+          return { ...p, isChairman: isChecked };
         }
       }
       return p;
@@ -755,11 +757,12 @@ export default function ShareholderDocuments() {
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
                 <tr>
-                  <th style={{ width: "33.3%" }}>Director Name</th>
-                  <th style={{ width: "33.3%" }}>Present in the Meeting</th>
-                  <th style={{ width: "33.3%" }}>
+                  <th style={{ width: "40%" }}>Director Name</th>
+                  <th style={{ width: "20%" }}>Present in the Meeting</th>
+                  <th style={{ width: "20%" }}>
                     Present in the Meeting(through Video Call)
                   </th>
+                  <th style={{ width: "20%" }}>Selected Chairman</th>
                 </tr>
               </thead>
               <tbody>
@@ -785,6 +788,21 @@ export default function ShareholderDocuments() {
                           handleCheckboxChange(e, participant, "isPresent_vc")
                         }
                         disabled={participant?.isPresent}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={participant?.isChairman}
+                        onChange={(e) =>
+                          handleCheckboxChange(e, participant, "isChairman")
+                        }
+                        // disabled={participant?.isPresent}
+                        disabled={
+                          !participant.isChairman &&
+                          participants.some((p) => p.isChairman)
+                        }
                       />
                     </td>
                   </tr>
