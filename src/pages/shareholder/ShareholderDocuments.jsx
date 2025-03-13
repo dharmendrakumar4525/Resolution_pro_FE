@@ -623,6 +623,9 @@ export default function ShareholderDocuments() {
     "acknowledgement",
     "leaveOfAbsence",
   ];
+  const hasAttendee = meetData?.participants?.some(
+    (director) => director.isPresent || director.isPresent_vc
+  );
 
   return (
     <>
@@ -638,6 +641,8 @@ export default function ShareholderDocuments() {
             meetData.approval_status !== "approved"
           ) {
             toast.warning("Need approval to see saved documents.");
+          } else if (k === "mom" && !hasAttendee) {
+            toast.warning("Please mark attendance first");
           } else {
             setKey(k);
           }
@@ -676,82 +681,7 @@ export default function ShareholderDocuments() {
             </Button>
           </div>
         </Tab>
-        {Object.keys(shortNotice).length > 0 && (
-          <Tab eventKey="shortNotice" title="Short Notice">
-            <div className="table-responsive mt-5">
-              <Table bordered hover className="Master-table">
-                <thead className="Master-Thead">
-                  <tr>
-                    <th style={{ width: "30%" }}>Name</th>
-                    <th>Edit</th>
-                    <th>View</th>
-                    <th>Download-as PDF</th>
-                    <th>Download-as Docx</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Short Notice</td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeEditClick(
-                            shortNotice?.templateFile,
-                            1
-                          )
-                        }
-                      >
-                        <FaEdit />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeView(shortNotice?.filehtml, 1)
-                        }
-                        disabled={!shortNotice?.filehtml}
-                      >
-                        <FaFileWord />
-                      </Button>
-                    </td>
-                    <td>
-                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
-                        <Button
-                          variant="outline-primary"
-                          as="a"
-                          href={shortNotice?.fileName}
-                          download="customFileName.docx"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          <FaFileWord />
-                        </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
 
-                    <td>
-                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
-                        <Button
-                          variant="outline-primary"
-                          onClick={handleDownload}
-                          rel="noopener noreferrer"
-                        >
-                          <FaFileWord />
-                        </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </div>
-          </Tab>
-        )}
         <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
@@ -964,7 +894,7 @@ export default function ShareholderDocuments() {
           </div>
         </Tab>
 
-        <Tab eventKey="mom" title="MOM">
+        <Tab eventKey="mom" title="Minutes">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
               <thead className="Master-Thead">
@@ -1109,6 +1039,82 @@ export default function ShareholderDocuments() {
             </Table>
           </div>
         </Tab>
+        {Object.keys(shortNotice).length > 0 && (
+          <Tab eventKey="shortNotice" title="Shorter Notice">
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th style={{ width: "30%" }}>Name</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                    <th>Download-as PDF</th>
+                    <th>Download-as Docx</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Short Notice</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeEditClick(
+                            shortNotice?.templateFile,
+                            1
+                          )
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeView(shortNotice?.filehtml, 1)
+                        }
+                        disabled={!shortNotice?.filehtml}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={shortNotice?.fileName}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          onClick={handleDownload}
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </Tab>
+        )}
 
         <Tab eventKey="resolution" title="Resolution">
           <div className="table-responsive mt-5">

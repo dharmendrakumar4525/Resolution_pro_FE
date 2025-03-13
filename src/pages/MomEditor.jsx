@@ -833,9 +833,9 @@ Date of entry in the Minutes Book:
 <br/>
 Chairperson
 <br/>
-Date: 
+Date: #{meeting_day_date}
 <br/>
-Place: 
+Place: #{meeting_location}
 
 `;
       if (initializedContent) {

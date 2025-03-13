@@ -586,82 +586,76 @@ export default function MeetingDocuments() {
             </Button>
           </div>
         </Tab>
-        {Object.keys(shortNotice).length > 0 && (
-          <Tab eventKey="shortNotice" title="Short Notice">
-            <div className="table-responsive mt-5">
-              <Table bordered hover className="Master-table">
-                <thead className="Master-Thead">
-                  <tr>
-                    <th style={{ width: "30%" }}>Name</th>
-                    <th>Edit</th>
-                    <th>View</th>
-                    <th>Download-as PDF</th>
-                    <th>Download-as Docx</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Short Notice</td>
-                    <td>
+
+        <Tab eventKey="notice" title="Notice">
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "30%" }}>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Notice</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() =>
+                        handleNoticeEditClick(notice?.templateFile, 1)
+                      }
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleNoticeView(notice?.filehtml, 1)}
+                      disabled={!notice?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    {notice?.fileName && notice?.fileName !== "" ? (
                       <Button
                         variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeEditClick(
-                            shortNotice?.templateFile,
-                            1
-                          )
-                        }
-                      >
-                        <FaEdit />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeView(shortNotice?.filehtml, 1)
-                        }
-                        disabled={!shortNotice?.filehtml}
+                        as="a"
+                        href={notice?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
                       >
                         <FaFileWord />
                       </Button>
-                    </td>
-                    <td>
-                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
-                        <Button
-                          variant="outline-primary"
-                          as="a"
-                          href={shortNotice?.fileName}
-                          download="customFileName.docx"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          <FaFileWord />
-                        </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
 
-                    <td>
-                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
-                        <Button
-                          variant="outline-primary"
-                          onClick={handleDownload}
-                          rel="noopener noreferrer"
-                        >
-                          <FaFileWord />
-                        </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </div>
-          </Tab>
-        )}
+                  <td>
+                    {notice?.filedocx && notice?.filedocx !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        onClick={handleDownload}
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
+        </Tab>
         <Tab eventKey="attendance" title="Attendance Register">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
@@ -808,149 +802,6 @@ export default function MeetingDocuments() {
             </Table>
           </div>
         </Tab>
-
-        <Tab eventKey="notice" title="Notice">
-          <div className="table-responsive mt-5">
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "30%" }}>Name</th>
-                  <th>Edit</th>
-                  <th>View</th>
-                  <th>Download-as PDF</th>
-                  <th>Download-as Docx</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Notice</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleNoticeEditClick(notice?.templateFile, 1)
-                      }
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleNoticeView(notice?.filehtml, 1)}
-                      disabled={!notice?.filehtml}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    {notice?.fileName && notice?.fileName !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={notice?.fileName}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {notice?.filedocx && notice?.filedocx !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        onClick={handleDownload}
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        </Tab>
-
-        <Tab eventKey="mom" title="MOM">
-          <div className="table-responsive mt-5">
-            <Table bordered hover className="Master-table">
-              <thead className="Master-Thead">
-                <tr>
-                  <th style={{ width: "30%" }}>Name</th>
-                  <th>Edit</th>
-                  <th>View</th>
-                  <th>Download-as PDF</th>
-                  <th>Download-as Docx</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>MOM Document</td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() =>
-                        handleMOMEditClick(minutes.templateFile, 1)
-                      }
-                    >
-                      <FaEdit />
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
-                      disabled={!minutes?.filehtml}
-                    >
-                      <FaFileWord />
-                    </Button>
-                  </td>
-                  <td>
-                    {minutes?.fileName && minutes?.fileName !== "" ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={minutes?.fileName}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {minutes?.filedocx ? (
-                      <Button
-                        variant="outline-primary"
-                        as="a"
-                        href={minutes?.filedocx}
-                        download="customFileName.docx"
-                        rel="noopener noreferrer"
-                      >
-                        <FaFileWord />
-                      </Button>
-                    ) : (
-                      <span>No file available</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        </Tab>
-
         <Tab eventKey="leaveOfAbsence" title="Leave of Absence">
           <div className="table-responsive mt-5">
             <br />
@@ -1020,6 +871,78 @@ export default function MeetingDocuments() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </Table>
+          </div>
+        </Tab>
+
+        <Tab eventKey="mom" title="Minutes">
+          <div className="table-responsive mt-5">
+            <Table bordered hover className="Master-table">
+              <thead className="Master-Thead">
+                <tr>
+                  <th style={{ width: "30%" }}>Name</th>
+                  <th>Edit</th>
+                  <th>View</th>
+                  <th>Download-as PDF</th>
+                  <th>Download-as Docx</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MOM Document</td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() =>
+                        handleMOMEditClick(minutes.templateFile, 1)
+                      }
+                    >
+                      <FaEdit />
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => handleMOMView(minutes?.filehtml, 11)}
+                      disabled={!minutes?.filehtml}
+                    >
+                      <FaFileWord />
+                    </Button>
+                  </td>
+                  <td>
+                    {minutes?.fileName && minutes?.fileName !== "" ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.fileName}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {minutes?.filedocx ? (
+                      <Button
+                        variant="outline-primary"
+                        as="a"
+                        href={minutes?.filedocx}
+                        download="customFileName.docx"
+                        rel="noopener noreferrer"
+                      >
+                        <FaFileWord />
+                      </Button>
+                    ) : (
+                      <span>No file available</span>
+                    )}
+                  </td>
+                </tr>
               </tbody>
             </Table>
           </div>
@@ -1097,6 +1020,82 @@ export default function MeetingDocuments() {
             </Table>
           </div>
         </Tab>
+        {Object.keys(shortNotice).length > 0 && (
+          <Tab eventKey="shortNotice" title="Shorter Notice">
+            <div className="table-responsive mt-5">
+              <Table bordered hover className="Master-table">
+                <thead className="Master-Thead">
+                  <tr>
+                    <th style={{ width: "30%" }}>Name</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                    <th>Download-as PDF</th>
+                    <th>Download-as Docx</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Short Notice</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeEditClick(
+                            shortNotice?.templateFile,
+                            1
+                          )
+                        }
+                      >
+                        <FaEdit />
+                      </Button>
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() =>
+                          handleShortNoticeView(shortNotice?.filehtml, 1)
+                        }
+                        disabled={!shortNotice?.filehtml}
+                      >
+                        <FaFileWord />
+                      </Button>
+                    </td>
+                    <td>
+                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          as="a"
+                          href={shortNotice?.fileName}
+                          download="customFileName.docx"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
+                        <Button
+                          variant="outline-primary"
+                          onClick={handleDownload}
+                          rel="noopener noreferrer"
+                        >
+                          <FaFileWord />
+                        </Button>
+                      ) : (
+                        <span>No file available</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </Tab>
+        )}
         <Tab eventKey="acknowledgement" title="Acknowledgement">
           <div className="table-responsive mt-5">
             <Table bordered hover className="Master-table">
