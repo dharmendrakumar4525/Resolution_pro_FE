@@ -55,11 +55,7 @@ export default function AddMeeting() {
       meetingType: "board_meeting",
       templateFile: "",
     },
-    shortNotice: {
-      templateName: "Notice",
-      meetingType: "board_meeting",
-      templateFile: "",
-    },
+    shortNotice: null,
     mom: {
       templateName: "MOM",
       meetingType: "board_meeting",
@@ -167,6 +163,7 @@ export default function AddMeeting() {
       });
       const data = await response.json();
       setCLientDetail(data);
+      console.log(data, "clientDetail");
       setFormData((prevData) => ({
         ...prevData,
         location: data.registered_address,
@@ -207,6 +204,7 @@ export default function AddMeeting() {
       );
       const data = await response.json();
       setDirectorList(Array.isArray(data) ? data : []);
+      console.log(data, "director-list");
     } catch (error) {
       console.error("Error fetching directors:", error);
     }
@@ -369,11 +367,16 @@ export default function AddMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "board_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -463,11 +466,16 @@ export default function AddMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "board_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -504,7 +512,6 @@ export default function AddMeeting() {
     value: director.id,
     label: director.name,
   }));
-
   const validateForm = () => {
     const {
       title,

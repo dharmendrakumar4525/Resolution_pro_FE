@@ -632,14 +632,21 @@ const MOMEditor = () => {
       meetInfo?.agendaItems[0]?.templateName == "BM Agenda Physical"
         ? ""
         : "THROUGH VIDEO CONFERENCE"
-    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{registered_address}.
+    } AT THE REGISTERED OFFICE OF THE COMPANY AT #{meeting_location}.
     </p>
     <p>
     DIRECTORS PRESENT
     <ol>
     ${meetInfo?.participants
       ?.filter((director) => director?.isPresent || director?.isPresent_vc)
-      ?.map((director) => `<li>${director.director.name}</li>`)
+      ?.map((director) => {
+        if (director?.isPresent) {
+          return `<li>${director.director.name} - attended physically</li>`;
+        } else if (director?.isPresent_vc) {
+          return `<li>${director.director.name} - attended virtually</li>`;
+        }
+        return "";
+      })
       .join("")}
 </ol>
     
@@ -671,7 +678,14 @@ MEMBERS PRESENT
      ${
        meetInfo?.participants
          ?.filter((director) => director?.isPresent || director?.isPresent_vc)
-         ?.map((director) => `<li>${director.director?.name}</li>`)
+         ?.map((director) => {
+           if (director?.isPresent) {
+             return `<li>${director.director.name} - attended physically</li>`;
+           } else if (director?.isPresent_vc) {
+             return `<li>${director.director.name} - attended virtually</li>`;
+           }
+           return "";
+         })
          .join("") ?? ""
      }
      </ol>
@@ -697,7 +711,14 @@ MEMBERS PRESENT
      ${
        meetInfo?.participants
          ?.filter((director) => director?.isPresent || director?.isPresent_vc)
-         ?.map((director) => `<li>${director.director?.name}</li>`)
+         ?.map((director) => {
+           if (director?.isPresent) {
+             return `<li>${director.director.name} - attended physically</li>`;
+           } else if (director?.isPresent_vc) {
+             return `<li>${director.director.name} - attended virtually</li>`;
+           }
+           return "";
+         })
          .join("") ?? ""
      }
      </ol>
@@ -710,7 +731,14 @@ MEMBERS PRESENT
          ?.filter(
            (shareholder) => shareholder?.isPresent || shareholder?.isPresent_vc
          )
-         ?.map((shareholder) => `<li>${shareholder?.shareholder?.name}</li>`)
+         ?.map((shareholder) => {
+           if (shareholder?.isPresent) {
+             return `<li>${shareholder?.shareholder?.name} - attended physically</li>`;
+           } else if (shareholder?.isPresent_vc) {
+             return `<li>${shareholder?.shareholder?.name} - attended virtually</li>`;
+           }
+           return "";
+         })
          .join("") ?? ""
      }
      </ol>
@@ -734,7 +762,14 @@ MEMBERS PRESENT
      ${
        meetInfo?.participants
          ?.filter((director) => director?.isPresent || director?.isPresent_vc)
-         ?.map((director) => `<li>${director.director?.name}</li>`)
+         ?.map((director) => {
+           if (director?.isPresent) {
+             return `<li>${director.director.name} - attended physically</li>`;
+           } else if (director?.isPresent_vc) {
+             return `<li>${director.director.name} - attended virtually</li>`;
+           }
+           return "";
+         })
          .join("") ?? ""
      }
      </ol>
@@ -747,7 +782,14 @@ MEMBERS PRESENT
          ?.filter(
            (shareholder) => shareholder?.isPresent || shareholder?.isPresent_vc
          )
-         ?.map((shareholder) => `<li>${shareholder?.shareholder?.name}</li>`)
+         ?.map((shareholder) => {
+           if (shareholder?.isPresent) {
+             return `<li>${shareholder?.shareholder?.name} - attended physically</li>`;
+           } else if (shareholder?.isPresent_vc) {
+             return `<li>${shareholder?.shareholder?.name} - attended virtually</li>`;
+           }
+           return "";
+         })
          .join("") ?? ""
      }
      </ol>
@@ -1181,7 +1223,7 @@ Place: #{meeting_location}
 
   return (
     <Container className="mt-5">
-      <h1>MOM Editor</h1>
+      <h1>Minutes Editor</h1>
       {/* <Button onClick={handleFileAddOn}>Add On</Button>
       <Button onClick={handleFileRemoveOn}>Remove On</Button> */}
       <div className="parentContainer">

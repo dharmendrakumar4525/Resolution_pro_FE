@@ -58,11 +58,7 @@ export default function AddShareholderMeeting() {
       meetingType: "shareholder_meeting",
       templateFile: "",
     },
-    shortNotice: {
-      templateName: "Notice",
-      meetingType: "shareholder_meeting",
-      templateFile: "",
-    },
+    shortNotice: null,
     mom: {
       templateName: "MOM",
       meetingType: "shareholder_meeting",
@@ -367,11 +363,16 @@ export default function AddShareholderMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "shareholder_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -462,11 +463,16 @@ export default function AddShareholderMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "shareholder_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -557,11 +563,16 @@ export default function AddShareholderMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "shareholder_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -652,11 +663,16 @@ export default function AddShareholderMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  directorList?.map((dir) => ({
+                    director: dir.id,
+                    templateName: "Short Notice",
+                    meetingType: "shareholder_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({

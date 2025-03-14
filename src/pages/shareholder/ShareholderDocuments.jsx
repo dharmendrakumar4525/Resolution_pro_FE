@@ -26,7 +26,7 @@ export default function ShareholderDocuments() {
   const [rows, setRows] = useState([]);
   const [meetData, setMeetData] = useState([]);
   const [notice, setNotice] = useState({});
-  const [shortNotice, setShortNotice] = useState({});
+  const [shortNotice, setShortNotice] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [minutes, setMinutes] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -74,7 +74,7 @@ export default function ShareholderDocuments() {
         setParticipants(data?.participants || []);
         setShareolderParticipants(data?.shareholder_participants || []);
         setNotice(data?.notes || {});
-        setShortNotice(data?.shortNotice || {});
+        setShortNotice(data?.shortNotice || []);
         setMinutes(data?.mom || {});
         setAcknowledgement(data?.acknowledgement || {});
         setAttendance(data?.attendance || {});
@@ -189,12 +189,13 @@ export default function ShareholderDocuments() {
       },
     });
   };
-  const handleShortNoticeEditClick = (url, index) => {
+  const handleShortNoticeEditClick = (url, index, director) => {
     navigate(`/short-notice-edit/${id}`, {
       state: {
         index,
         fileUrl: url,
         page: "shareholder",
+        director,
       },
     });
   };
@@ -615,7 +616,6 @@ export default function ShareholderDocuments() {
     ...resolutions.map((row) => row?.filedocx),
   ].every((file) => file); // Check if all files are available
   const approvalTabs = [
-    "shortNotice",
     "notice",
     "mom",
     "attendance",
@@ -1039,7 +1039,7 @@ export default function ShareholderDocuments() {
             </Table>
           </div>
         </Tab>
-        {Object.keys(shortNotice).length > 0 && (
+        {shortNotice?.length > 0 && (
           <Tab eventKey="shortNotice" title="Shorter Notice">
             <div className="table-responsive mt-5">
               <Table bordered hover className="Master-table">
@@ -1053,63 +1053,66 @@ export default function ShareholderDocuments() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Short Notice</td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeEditClick(
-                            shortNotice?.templateFile,
-                            1
-                          )
-                        }
-                      >
-                        <FaEdit />
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() =>
-                          handleShortNoticeView(shortNotice?.filehtml, 1)
-                        }
-                        disabled={!shortNotice?.filehtml}
-                      >
-                        <FaFileWord />
-                      </Button>
-                    </td>
-                    <td>
-                      {shortNotice?.fileName && shortNotice?.fileName !== "" ? (
+                  {shortNotice?.map((row, index) => (
+                    <tr>
+                      <td>{row?.director?.name} Consent</td>
+                      <td>
                         <Button
                           variant="outline-primary"
-                          as="a"
-                          href={shortNotice?.fileName}
-                          download="customFileName.docx"
-                          rel="noopener noreferrer"
-                          target="_blank"
+                          onClick={() =>
+                            handleShortNoticeEditClick(
+                              row.templateFile,
+                              index,
+                              row?.director
+                            )
+                          }
+                        >
+                          <FaEdit />
+                        </Button>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          onClick={() =>
+                            handleShortNoticeView(row?.filehtml, 1)
+                          }
+                          disabled={!row?.filehtml}
                         >
                           <FaFileWord />
                         </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
+                      </td>
+                      <td>
+                        {row?.fileName && row?.fileName !== "" ? (
+                          <Button
+                            variant="outline-primary"
+                            as="a"
+                            href={row?.fileName}
+                            download="customFileName.docx"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <FaFileWord />
+                          </Button>
+                        ) : (
+                          <span>No file available</span>
+                        )}
+                      </td>
 
-                    <td>
-                      {shortNotice?.filedocx && shortNotice?.filedocx !== "" ? (
-                        <Button
-                          variant="outline-primary"
-                          onClick={handleDownload}
-                          rel="noopener noreferrer"
-                        >
-                          <FaFileWord />
-                        </Button>
-                      ) : (
-                        <span>No file available</span>
-                      )}
-                    </td>
-                  </tr>
+                      <td>
+                        {row?.filedocx && row?.filedocx !== "" ? (
+                          <Button
+                            variant="outline-primary"
+                            onClick={handleDownload}
+                            rel="noopener noreferrer"
+                          >
+                            <FaFileWord />
+                          </Button>
+                        ) : (
+                          <span>No file available</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
             </div>
