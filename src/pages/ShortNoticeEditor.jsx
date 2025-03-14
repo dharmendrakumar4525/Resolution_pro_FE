@@ -46,8 +46,17 @@ export default function ShortNoticeEditor() {
   const index = location.state?.index;
   const fileUrl = location.state?.fileUrl;
   const page = location.state?.page || "";
+  const director = location.state?.director || "";
+  console.log(director, "director-info");
   const editor = useRef(null);
   const navigate = useNavigate();
+  console.log(fileUrl, "fileee");
+  const directorPlaceholders = {
+    short_notice_director_name: director?.name || "Unknown Director",
+    short_notice_director_designation:
+      director?.designation || "Unknown Designation",
+    short_notice_director_din_pan: director?.["din/pan"] || "Unknown DIN/PAN",
+  };
   useEffect(() => {
     const fetchMeetData = async (id) => {
       try {
@@ -233,15 +242,178 @@ export default function ShortNoticeEditor() {
           ...prevState,
           [placeholder]: true,
         }));
-      }
-      // Check if it's a system variable
-      const systemVariable = variable[placeholder];
-      // const systemVariable = rows.find((row) => row.name === placeholder);
+      } // Check if it's a system variable
+      const systemVariable = rows?.find((row) => row?.name === placeholder);
       if (systemVariable) {
         console.log(systemVariable, "system-var");
+        let res = systemVariable.mca_name;
+
+        let formulaRes = systemVariable.formula;
+        let value;
+        function getOrdinalSuffix(number) {
+          const suffixes = ["th", "st", "nd", "rd"];
+          const value = number % 100;
+          const suffix =
+            suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+          return `${number}<sup style="color:#4a5073">${suffix}</sup>`;
+        }
+        if (res == "current_year") {
+          function getCurrentFinancialYear() {
+            const today = new Date();
+            const year = today.getFullYear();
+
+            if (today.getMonth() + 1 >= 4) {
+              return `${year}-${year + 1}`;
+            } else {
+              return `${year - 1}-${year}`;
+            }
+          }
+
+          let result = getCurrentFinancialYear();
+          value = result;
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+
+          // Mark as confirmed
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else if (res == "createdAt") {
+          function getFormattedDate(dateString) {
+            const dateObj = new Date(dateString);
+
+            const day = dateObj.toLocaleDateString("en-US", {
+              weekday: "long",
+            });
+            const month = dateObj.toLocaleDateString("en-US", {
+              month: "long",
+            });
+            const date = dateObj.getDate();
+            const year = dateObj.getFullYear();
+
+            return `${date} ${month} ${year}`;
+          }
+
+          let result = getFormattedDate(meetInfo[res]);
+          console.log(result, "resultttt");
+          value = result;
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else if (res == "startTime") {
+          const timeParts =
+            meetInfo[res]?.split(":") ||
+            "2024-11-28T09:08:41.931+00:00"?.split(":");
+          console.log(timeParts, "tp");
+          if (timeParts == undefined) {
+            return (fields[placeholder] = inputFields[placeholder] || ""); // Preserve or initialize
+          }
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = timeParts[1];
+          const amPm = hours >= 12 ? "PM" : "AM";
+
+          const formattedHours = hours % 12 || 12;
+          const result = `${formattedHours}:${minutes} ${amPm} ${meetInfo?.standard_time}`;
+          console.log(result, "time-23");
+          value = result;
+
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData,
+            [systemVariable.name]: value,
+          }));
+        } else if (formulaRes == "date") {
+          console.log(res, "response1234");
+          function getFormattedDate(dateString) {
+            const dateObj = new Date(dateString);
+            const day = String(dateObj.getDate()).padStart(2, "0");
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+            const year = dateObj.getFullYear();
+            return `${day}/${month}/${year}`;
+          }
+          let result = getFormattedDate(clientInfo[res]);
+          value = result;
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+          // Mark as confirmed
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else if (res in clientInfo) {
+          console.log(clientInfo, "clientid");
+          value = clientInfo[res];
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+
+          // Mark as confirmed
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else if (res in meetInfo) {
+          value = meetInfo[res];
+          updatedContent = updatedContent.replace(
+            new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+            value
+          );
+
+          // Mark as confirmed
+          setConfirmedFields((prevState) => ({
+            ...prevState,
+            [placeholder]: true,
+          }));
+          setPlaceVar((prevData) => ({
+            ...prevData, // Spread the existing state
+            [systemVariable.name]: value, // Add the new key-value pair
+          }));
+        } else {
+          fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
+        }
+        // const value = systemVariable.mca_name; // System variable value
+      }
+      // Check if it's a already filled variable
+      const filledVariable = variable[placeholder];
+      // const systemVariable = rows.find((row) => row.name === placeholder);
+      if (filledVariable) {
         // let res = systemVariable.mca_name;
         let value;
-        value = systemVariable;
+        value = filledVariable;
         updatedContent = updatedContent.replace(
           new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
           value
@@ -254,6 +426,16 @@ export default function ShortNoticeEditor() {
         }));
 
         // const value = systemVariable.mca_name; // System variable value
+      } else if (directorPlaceholders[placeholder]) {
+        updatedContent = updatedContent.replace(
+          new RegExp(`(?:\\$|\\#)\\{${placeholder}\\}`, "g"),
+          directorPlaceholders[placeholder]
+        );
+
+        setConfirmedFields((prevState) => ({
+          ...prevState,
+          [placeholder]: true,
+        }));
       } else {
         // Initialize inputFields for non-system placeholders
         fields[placeholder] = inputFields[placeholder] || ""; // Preserve or initialize
@@ -374,6 +556,7 @@ export default function ShortNoticeEditor() {
     const formData = new FormData();
     formData.append("short_notice_file", docxBlob);
     formData.append("htmlcontent", editorContent);
+    formData.append("index", `${index}`);
 
     try {
       let url;

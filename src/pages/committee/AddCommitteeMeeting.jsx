@@ -54,11 +54,7 @@ export default function AddCommitteeMeeting() {
       meetingType: "committee_meeting",
       templateFile: "",
     },
-    shortNotice: {
-      templateName: "Notice",
-      meetingType: "committee_meeting",
-      templateFile: "",
-    },
+    shortNotice: null,
     mom: {
       templateName: "MOM",
       meetingType: "committee_meeting",
@@ -348,11 +344,16 @@ export default function AddCommitteeMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  formData.participants?.map((dir) => ({
+                    director: dir.director,
+                    templateName: "Short Notice",
+                    meetingType: "committee_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -440,11 +441,16 @@ export default function AddCommitteeMeeting() {
                   templateFile: noticeTemplate.fileName,
                   templateName: "Notice",
                 },
-                shortNotice: {
-                  ...prevFormData.notes,
-                  templateFile: shortNoticeTemplate.fileName,
-                  templateName: "Short Notice",
-                },
+                shortNotice:
+                  formData.participants?.map((dir) => ({
+                    director: dir.director,
+                    templateName: "Short Notice",
+                    meetingType: "committee_meeting",
+                    templateFile: shortNoticeTemplate.fileName,
+                    fileName: null,
+                    filedocx: null,
+                    filehtml: null,
+                  })) || [],
               }));
             } else {
               setFormData((prevFormData) => ({
@@ -750,28 +756,6 @@ export default function AddCommitteeMeeting() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} lg={4} className="mt-2">
-                <Form.Label>
-                  Meeting Documents<sup>*</sup>
-                </Form.Label>
-
-                <Form.Group controlId="agendaItems">
-                  <Select
-                    options={agendaOptions}
-                    placeholder="Select Meeting Document"
-                    value={
-                      formData.agendaItems.length > 0
-                        ? {
-                            value: formData.agendaItems[0].templateName,
-                            label: formData.agendaItems[0].templateName,
-                          }
-                        : null
-                    }
-                    onChange={handleAgendaItemChange}
-                    isClearable
-                  />
-                </Form.Group>
-              </Col>
 
               <Col md={6} lg={4} className="mt-2">
                 <Form.Group controlId="committee">
@@ -880,6 +864,28 @@ export default function AddCommitteeMeeting() {
                     before proceeding.
                   </p>
                 )}
+              </Col>
+              <Col md={6} lg={4} className="mt-2">
+                <Form.Label>
+                  Meeting Documents<sup>*</sup>
+                </Form.Label>
+
+                <Form.Group controlId="agendaItems">
+                  <Select
+                    options={agendaOptions}
+                    placeholder="Select Meeting Document"
+                    value={
+                      formData.agendaItems.length > 0
+                        ? {
+                            value: formData.agendaItems[0].templateName,
+                            label: formData.agendaItems[0].templateName,
+                          }
+                        : null
+                    }
+                    onChange={handleAgendaItemChange}
+                    isClearable
+                  />
+                </Form.Group>
               </Col>
             </Row>
 
